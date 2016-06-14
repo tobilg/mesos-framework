@@ -5,7 +5,7 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
 
 ## Installation
 
-You can use `mesos-js` in your own projects by running
+You can use `mesos-framework` in your own projects by running
 
     npm i mesos-framework --save
 
