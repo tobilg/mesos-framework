@@ -33,6 +33,10 @@ var scheduler = new Scheduler({
 
 Basically this is the mechanism to create custom framework logic. Please have a look at the `examples` folder to see examples for command-based and Docker-based schedulers.
 
+### API docs
+
+The API docs can be accessed via [this link](https://htmlpreview.github.io/?https://raw.githubusercontent.com/tobilg/mesos-framework/master/docs/mesos-framework/0.1.0/index.html).
+
 ## Scheduler
 
 The `Scheduler` is the "heart" of a Mesos framework. It is very well possible to create a Mesos framework only by implementing the `Scheduler` with the standard [CommandInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397) and [ContainerInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744) objects.
