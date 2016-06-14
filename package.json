@@ -1,0 +1,31 @@
+{
+  "name": "mesos-framework",
+  "version": "0.1.0",
+  "description": "A low-level wrapper around the Mesos HTTP APIs for Schedulers and Executors. Write your Mesos framework in pure JavaScript!",
+  "keywords": [
+    "mesos",
+    "framework",
+    "http",
+    "api",
+    "wrapper",
+    "base",
+    "scheduler",
+    "executor"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose"
+  },
+  "author": "TobiLG",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.13.1",
+    "protobufjs": "^5.0.1",
+    "uuid": "^2.0.2"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.4.0",
+    "minami": "^1.1.1"
+  }
+}

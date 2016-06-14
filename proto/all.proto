@@ -1,0 +1,6 @@
+/*
+* This is used to import/concatenate all required protobufs
+*/
+import "0.28.2/mesos.proto";
+import "0.28.2/scheduler.proto";
+import "0.28.2/executor.proto";

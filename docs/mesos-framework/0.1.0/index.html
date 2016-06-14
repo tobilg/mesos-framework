@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Home - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Executor.html">Executor</a><ul class='methods'><li data-type='method'><a href="Executor.html#message">message</a></li><li data-type='method'><a href="Executor.html#subscribe">subscribe</a></li><li data-type='method'><a href="Executor.html#update">update</a></li></ul></li><li><a href="Mesos.html">Mesos</a><ul class='methods'><li data-type='method'><a href="Mesos.html#getBuilder">getBuilder</a></li><li data-type='method'><a href="Mesos.html#getMesos">getMesos</a></li><li data-type='method'><a href="Mesos.html#getProtoBuf">getProtoBuf</a></li></ul></li><li><a href="Scheduler.html">Scheduler</a><ul class='methods'><li data-type='method'><a href="Scheduler.html#accept">accept</a></li><li data-type='method'><a href="Scheduler.html#acknowledge">acknowledge</a></li><li data-type='method'><a href="Scheduler.html#decline">decline</a></li><li data-type='method'><a href="Scheduler.html#getRunningTasks">getRunningTasks</a></li><li data-type='method'><a href="Scheduler.html#kill">kill</a></li><li data-type='method'><a href="Scheduler.html#message">message</a></li><li data-type='method'><a href="Scheduler.html#reconcile">reconcile</a></li><li data-type='method'><a href="Scheduler.html#request">request</a></li><li data-type='method'><a href="Scheduler.html#revive">revive</a></li><li data-type='method'><a href="Scheduler.html#shutdown">shutdown</a></li><li data-type='method'><a href="Scheduler.html#subscribe">subscribe</a></li><li data-type='method'><a href="Scheduler.html#teardown">teardown</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h1>mesos-framework</h1><p>This project provides a low-level wrapper around the Mesos HTTP APIs for <a href="http://mesos.apache.org/documentation/latest/scheduler-http-api/">schedulers</a> and <a href="http://mesos.apache.org/documentation/latest/executor-http-api/">executors</a>.
+It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos version is 0.28.2.</p>
+<h2>Installation</h2><p>You can use <code>mesos-js</code> in your own projects by running</p>
+<pre class="prettyprint source"><code>npm i mesos-framework --save</code></pre><h1>Documentation</h1><p><code>mesos-js</code> is not a Mesos framework itself, but can be imagined as a &quot;framework-framework&quot;, meaning that it provides a certain low-level abstraction around the HTTP APIs for schedulers and executors.</p>
+<p>It implements all existing <code>Calls</code> as methods for both the <code>Scheduler</code> and <code>Executor</code> classes, meaning that they can be used without having to write the HTTP communication yourself. Additionally, it exposes all <code>Events</code> for both classes, as definied in the Mesos docs. It also adds some custom events for the <code>Scheduler</code> class for better task handling.   </p>
+<p>There are some basic event handler methods provided for the <code>Scheduler</code> class, which for example take care of the checking and accepting the offers received from the Mesos master, as well as keeping track of tasks. Please have a look at the class documentation in the <code>docs</code> folder of this project.</p>
+<p>For both the <code>Scheduler</code> and <code>Executor</code> classes, the belonging event handler methods can be overwritten with custom logic. To do that, you can supply a <code>options.handlers</code> property map object (where the property name is the uppercase <code>Event</code> name) when instantiating a class:</p>
+<pre class="prettyprint source"><code>var scheduler = new Scheduler({
+    ...
+    &quot;handlers&quot;: {
+        &quot;HEARTBEAT&quot;: function (timestamp) {
+            console.log(&quot;CUSTOM HEARTBEAT!&quot;);
+            this.lastHeartbeat = timestamp;
+        }
+    }
+});</code></pre><p>Basically this is the mechanism to create custom framework logic. Please have a look at the <code>examples</code> folder to see examples for command-based and Docker-based schedulers.</p>
+<h2>Scheduler</h2><p>The <code>Scheduler</code> is the &quot;heart&quot; of a Mesos framework. It is very well possible to create a Mesos framework only by implementing the <code>Scheduler</code> with the standard <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397">CommandInfo</a> and <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744">ContainerInfo</a> objects.</p>
+<h3>Events</h3><p><strong>Events from Master</strong><br>The following events from the leading Mesos master are exposed:</p>
+<ul>
+<li><code>subscribed</code>: The first event sent by the master when the scheduler sends a <code>SUBSCRIBE</code> request on the persistent connection (i.e. the framework was started). Emits an object containing the <code>frameworkId</code> and the <code>mesosStreamId</code>. </li>
+<li><code>offers</code>: Sent by the master whenever there are new resources that can be offered to the framework. Emits the base object from the Master for this event.</li>
+<li><code>rescind</code>: Sent by the master when a particular offer is no longer valid. Emits the base object from the Master for this event.</li>
+<li><code>update</code>: Sent by the master whenever there is a status update that is generated by the executor, agent or master. Emits the base object from the Master for this event.</li>
+<li><code>message</code>: A custom message generated by the executor that is forwarded to the scheduler by the master. Emits an object containing the <code>agentId</code>, the <code>executorId</code> and the ASCII-encoded <code>data</code>. </li>
+<li><code>heartbeat</code>: This event is periodically sent by the master to inform the scheduler that a connection is alive. Emits the timestamp of the last heartbeat event.</li>
+<li><code>failure</code>: Sent by the master when an agent is removed from the cluster (e.g., failed health checks) or when an executor is terminated. Emits the base object from the Master for this event. </li>
+<li><code>error</code>: Sent by the master when an asynchronous error event is generated (e.g., a framework is not authorized to subscribe with the given role). Emits the base object from the Master for this event.</li>
+</ul>
+<p><strong>Events from Scheduler</strong><br>The following events from the Scheduler calls are exposed:</p>
+<ul>
+<li><code>sent_subscribe</code>: Is emitted when the scheduler has sent the <code>SUBSCRIBE</code> request.</li>
+<li><code>sent_accept</code>: Is emitted when the scheduler has sent an <code>ACCEPT</code> request to accept an offer from the Master.</li>
+<li><code>sent_decline</code>: Is emitted when the scheduler has sent a <code>DECLINE</code> request to decline an offer from the Master.</li>
+<li><code>sent_teardown</code>: Is emitted when the scheduler has sent the <code>TEARDOWN</code> request to stop the framework to the Master.</li>
+<li><code>sent_revive</code>: Is emitted when the scheduler has sent a <code>REVIVE</code> request to the Master to remove any/all filters that it has previously set via <code>ACCEPT</code> or <code>DECLINE</code> calls.</li>
+<li><code>sent_kill</code>: Is emitted when the scheduler has sent a <code>KILL</code> request to the Master to kill a specific task.</li>
+<li><code>sent_acknowledge</code>: Is emitted when the scheduler has sent an <code>ACKNOWLEDGE</code> request to the Master to acknowledge a status update.</li>
+<li><code>sent_shutdown</code>: Is emitted when the scheduler has sent a <code>SHUTDOWN</code> request to the Master to shutdown a specific custom executor.</li>
+<li><code>sent_reconcile</code>: Is emitted when the scheduler has sent a <code>RECONCILE</code> request to the Master to query the status of non-terminal tasks.</li>
+<li><code>sent_message</code>: Is emitted when the scheduler has sent a <code>MESSAGE</code> request to the Master to send arbitrary binary data to the executor.</li>
+<li><code>sent_request</code>: Is emitted when the scheduler has sent a <code>REQUEST</code> request to the Master to request new resources.</li>
+<li><code>updated_task</code>: Is emitted when a task was updated. Contains an object with <code>taskId</code>, <code>executorId</code> and <code>state</code>.  </li>
+<li><code>removed_task</code>: Is emitted when a task was removed. Contains the <code>taskId</code>.</li>
+</ul>
+<h3>Example</h3><p>The option properties you can specify to create a <code>Scheduler</code> are the following:</p>
+<ul>
+<li><code>masterUrl</code>: The URL of the leading Mesos master (<strong>mandatory</strong>).</li>
+<li><code>port</code>: The port of the leading Mesos master (<strong>mandatory</strong>).</li>
+<li><code>frameworkName</code>: The desired framework name (will choose a standard name if not specified).</li>
+<li><code>commandInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397">Mesos.CommandInfo</a> definition (<strong>mandatory</strong>).</li>
+<li><code>containerInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744">Mesos.ContainerInfo</a> definition.</li>
+<li><code>executorInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460">Mesos.ExecutorInfo</a> definition.</li>
+<li><code>resources</code>: The array of <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L641">Mesos.Resource</a> definitions (<strong>mandatory</strong>).</li>
+<li><code>instances</code>: The number of instances (tasks) you want to launch (will be 1 if you don't specify this property).</li>
+<li><code>handlers</code>: An object containing custom handler functions for the <code>Scheduler</code> events, where the property name is the uppercase <code>Event</code> name.</li>
+</ul>
+<p>Also, you can have a look at the <code>examples</code> folder to see examples for command-based and Docker-based schedulers.</p>
+<pre class="prettyprint source"><code>&quot;use strict&quot;;
+
+var Scheduler = require(&quot;mesos-framework&quot;).Scheduler;
+var Mesos = require(&quot;mesos-framework&quot;).Mesos().getMesos();
+
+var scheduler = new Scheduler({
+    &quot;masterUrl&quot;: &quot;172.17.10.103&quot;,
+    &quot;port&quot;: 5050,
+    &quot;frameworkName&quot;: &quot;My first Command framework&quot;,
+    &quot;commandInfo&quot;: new Mesos.CommandInfo(
+        null, // URI
+        null, // Environment
+        true, // Is shell?
+        &quot;sleep 10;&quot;, // Command
+        null, // Arguments
+        null // User
+    ),
+    &quot;resources&quot;: [ // Define your needed resources here
+        new Mesos.Resource(&quot;cpus&quot;, Mesos.Value.Type.SCALAR, new Mesos.Value.Scalar(0.1)),
+        new Mesos.Resource(&quot;mem&quot;, Mesos.Value.Type.SCALAR, new Mesos.Value.Scalar(64))
+    ],
+    &quot;instances&quot;: 1,
+    &quot;handlers&quot;: {
+        &quot;HEARTBEAT&quot;: function (timestamp) {
+            console.log(&quot;CUSTOM HEARTBEAT!&quot;);
+            this.lastHeartbeat = timestamp;
+        }
+    }
+});
+
+// Start the main logic once the framework scheduler has received the &quot;SUBSCRIBED&quot; event from the leading Mesos master
+scheduler.on(&quot;subscribed&quot;, function (obj) {
+
+    // Display the Mesos-Stream-Id
+    console.log(&quot;Mesos Stream Id is &quot; + obj.mesosStreamId);
+
+    // Display the framework id
+    console.log(&quot;Framework Id is &quot; + obj.frameworkId);
+
+    // Trigger shutdown after one minute
+    setTimeout(function() {
+        // Send &quot;TEARDOWN&quot; request
+        scheduler.teardown();
+        // Shutdown process
+        process.exit(0);
+    }, 60000);
+
+});
+
+// Capture &quot;offers&quot; events
+scheduler.on(&quot;offers&quot;, function (offers) {
+    console.log(&quot;Got offers: &quot; + JSON.stringify(offers));
+});
+
+// Capture &quot;heartbeat&quot; events
+scheduler.on(&quot;heartbeat&quot;, function (heartbeatTimestamp) {
+    console.log(&quot;Heartbeat on &quot; + heartbeatTimestamp);
+});
+
+// Capture &quot;error&quot; events
+scheduler.on(&quot;error&quot;, function (error) {
+    console.log(&quot;ERROR: &quot; + JSON.stringify(error));
+    console.log(error.stack);
+});
+
+// Start framework scheduler
+scheduler.subscribe();</code></pre><h2>Executor</h2><p>You should consider writing your own executors if your framework has special requirements. For example, you may not want a 1:1 relationship between tasks and processes.</p>
+<p>How can the custom executors be used? Taken from the <a href="http://mesos.apache.org/documentation/latest/app-framework-development-guide/">Mesos framework development guide</a>:</p>
+<blockquote>
+<p>One way to distribute your framework executor is to let the Mesos fetcher download it on-demand when your scheduler launches tasks on that slave.
+<a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460">ExecutorInfo</a> is a Protocol Buffer Message class, and it contains a field of type <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397">CommandInfo</a>.
+<a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397">CommandInfo</a> allows schedulers to specify, among other things, a number of resources as URIs.
+These resources are fetched to a sandbox directory on the slave before attempting to execute the <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460">ExecutorInfo</a> command.
+Several URI schemes are supported, including HTTP, FTP, HDFS, and S3.</p>
+<p>Alternatively, you can pass the <code>frameworks_home</code> configuration option (defaults to: <code>MESOS_HOME/frameworks</code>) to your mesos-slave daemons
+when you launch them to specify where your framework executors are stored (e.g. on an NFS mount that is available to all slaves),
+then use a relative path in <code>CommandInfo.uris</code>, and the slave will prepend the value of frameworks_home to the relative path provided.</p>
+</blockquote>
+<h3>Events</h3><p><strong>Events from Scheduler</strong><br>The following events from the Scheduler are exposed:</p>
+<ul>
+<li><code>subscribed</code>: The first event sent by the agent when the executor sends a <code>SUBSCRIBE</code> request on the persistent connection.</li>
+<li><code>launch</code>: Sent by the agent whenever it needs to assign a new task to the executor. The executor is required to send an <code>UPDATE</code> message back to the agent indicating the success or failure of the task initialization.</li>
+<li><code>kill</code>: Is sent whenever the scheduler needs to stop execution of a specific task. The executor is required to send a terminal update (e.g., <code>TASK_FINISHED</code>, <code>TASK_KILLED</code> or <code>TASK_FAILED</code>) back to the agent once it has stopped/killed the task. Mesos will mark the task resources as freed once the terminal update is received.</li>
+<li><code>acknowledged</code>: Sent to signal the executor that a status update was received as part of the reliable message passing mechanism. Acknowledged updates must not be retried.</li>
+<li><code>message</code>: Sent a custom message generated by the scheduler and forwarded all the way to the executor. These messages are delivered “as-is” by Mesos and have no delivery guarantees. It is up to the scheduler to retry if a message is dropped for any reason.</li>
+<li><code>shutdown</code>: Sent by the agent in order to shutdown the executor. Once an executor gets a <code>SHUTDOWN</code> event it is required to kill all its tasks, send <code>TASK_KILLED</code> updates and gracefully exit. </li>
+<li><code>error</code>: Sent by the agent when an asynchronous error event is generated. It is recommended that the executor abort when it receives an error event and retry subscription.</li>
+</ul>
+<p><strong>Events from Executor</strong><br>The following events from the Executor calls are exposed:</p>
+<ul>
+<li><code>sent_subscribe</code>: Is emitted when the executor has sent the <code>SUBSCRIBE</code> request.</li>
+<li><code>sent_update</code>: Is emitted when the scheduler has sent the <code>UPDATE</code> request to the agent.</li>
+<li><code>sent_message</code>: Is emitted when the scheduler has sent the <code>MESSAGE</code> request to send arbitrary binary data to the agent.</li>
+</ul>
+<h2>Mesos</h2><p>The module also exposes the Mesos protocol buffer object, which is loaded via <a href="https://github.com/dcodeIO/ProtoBuf.js/">protobuf.js</a>. It can be used to create the objects which can be then passed to the scheduler/executor methods.</p>
+<p><strong>Example:</strong></p>
+<pre class="prettyprint source"><code>var Mesos = require(&quot;mesos-framework&quot;).Mesos().getMesos();
+
+var TaskID = new Mesos.TaskID(&quot;my-task-id&quot;);</code></pre><p>You can also instantiate Mesos protocol buffer objects from plain JSON.</p>
+<p><strong>Example:</strong></p>
+<pre class="prettyprint source"><code>var Builder = require(&quot;mesos-framework&quot;).Mesos().getBuilder();
+
+var taskId = {
+    &quot;value&quot;: &quot;my-task-id&quot;
+};
+
+var TaskID = new (Builder.build(&quot;mesos.TaskID&quot;))(taskId);</code></pre></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jun 14 2016 13:14:49 GMT+0200 (CEST) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
