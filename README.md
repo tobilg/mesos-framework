@@ -35,7 +35,7 @@ Basically this is the mechanism to create custom framework logic. Please have a 
 
 ### API docs
 
-The API docs can be accessed via [this link](https://htmlpreview.github.io/?https://raw.githubusercontent.com/tobilg/mesos-framework/master/docs/mesos-framework/0.1.0/index.html).
+The API docs can be accessed via [this link](https://htmlpreview.github.io/?https://raw.githubusercontent.com/tobilg/mesos-framework/master/docs/mesos-framework/0.1.1/index.html).
 
 ## Scheduler
 

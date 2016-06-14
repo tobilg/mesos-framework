@@ -1,10 +1,10 @@
 "use strict";
 
 var Scheduler = require("../index").Scheduler;
-var Mesos = require("../index").Mesos().getMesos();
+var Mesos = require("../index").Mesos.getMesos();
 
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.103",
+    "masterUrl": "172.17.10.101",
     "port": 5050,
     "frameworkName": "My first Command framework",
     "commandInfo": new Mesos.CommandInfo(
