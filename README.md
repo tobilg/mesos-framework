@@ -92,7 +92,7 @@ Also, you can have a look at the `examples` folder to see examples for command-b
 "use strict";
 
 var Scheduler = require("mesos-framework").Scheduler;
-var Mesos = require("mesos-framework").Mesos().getMesos();
+var Mesos = require("mesos-framework").Mesos.getMesos();
 
 var scheduler = new Scheduler({
     "masterUrl": "172.17.10.103",
@@ -200,7 +200,7 @@ The module also exposes the Mesos protocol buffer object, which is loaded via [p
 
 **Example:**
 ```
-var Mesos = require("mesos-framework").Mesos().getMesos();
+var Mesos = require("mesos-framework").Mesos.getMesos();
 
 var TaskID = new Mesos.TaskID("my-task-id");
 ```
@@ -209,7 +209,7 @@ You can also instantiate Mesos protocol buffer objects from plain JSON.
 
 **Example:**
 ```
-var Builder = require("mesos-framework").Mesos().getBuilder();
+var Builder = require("mesos-framework").Mesos.getBuilder();
 
 var taskId = {
     "value": "my-task-id"
