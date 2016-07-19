@@ -49,8 +49,8 @@
     <section class="readme">
         <article><h1>mesos-framework</h1><p>This project provides a low-level wrapper around the Mesos HTTP APIs for <a href="http://mesos.apache.org/documentation/latest/scheduler-http-api/">schedulers</a> and <a href="http://mesos.apache.org/documentation/latest/executor-http-api/">executors</a>.
 It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos version is 0.28.2.</p>
-<h2>Installation</h2><p>You can use <code>mesos-js</code> in your own projects by running</p>
-<pre class="prettyprint source"><code>npm i mesos-framework --save</code></pre><h1>Documentation</h1><p><code>mesos-js</code> is not a Mesos framework itself, but can be imagined as a &quot;framework-framework&quot;, meaning that it provides a certain low-level abstraction around the HTTP APIs for schedulers and executors.</p>
+<h2>Installation</h2><p>You can use <code>mesos-framework</code> in your own projects by running</p>
+<pre class="prettyprint source"><code>npm i mesos-framework --save</code></pre><h2>Documentation</h2><p><code>mesos-js</code> is not a Mesos framework itself, but can be imagined as a &quot;framework-framework&quot;, meaning that it provides a certain low-level abstraction around the HTTP APIs for schedulers and executors.</p>
 <p>It implements all existing <code>Calls</code> as methods for both the <code>Scheduler</code> and <code>Executor</code> classes, meaning that they can be used without having to write the HTTP communication yourself. Additionally, it exposes all <code>Events</code> for both classes, as definied in the Mesos docs. It also adds some custom events for the <code>Scheduler</code> class for better task handling.   </p>
 <p>There are some basic event handler methods provided for the <code>Scheduler</code> class, which for example take care of the checking and accepting the offers received from the Mesos master, as well as keeping track of tasks. Please have a look at the class documentation in the <code>docs</code> folder of this project.</p>
 <p>For both the <code>Scheduler</code> and <code>Executor</code> classes, the belonging event handler methods can be overwritten with custom logic. To do that, you can supply a <code>options.handlers</code> property map object (where the property name is the uppercase <code>Event</code> name) when instantiating a class:</p>
@@ -63,9 +63,30 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
         }
     }
 });</code></pre><p>Basically this is the mechanism to create custom framework logic. Please have a look at the <code>examples</code> folder to see examples for command-based and Docker-based schedulers.</p>
-<h3>API docs</h3><p>The API docs can be accessed via <a href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/tobilg/mesos-framework/master/docs/mesos-framework/0.1.1/index.html">this link</a>.</p>
-<h2>Scheduler</h2><p>The <code>Scheduler</code> is the &quot;heart&quot; of a Mesos framework. It is very well possible to create a Mesos framework only by implementing the <code>Scheduler</code> with the standard <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397">CommandInfo</a> and <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744">ContainerInfo</a> objects.</p>
-<h3>Events</h3><p><strong>Events from Master</strong><br>The following events from the leading Mesos master are exposed:</p>
+<h4>API docs</h4><p>The API docs can be accessed via <a href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/tobilg/mesos-framework/master/docs/mesos-framework/0.2.0/index.html">this link</a>.</p>
+<h3>Scheduler</h3><p>The <code>Scheduler</code> is the &quot;heart&quot; of a Mesos framework. It is very well possible to create a Mesos framework only by implementing the <code>Scheduler</code> with the standard <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397">CommandInfo</a> and <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744">ContainerInfo</a> objects.</p>
+<p>The option properties you can specify to create a <code>Scheduler</code> are the following:</p>
+<ul>
+<li><code>masterUrl</code>: The URL of the leading Mesos master (<strong>mandatory</strong>).</li>
+<li><code>port</code>: The port of the leading Mesos master (<strong>mandatory</strong>).</li>
+<li><code>frameworkName</code>: The desired framework name (will choose a standard name if not specified).</li>
+<li><code>restartStates</code>: An array of <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1310">TaskStates</a> which should trigger a restart of a task. For example, regularly finished tasks (in state <code>TASK_FINISHED</code>) are not restarted by default.</li>
+<li><code>tasks</code>: An object (map) with the task info (see below). It's possible to create different (prioritized) tasks, e.g. launching different containers with different instance counts. See the <a href="https://github.com/tobilg/mesos-framework/blob/master/examples/dockerScheduler.js">Docker Scheduler example</a>.</li>
+<li><code>handlers</code>: An object containing custom handler functions for the <code>Scheduler</code> events, where the property name is the uppercase <code>Event</code> name.</li>
+</ul>
+<p>A <code>tasks</code> sub-object can contain objects with task information:</p>
+<ul>
+<li><code>instances</code>: The number of instances (tasks) you want to launch (will be 1 if you don't specify this property).</li>
+<li><code>priority</code>: The priority of which the different tasks shall be launched (lower is better). If none is specified, tasks will be launched based on the task naming.</li>
+<li><code>commandInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397">Mesos.CommandInfo</a> definition (<strong>mandatory</strong>).</li>
+<li><code>containerInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744">Mesos.ContainerInfo</a> definition.</li>
+<li><code>executorInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460">Mesos.ExecutorInfo</a> definition.</li>
+<li><code>resources</code>: The array of <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L641">Mesos.Resource</a> definitions (<strong>mandatory</strong>).</li>
+<li><code>portMappings</code>: The array of portMapping objects, each containing a numeric <code>port</code> value (for container ports), and a <code>protocol</code> string (either <code>tcp</code> or <code>udp</code>). </li>
+<li><code>healthChecks</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L302">Mesos.HealthCheck</a> definition.</li>
+<li><code>labels</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1845">Mesos.Labels</a> definition.</li>
+</ul>
+<h4>Events</h4><p><strong>Events from Master</strong><br>The following events from the leading Mesos master are exposed:</p>
 <ul>
 <li><code>subscribed</code>: The first event sent by the master when the scheduler sends a <code>SUBSCRIBE</code> request on the persistent connection (i.e. the framework was started). Emits an object containing the <code>frameworkId</code> and the <code>mesosStreamId</code>. </li>
 <li><code>offers</code>: Sent by the master whenever there are new resources that can be offered to the framework. Emits the base object from the Master for this event.</li>
@@ -92,41 +113,36 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
 <li><code>updated_task</code>: Is emitted when a task was updated. Contains an object with <code>taskId</code>, <code>executorId</code> and <code>state</code>.  </li>
 <li><code>removed_task</code>: Is emitted when a task was removed. Contains the <code>taskId</code>.</li>
 </ul>
-<h3>Example</h3><p>The option properties you can specify to create a <code>Scheduler</code> are the following:</p>
-<ul>
-<li><code>masterUrl</code>: The URL of the leading Mesos master (<strong>mandatory</strong>).</li>
-<li><code>port</code>: The port of the leading Mesos master (<strong>mandatory</strong>).</li>
-<li><code>frameworkName</code>: The desired framework name (will choose a standard name if not specified).</li>
-<li><code>commandInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397">Mesos.CommandInfo</a> definition (<strong>mandatory</strong>).</li>
-<li><code>containerInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744">Mesos.ContainerInfo</a> definition.</li>
-<li><code>executorInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460">Mesos.ExecutorInfo</a> definition.</li>
-<li><code>resources</code>: The array of <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L641">Mesos.Resource</a> definitions (<strong>mandatory</strong>).</li>
-<li><code>instances</code>: The number of instances (tasks) you want to launch (will be 1 if you don't specify this property).</li>
-<li><code>handlers</code>: An object containing custom handler functions for the <code>Scheduler</code> events, where the property name is the uppercase <code>Event</code> name.</li>
-</ul>
-<p>Also, you can have a look at the <code>examples</code> folder to see examples for command-based and Docker-based schedulers.</p>
+<h4>Example</h4><p>Also, you can have a look at the <code>examples</code> folder to see examples for command-based and Docker-based schedulers.</p>
 <pre class="prettyprint source"><code>&quot;use strict&quot;;
 
 var Scheduler = require(&quot;mesos-framework&quot;).Scheduler;
 var Mesos = require(&quot;mesos-framework&quot;).Mesos.getMesos();
 
 var scheduler = new Scheduler({
-    &quot;masterUrl&quot;: &quot;172.17.10.103&quot;,
+    &quot;masterUrl&quot;: &quot;leader.mesos&quot;, // If Mesos DNS is not used, use the actual IP address of the leading master!
     &quot;port&quot;: 5050,
     &quot;frameworkName&quot;: &quot;My first Command framework&quot;,
-    &quot;commandInfo&quot;: new Mesos.CommandInfo(
-        null, // URI
-        null, // Environment
-        true, // Is shell?
-        &quot;sleep 10;&quot;, // Command
-        null, // Arguments
-        null // User
-    ),
-    &quot;resources&quot;: [ // Define your needed resources here
-        new Mesos.Resource(&quot;cpus&quot;, Mesos.Value.Type.SCALAR, new Mesos.Value.Scalar(0.1)),
-        new Mesos.Resource(&quot;mem&quot;, Mesos.Value.Type.SCALAR, new Mesos.Value.Scalar(64))
-    ],
-    &quot;instances&quot;: 1,
+    &quot;tasks&quot;: {
+        &quot;webservers&quot;: {
+            &quot;priority&quot;: 1,
+            &quot;instances&quot;: 3,
+            &quot;commandInfo&quot;: new Mesos.CommandInfo(
+                null, // URI
+                null, // Environment
+                true, // Is shell?
+                &quot;sleep 10;&quot;, // Command
+                null, // Arguments
+                null // User
+            ),
+            &quot;resources&quot;: {
+                &quot;cpus&quot;: 0.2,
+                &quot;mem&quot;: 128,
+                &quot;ports&quot;: 1,
+                &quot;disk&quot;: 0
+            }
+        }
+    },
     &quot;handlers&quot;: {
         &quot;HEARTBEAT&quot;: function (timestamp) {
             console.log(&quot;CUSTOM HEARTBEAT!&quot;);
@@ -171,7 +187,7 @@ scheduler.on(&quot;error&quot;, function (error) {
 });
 
 // Start framework scheduler
-scheduler.subscribe();</code></pre><h2>Executor</h2><p>You should consider writing your own executors if your framework has special requirements. For example, you may not want a 1:1 relationship between tasks and processes.</p>
+scheduler.subscribe();</code></pre><h3>Executor</h3><p>You should consider writing your own executors if your framework has special requirements. For example, you may not want a 1:1 relationship between tasks and processes.</p>
 <p>How can the custom executors be used? Taken from the <a href="http://mesos.apache.org/documentation/latest/app-framework-development-guide/">Mesos framework development guide</a>:</p>
 <blockquote>
 <p>One way to distribute your framework executor is to let the Mesos fetcher download it on-demand when your scheduler launches tasks on that slave.
@@ -183,7 +199,7 @@ Several URI schemes are supported, including HTTP, FTP, HDFS, and S3.</p>
 when you launch them to specify where your framework executors are stored (e.g. on an NFS mount that is available to all slaves),
 then use a relative path in <code>CommandInfo.uris</code>, and the slave will prepend the value of frameworks_home to the relative path provided.</p>
 </blockquote>
-<h3>Events</h3><p><strong>Events from Scheduler</strong><br>The following events from the Scheduler are exposed:</p>
+<h4>Events</h4><p><strong>Events from Scheduler</strong><br>The following events from the Scheduler are exposed:</p>
 <ul>
 <li><code>subscribed</code>: The first event sent by the agent when the executor sends a <code>SUBSCRIBE</code> request on the persistent connection.</li>
 <li><code>launch</code>: Sent by the agent whenever it needs to assign a new task to the executor. The executor is required to send an <code>UPDATE</code> message back to the agent indicating the success or failure of the task initialization.</li>
@@ -199,7 +215,7 @@ then use a relative path in <code>CommandInfo.uris</code>, and the slave will pr
 <li><code>sent_update</code>: Is emitted when the scheduler has sent the <code>UPDATE</code> request to the agent.</li>
 <li><code>sent_message</code>: Is emitted when the scheduler has sent the <code>MESSAGE</code> request to send arbitrary binary data to the agent.</li>
 </ul>
-<h2>Mesos</h2><p>The module also exposes the Mesos protocol buffer object, which is loaded via <a href="https://github.com/dcodeIO/ProtoBuf.js/">protobuf.js</a>. It can be used to create the objects which can be then passed to the scheduler/executor methods.</p>
+<h3>Mesos</h3><p>The module also exposes the Mesos protocol buffer object, which is loaded via <a href="https://github.com/dcodeIO/ProtoBuf.js/">protobuf.js</a>. It can be used to create the objects which can be then passed to the scheduler/executor methods.</p>
 <p><strong>Example:</strong></p>
 <pre class="prettyprint source"><code>var Mesos = require(&quot;mesos-framework&quot;).Mesos.getMesos();
 
@@ -224,7 +240,7 @@ var TaskID = new (Builder.build(&quot;mesos.TaskID&quot;))(taskId);</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jun 14 2016 15:20:08 GMT+0200 (CEST) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jul 19 2016 17:10:10 GMT+0200 (CEST) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
