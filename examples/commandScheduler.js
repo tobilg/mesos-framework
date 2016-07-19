@@ -4,22 +4,29 @@ var Scheduler = require("../index").Scheduler;
 var Mesos = require("../index").Mesos.getMesos();
 
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.101",
+    "masterUrl": "172.17.10.101", // If Mesos DNS is not used, use the actual IP address of the leading master!
     "port": 5050,
     "frameworkName": "My first Command framework",
-    "commandInfo": new Mesos.CommandInfo(
-        null, // URI
-        null, // Environment
-        true, // Is shell?
-        "sleep 10;", // Command
-        null, // Arguments
-        null // User
-    ),
-    "resources": [ // Define your needed resources here
-        new Mesos.Resource("cpus", Mesos.Value.Type.SCALAR, new Mesos.Value.Scalar(0.1)),
-        new Mesos.Resource("mem", Mesos.Value.Type.SCALAR, new Mesos.Value.Scalar(64))
-    ],
-    "instances": 1,
+    "tasks": {
+        "webservers": {
+            "priority": 1,
+            "instances": 3,
+            "commandInfo": new Mesos.CommandInfo(
+                null, // URI
+                null, // Environment
+                true, // Is shell?
+                "sleep 10;", // Command
+                null, // Arguments
+                null // User
+            ),
+            "resources": {
+                "cpus": 0.2,
+                "mem": 128,
+                "ports": 1,
+                "disk": 0
+            }
+        }
+    },
     "handlers": {
         "HEARTBEAT": function (timestamp) {
             console.log("CUSTOM HEARTBEAT!");
