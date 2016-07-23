@@ -21,7 +21,12 @@ var ContainerInfo = new Mesos.ContainerInfo(
 var scheduler = new Scheduler({
     "masterUrl": "172.17.10.101",
     "port": 5050,
-    "frameworkName": "My first Docker framework",
+    "frameworkName": "My first Docker framework (host networking)",
+    "logging": {
+        "path": "logs",
+        "fileName": "mesos-framework-docker-host.log",
+        "level": "debug"
+    },
     "tasks": {
         "webservers": {
             "priority": 1,
@@ -75,7 +80,7 @@ var scheduler = new Scheduler({
     },
     "handlers": {
         "HEARTBEAT": function (timestamp) {
-            console.log("CUSTOM HEARTBEAT!");
+            this.logger.info("CUSTOM HEARTBEAT!");
             this.lastHeartbeat = timestamp;
         }
     }
@@ -85,10 +90,10 @@ var scheduler = new Scheduler({
 scheduler.on("subscribed", function (obj) {
 
     // Display the Mesos-Stream-Id
-    console.log("Mesos Stream Id is " + obj.mesosStreamId);
+    scheduler.logger.info("Mesos Stream Id is " + obj.mesosStreamId);
 
     // Display the framework id
-    console.log("Framework Id is " + obj.frameworkId);
+    scheduler.logger.info("Framework Id is " + obj.frameworkId);
 
     // Trigger shutdown after one minute
     setTimeout(function() {
@@ -96,24 +101,24 @@ scheduler.on("subscribed", function (obj) {
         scheduler.teardown();
         // Shutdown process
         process.exit(0);
-    }, 60000);
+    }, 600000);
 
 });
 
 // Capture "offers" events
 scheduler.on("offers", function (offers) {
-    console.log("Got offers: " + JSON.stringify(offers));
+    scheduler.logger.info("Got offers: " + JSON.stringify(offers));
 });
 
 // Capture "heartbeat" events
 scheduler.on("heartbeat", function (heartbeatTimestamp) {
-    console.log("Heartbeat on " + heartbeatTimestamp);
+    scheduler.logger.info("Heartbeat on " + heartbeatTimestamp);
 });
 
 // Capture "error" events
 scheduler.on("error", function (error) {
-    console.log("ERROR: " + JSON.stringify(error));
-    console.log(error.stack);
+    scheduler.logger.info("ERROR: " + JSON.stringify(error));
+    scheduler.logger.info(error.stack);
 });
 
 // Start framework scheduler

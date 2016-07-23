@@ -1,19 +1,12 @@
-# Created by .ignore support plugin (hsz.mobi)
-logs
+
 *.log
-npm-debug.log*
-pids
-*.pid
-*.seed
-lib-cov
-coverage
-.nyc_output
-.grunt
-.lock-wscript
-build/Release
+
 node_modules
-jspm_packages
+
+npm-debug.log*
 .npm
 .node_repl_history
+
 .DS_Store
+
 .idea/

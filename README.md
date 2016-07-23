@@ -9,9 +9,9 @@ You can use `mesos-framework` in your own projects by running
 
     npm i mesos-framework --save
 
-# Documentation
+## Documentation
 
-`mesos-js` is not a Mesos framework itself, but can be imagined as a "framework-framework", meaning that it provides a certain low-level abstraction around the HTTP APIs for schedulers and executors.
+`mesos-js` is not a Mesos framework itself, but can be imagined as a "framework-framework", meaning that it provides a certain abstraction around the HTTP APIs for schedulers and executors.
  
 It implements all existing `Calls` as methods for both the `Scheduler` and `Executor` classes, meaning that they can be used without having to write the HTTP communication yourself. Additionally, it exposes all `Events` for both classes, as definied in the Mesos docs. It also adds some custom events for the `Scheduler` class for better task handling.   
 
@@ -33,15 +33,36 @@ var scheduler = new Scheduler({
 
 Basically this is the mechanism to create custom framework logic. Please have a look at the `examples` folder to see examples for command-based and Docker-based schedulers.
 
-### API docs
+#### API docs
 
-The API docs can be accessed via [this link](https://htmlpreview.github.io/?https://raw.githubusercontent.com/tobilg/mesos-framework/master/docs/mesos-framework/0.1.1/index.html).
+The API docs can be accessed via [this link](https://htmlpreview.github.io/?https://raw.githubusercontent.com/tobilg/mesos-framework/master/docs/index.html).
 
-## Scheduler
+### Scheduler
 
 The `Scheduler` is the "heart" of a Mesos framework. It is very well possible to create a Mesos framework only by implementing the `Scheduler` with the standard [CommandInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397) and [ContainerInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744) objects.
 
-### Events
+The option properties you can specify to create a `Scheduler` are the following:
+
+* `masterUrl`: The URL of the leading Mesos master (**mandatory**).
+* `port`: The port of the leading Mesos master (**mandatory**).
+* `frameworkName`: The desired framework name (will choose a standard name if not specified).
+* `restartStates`: An array of [TaskStates](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1310) which should trigger a restart of a task. For example, regularly finished tasks (in state `TASK_FINISHED`) are not restarted by default.
+* `tasks`: An object (map) with the task info (see below). It's possible to create different (prioritized) tasks, e.g. launching different containers with different instance counts. See the [Docker Scheduler example](https://github.com/tobilg/mesos-framework/blob/master/examples/dockerSchedulerBridgeNetworking.js).
+* `handlers`: An object containing custom handler functions for the `Scheduler` events, where the property name is the uppercase `Event` name.
+
+A `tasks` sub-object can contain objects with task information:
+
+* `instances`: The number of instances (tasks) you want to launch (will be 1 if you don't specify this property).
+* `priority`: The priority of which the different tasks shall be launched (lower is better). If none is specified, tasks will be launched based on the task naming.
+* `commandInfo`: A [Mesos.CommandInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397) definition (**mandatory**).
+* `containerInfo`: A [Mesos.ContainerInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744) definition.
+* `executorInfo`: A [Mesos.ExecutorInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460) definition.
+* `resources`: The array of [Mesos.Resource](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L641) definitions (**mandatory**).
+* `portMappings`: The array of portMapping objects, each containing a numeric `port` value (for container ports), and a `protocol` string (either `tcp` or `udp`). 
+* `healthChecks`: A [Mesos.HealthCheck](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L302) definition.
+* `labels`: A [Mesos.Labels](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1845) definition.
+
+#### Events
 
 **Events from Master**  
 The following events from the leading Mesos master are exposed:
@@ -72,48 +93,43 @@ The following events from the Scheduler calls are exposed:
 * `updated_task`: Is emitted when a task was updated. Contains an object with `taskId`, `executorId` and `state`.  
 * `removed_task`: Is emitted when a task was removed. Contains the `taskId`.
 
-### Example
-
-The option properties you can specify to create a `Scheduler` are the following:
-
-* `masterUrl`: The URL of the leading Mesos master (**mandatory**).
-* `port`: The port of the leading Mesos master (**mandatory**).
-* `frameworkName`: The desired framework name (will choose a standard name if not specified).
-* `commandInfo`: A [Mesos.CommandInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397) definition (**mandatory**).
-* `containerInfo`: A [Mesos.ContainerInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744) definition.
-* `executorInfo`: A [Mesos.ExecutorInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460) definition.
-* `resources`: The array of [Mesos.Resource](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L641) definitions (**mandatory**).
-* `instances`: The number of instances (tasks) you want to launch (will be 1 if you don't specify this property).
-* `handlers`: An object containing custom handler functions for the `Scheduler` events, where the property name is the uppercase `Event` name.
+#### Example
 
 Also, you can have a look at the `examples` folder to see examples for command-based and Docker-based schedulers.
 
 ```
 "use strict";
 
-var Scheduler = require("mesos-framework").Scheduler;
-var Mesos = require("mesos-framework").Mesos.getMesos();
+var Scheduler = require("../index").Scheduler;
+var Mesos = require("../index").Mesos.getMesos();
 
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.103",
+    "masterUrl": "172.17.10.101", // If Mesos DNS is not used, use the actual IP address of the leading master!
     "port": 5050,
     "frameworkName": "My first Command framework",
-    "commandInfo": new Mesos.CommandInfo(
-        null, // URI
-        null, // Environment
-        true, // Is shell?
-        "sleep 10;", // Command
-        null, // Arguments
-        null // User
-    ),
-    "resources": [ // Define your needed resources here
-        new Mesos.Resource("cpus", Mesos.Value.Type.SCALAR, new Mesos.Value.Scalar(0.1)),
-        new Mesos.Resource("mem", Mesos.Value.Type.SCALAR, new Mesos.Value.Scalar(64))
-    ],
-    "instances": 1,
+    "tasks": {
+        "webservers": {
+            "priority": 1,
+            "instances": 3,
+            "commandInfo": new Mesos.CommandInfo(
+                null, // URI
+                null, // Environment
+                true, // Is shell?
+                "sleep 10;", // Command
+                null, // Arguments
+                null // User
+            ),
+            "resources": {
+                "cpus": 0.2,
+                "mem": 128,
+                "ports": 1,
+                "disk": 0
+            }
+        }
+    },
     "handlers": {
         "HEARTBEAT": function (timestamp) {
-            console.log("CUSTOM HEARTBEAT!");
+            this.logger.info("CUSTOM HEARTBEAT!");
             this.lastHeartbeat = timestamp;
         }
     }
@@ -123,10 +139,10 @@ var scheduler = new Scheduler({
 scheduler.on("subscribed", function (obj) {
 
     // Display the Mesos-Stream-Id
-    console.log("Mesos Stream Id is " + obj.mesosStreamId);
+    scheduler.logger.info("Mesos Stream Id is " + obj.mesosStreamId);
 
     // Display the framework id
-    console.log("Framework Id is " + obj.frameworkId);
+    scheduler.logger.info("Framework Id is " + obj.frameworkId);
 
     // Trigger shutdown after one minute
     setTimeout(function() {
@@ -134,31 +150,31 @@ scheduler.on("subscribed", function (obj) {
         scheduler.teardown();
         // Shutdown process
         process.exit(0);
-    }, 60000);
+    }, 600000);
 
 });
 
 // Capture "offers" events
 scheduler.on("offers", function (offers) {
-    console.log("Got offers: " + JSON.stringify(offers));
+    scheduler.logger.info("Got offers: " + JSON.stringify(offers));
 });
 
 // Capture "heartbeat" events
 scheduler.on("heartbeat", function (heartbeatTimestamp) {
-    console.log("Heartbeat on " + heartbeatTimestamp);
+    scheduler.logger.info("Heartbeat on " + heartbeatTimestamp);
 });
 
 // Capture "error" events
 scheduler.on("error", function (error) {
-    console.log("ERROR: " + JSON.stringify(error));
-    console.log(error.stack);
+    scheduler.logger.info("ERROR: " + JSON.stringify(error));
+    scheduler.logger.info(error.stack);
 });
 
 // Start framework scheduler
 scheduler.subscribe();
 ```
 
-## Executor
+### Executor
 
 You should consider writing your own executors if your framework has special requirements. For example, you may not want a 1:1 relationship between tasks and processes.
 
@@ -174,7 +190,7 @@ How can the custom executors be used? Taken from the [Mesos framework developmen
 > when you launch them to specify where your framework executors are stored (e.g. on an NFS mount that is available to all slaves),
 > then use a relative path in `CommandInfo.uris`, and the slave will prepend the value of frameworks_home to the relative path provided.
 
-### Events
+#### Events
 
 **Events from Scheduler**  
 The following events from the Scheduler are exposed:
@@ -194,7 +210,7 @@ The following events from the Executor calls are exposed:
 * `sent_update`: Is emitted when the scheduler has sent the `UPDATE` request to the agent.
 * `sent_message`: Is emitted when the scheduler has sent the `MESSAGE` request to send arbitrary binary data to the agent.
 
-## Mesos
+### Mesos
 
 The module also exposes the Mesos protocol buffer object, which is loaded via [protobuf.js](https://github.com/dcodeIO/ProtoBuf.js/). It can be used to create the objects which can be then passed to the scheduler/executor methods.
 
@@ -205,7 +221,7 @@ var Mesos = require("mesos-framework").Mesos.getMesos();
 var TaskID = new Mesos.TaskID("my-task-id");
 ```
 
-You can also instantiate Mesos protocol buffer objects from plain JSON.
+You can also instantiate Mesos protocol buffer objects from plain JSON. Be sure to follow the structure defined in the `mesos.proto` protobuf though, otherwise this will raise an error...
 
 **Example:**
 ```

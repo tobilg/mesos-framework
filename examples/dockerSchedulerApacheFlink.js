@@ -8,73 +8,80 @@ var ContainerInfo = new Mesos.ContainerInfo(
     null, // Volumes
     null, // Hostname
     new Mesos.ContainerInfo.DockerInfo(
-        "tobilg/mini-webserver", // Image
-        Mesos.ContainerInfo.DockerInfo.Network.BRIDGE, // Network
+        "mesoshq/flink:0.1.1", // Image
+        Mesos.ContainerInfo.DockerInfo.Network.HOST, // Network
         null,  // PortMappings
         false, // Privileged
         null,  // Parameters
-        false, // forcePullImage
+        true, // forcePullImage
         null   // Volume Driver
     )
 );
 
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.103",
+    "masterUrl": "172.17.10.101",
     "port": 5050,
-    "frameworkName": "My first Docker framework (bridge networking)",
+    "frameworkName": "Simple Apache Flink HA framework",
     "logging": {
         "path": "logs",
-        "fileName": "mesos-framework-docker-bridge.log",
+        "fileName": "mesos-framework-flink.log",
         "level": "debug"
     },
     "tasks": {
-        "webservers": {
+        "jobmanagers": {
             "priority": 1,
             "instances": 3,
             "executorInfo": null, // Can take a Mesos.ExecutorInfo object
             "containerInfo": ContainerInfo, // Mesos.ContainerInfo object
             "commandInfo": new Mesos.CommandInfo( // Strangely, this is needed, even when specifying ContainerInfo...
                 null, // URI
-                null, // Environment
+                new Mesos.Environment([
+                    new Mesos.Environment.Variable("flink_recovery_mode", "zookeeper"),
+                    new Mesos.Environment.Variable("flink_recovery_zookeeper_quorum", "172.17.10.101:2181"),
+                    new Mesos.Environment.Variable("flink_recovery_zookeeper_storageDir", "/data/zk")
+                ]), // Environment
                 false, // Is shell?
                 null, // Command
-                null, // Arguments
+                ["jobmanager"], // Arguments
                 null // User
             ),
             "resources": {
-                "cpus": 0.2,
-                "mem": 128,
-                "ports": 1,
+                "cpus": 0.5,
+                "mem": 256,
+                "ports": 2,
                 "disk": 0
             },
-            "portMappings": [
-                { "port": 80, "protocol": "tcp" }
-            ],
             "healthChecks": null, // Add your health checks here
             "labels": null // Add your labels (an array of { "key": "value" } objects)
         },
-        "webservers1": {
+        "taskmanagers": {
             "priority": 2,
-            "instances": 1,
+            "instances": 2,
             "executorInfo": null, // Can take a Mesos.ExecutorInfo object
             "containerInfo": ContainerInfo, // Mesos.ContainerInfo object
             "commandInfo": new Mesos.CommandInfo( // Strangely, this is needed, even when specifying ContainerInfo...
                 null, // URI
-                null, // Environment
+                new Mesos.Environment([
+                    new Mesos.Environment.Variable("flink_recovery_mode", "zookeeper"),
+                    new Mesos.Environment.Variable("flink_recovery_zookeeper_quorum", "172.17.10.101:2181"),
+                    new Mesos.Environment.Variable("flink_recovery_zookeeper_storageDir", "/data/zk"),
+                    new Mesos.Environment.Variable("flink_taskmanager_tmp_dirs", "/data/tasks"),
+                    new Mesos.Environment.Variable("flink_blob_storage_directory", "/data/blobs"),
+                    new Mesos.Environment.Variable("flink_state_backend", "filesystem"),
+                    new Mesos.Environment.Variable("flink_taskmanager_numberOfTaskSlots", "1"),
+                    new Mesos.Environment.Variable("flink_taskmanager_heap_mb", "1536")
+                ]), // Environment
                 false, // Is shell?
                 null, // Command
-                null, // Arguments
+                ["taskmanager"], // Arguments
                 null // User
             ),
             "resources": {
-                "cpus": 0.2,
-                "mem": 256,
-                "ports": 1,
+                "cpus": 0.5,
+                "mem": 1536,
+                "ports": 3,
                 "disk": 0
             },
-            "portMappings": [
-                { "port": 80, "protocol": "tcp" }
-            ],
             "healthChecks": null, // Add your health checks here
             "labels": null // Add your labels (an array of { "key": "value" } objects)
         }
