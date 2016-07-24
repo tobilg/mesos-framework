@@ -50,7 +50,7 @@
         <article><h1>mesos-framework</h1><p>This project provides a low-level wrapper around the Mesos HTTP APIs for <a href="http://mesos.apache.org/documentation/latest/scheduler-http-api/">schedulers</a> and <a href="http://mesos.apache.org/documentation/latest/executor-http-api/">executors</a>.
 It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos version is 0.28.2.</p>
 <h2>Installation</h2><p>You can use <code>mesos-framework</code> in your own projects by running</p>
-<pre class="prettyprint source"><code>npm i mesos-framework --save</code></pre><h2>Documentation</h2><p><code>mesos-js</code> is not a Mesos framework itself, but can be imagined as a &quot;framework-framework&quot;, meaning that it provides a certain low-level abstraction around the HTTP APIs for schedulers and executors.</p>
+<pre class="prettyprint source"><code>npm i mesos-framework --save</code></pre><h2>Documentation</h2><p><code>mesos-js</code> is not a Mesos framework itself, but can be imagined as a &quot;framework-framework&quot;, meaning that it provides a certain abstraction around the HTTP APIs for schedulers and executors.</p>
 <p>It implements all existing <code>Calls</code> as methods for both the <code>Scheduler</code> and <code>Executor</code> classes, meaning that they can be used without having to write the HTTP communication yourself. Additionally, it exposes all <code>Events</code> for both classes, as definied in the Mesos docs. It also adds some custom events for the <code>Scheduler</code> class for better task handling.   </p>
 <p>There are some basic event handler methods provided for the <code>Scheduler</code> class, which for example take care of the checking and accepting the offers received from the Mesos master, as well as keeping track of tasks. Please have a look at the class documentation in the <code>docs</code> folder of this project.</p>
 <p>For both the <code>Scheduler</code> and <code>Executor</code> classes, the belonging event handler methods can be overwritten with custom logic. To do that, you can supply a <code>options.handlers</code> property map object (where the property name is the uppercase <code>Event</code> name) when instantiating a class:</p>
@@ -63,7 +63,7 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
         }
     }
 });</code></pre><p>Basically this is the mechanism to create custom framework logic. Please have a look at the <code>examples</code> folder to see examples for command-based and Docker-based schedulers.</p>
-<h4>API docs</h4><p>The API docs can be accessed via <a href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/tobilg/mesos-framework/master/docs/mesos-framework/0.2.0/index.html">this link</a>.</p>
+<h4>API docs</h4><p>The API docs can be accessed via <a href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/tobilg/mesos-framework/master/docs/index.html">this link</a>.</p>
 <h3>Scheduler</h3><p>The <code>Scheduler</code> is the &quot;heart&quot; of a Mesos framework. It is very well possible to create a Mesos framework only by implementing the <code>Scheduler</code> with the standard <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397">CommandInfo</a> and <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744">ContainerInfo</a> objects.</p>
 <p>The option properties you can specify to create a <code>Scheduler</code> are the following:</p>
 <ul>
@@ -71,7 +71,7 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
 <li><code>port</code>: The port of the leading Mesos master (<strong>mandatory</strong>).</li>
 <li><code>frameworkName</code>: The desired framework name (will choose a standard name if not specified).</li>
 <li><code>restartStates</code>: An array of <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1310">TaskStates</a> which should trigger a restart of a task. For example, regularly finished tasks (in state <code>TASK_FINISHED</code>) are not restarted by default.</li>
-<li><code>tasks</code>: An object (map) with the task info (see below). It's possible to create different (prioritized) tasks, e.g. launching different containers with different instance counts. See the <a href="https://github.com/tobilg/mesos-framework/blob/master/examples/dockerScheduler.js">Docker Scheduler example</a>.</li>
+<li><code>tasks</code>: An object (map) with the task info (see below). It's possible to create different (prioritized) tasks, e.g. launching different containers with different instance counts. See the <a href="https://github.com/tobilg/mesos-framework/blob/master/examples/dockerSchedulerBridgeNetworking.js">Docker Scheduler example</a>.</li>
 <li><code>handlers</code>: An object containing custom handler functions for the <code>Scheduler</code> events, where the property name is the uppercase <code>Event</code> name.</li>
 </ul>
 <p>A <code>tasks</code> sub-object can contain objects with task information:</p>
@@ -116,11 +116,11 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
 <h4>Example</h4><p>Also, you can have a look at the <code>examples</code> folder to see examples for command-based and Docker-based schedulers.</p>
 <pre class="prettyprint source"><code>&quot;use strict&quot;;
 
-var Scheduler = require(&quot;mesos-framework&quot;).Scheduler;
-var Mesos = require(&quot;mesos-framework&quot;).Mesos.getMesos();
+var Scheduler = require(&quot;../index&quot;).Scheduler;
+var Mesos = require(&quot;../index&quot;).Mesos.getMesos();
 
 var scheduler = new Scheduler({
-    &quot;masterUrl&quot;: &quot;leader.mesos&quot;, // If Mesos DNS is not used, use the actual IP address of the leading master!
+    &quot;masterUrl&quot;: &quot;172.17.10.101&quot;, // If Mesos DNS is not used, use the actual IP address of the leading master!
     &quot;port&quot;: 5050,
     &quot;frameworkName&quot;: &quot;My first Command framework&quot;,
     &quot;tasks&quot;: {
@@ -145,7 +145,7 @@ var scheduler = new Scheduler({
     },
     &quot;handlers&quot;: {
         &quot;HEARTBEAT&quot;: function (timestamp) {
-            console.log(&quot;CUSTOM HEARTBEAT!&quot;);
+            this.logger.info(&quot;CUSTOM HEARTBEAT!&quot;);
             this.lastHeartbeat = timestamp;
         }
     }
@@ -155,10 +155,10 @@ var scheduler = new Scheduler({
 scheduler.on(&quot;subscribed&quot;, function (obj) {
 
     // Display the Mesos-Stream-Id
-    console.log(&quot;Mesos Stream Id is &quot; + obj.mesosStreamId);
+    scheduler.logger.info(&quot;Mesos Stream Id is &quot; + obj.mesosStreamId);
 
     // Display the framework id
-    console.log(&quot;Framework Id is &quot; + obj.frameworkId);
+    scheduler.logger.info(&quot;Framework Id is &quot; + obj.frameworkId);
 
     // Trigger shutdown after one minute
     setTimeout(function() {
@@ -166,24 +166,24 @@ scheduler.on(&quot;subscribed&quot;, function (obj) {
         scheduler.teardown();
         // Shutdown process
         process.exit(0);
-    }, 60000);
+    }, 600000);
 
 });
 
 // Capture &quot;offers&quot; events
 scheduler.on(&quot;offers&quot;, function (offers) {
-    console.log(&quot;Got offers: &quot; + JSON.stringify(offers));
+    scheduler.logger.info(&quot;Got offers: &quot; + JSON.stringify(offers));
 });
 
 // Capture &quot;heartbeat&quot; events
 scheduler.on(&quot;heartbeat&quot;, function (heartbeatTimestamp) {
-    console.log(&quot;Heartbeat on &quot; + heartbeatTimestamp);
+    scheduler.logger.info(&quot;Heartbeat on &quot; + heartbeatTimestamp);
 });
 
 // Capture &quot;error&quot; events
 scheduler.on(&quot;error&quot;, function (error) {
-    console.log(&quot;ERROR: &quot; + JSON.stringify(error));
-    console.log(error.stack);
+    scheduler.logger.info(&quot;ERROR: &quot; + JSON.stringify(error));
+    scheduler.logger.info(error.stack);
 });
 
 // Start framework scheduler
@@ -219,7 +219,7 @@ then use a relative path in <code>CommandInfo.uris</code>, and the slave will pr
 <p><strong>Example:</strong></p>
 <pre class="prettyprint source"><code>var Mesos = require(&quot;mesos-framework&quot;).Mesos.getMesos();
 
-var TaskID = new Mesos.TaskID(&quot;my-task-id&quot;);</code></pre><p>You can also instantiate Mesos protocol buffer objects from plain JSON.</p>
+var TaskID = new Mesos.TaskID(&quot;my-task-id&quot;);</code></pre><p>You can also instantiate Mesos protocol buffer objects from plain JSON. Be sure to follow the structure defined in the <code>mesos.proto</code> protobuf though, otherwise this will raise an error...</p>
 <p><strong>Example:</strong></p>
 <pre class="prettyprint source"><code>var Builder = require(&quot;mesos-framework&quot;).Mesos.getBuilder();
 
@@ -240,7 +240,7 @@ var TaskID = new (Builder.build(&quot;mesos.TaskID&quot;))(taskId);</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jul 19 2016 17:10:10 GMT+0200 (CEST) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Jul 25 2016 00:04:01 GMT+0200 (CEST) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
