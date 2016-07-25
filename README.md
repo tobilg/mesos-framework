@@ -11,7 +11,7 @@ You can use `mesos-framework` in your own projects by running
 
 ## Documentation
 
-`mesos-js` is not a Mesos framework itself, but can be imagined as a "framework-framework", meaning that it provides a certain abstraction around the HTTP APIs for schedulers and executors.
+The `mesos-framework` project is not a Mesos framework itself, but can be imagined as a "framework-framework" (or meta framework), meaning that it provides a certain abstraction around the HTTP APIs for schedulers and executors, together with some convenience methods.
  
 It implements all existing `Calls` as methods for both the `Scheduler` and `Executor` classes, meaning that they can be used without having to write the HTTP communication yourself. Additionally, it exposes all `Events` for both classes, as definied in the Mesos docs. It also adds some custom events for the `Scheduler` class for better task handling.   
 
