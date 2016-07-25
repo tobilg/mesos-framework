@@ -100,15 +100,19 @@ Also, you can have a look at the `examples` folder to see examples for command-b
 ```
 "use strict";
 
-var Scheduler = require("../index").Scheduler;
-var Mesos = require("../index").Mesos.getMesos();
+var Scheduler = require("mesos-framework").Scheduler;
+var Mesos = require("mesos-framework").Mesos.getMesos();
 
 var scheduler = new Scheduler({
     "masterUrl": "172.17.10.101", // If Mesos DNS is not used, use the actual IP address of the leading master!
     "port": 5050,
     "frameworkName": "My first Command framework",
+    "logging": {
+        "level": "debug" // Set log Level to debug (default is info)
+    },
+    "restartStates": ["TASK_FAILED", "TASK_KILLED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"], // Overwrite the restartStates (by default, TASK_FINISHED tasks are NOT restarted!)
     "tasks": {
-        "webservers": {
+        "sleepProcesses": {
             "priority": 1,
             "instances": 3,
             "commandInfo": new Mesos.CommandInfo(
@@ -150,7 +154,7 @@ scheduler.on("subscribed", function (obj) {
         scheduler.teardown();
         // Shutdown process
         process.exit(0);
-    }, 600000);
+    }, 60000);
 
 });
 

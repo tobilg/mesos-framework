@@ -8,11 +8,11 @@ var scheduler = new Scheduler({
     "port": 5050,
     "frameworkName": "My first Command framework",
     "logging": {
-        "level": "debug"
+        "level": "debug" // Set log Level to debug (default is info)
     },
-    "restartStates": ["TASK_FAILED", "TASK_KILLED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"],
+    "restartStates": ["TASK_FAILED", "TASK_KILLED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"], // Overwrite the restartStates (by default, TASK_FINISHED tasks are NOT restarted!)
     "tasks": {
-        "webservers": {
+        "sleepProcesses": {
             "priority": 1,
             "instances": 3,
             "commandInfo": new Mesos.CommandInfo(
@@ -54,7 +54,7 @@ scheduler.on("subscribed", function (obj) {
         scheduler.teardown();
         // Shutdown process
         process.exit(0);
-    }, 600000);
+    }, 60000);
 
 });
 
