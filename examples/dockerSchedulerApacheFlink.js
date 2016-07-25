@@ -19,7 +19,7 @@ var ContainerInfo = new Mesos.ContainerInfo(
 );
 
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.101",
+    "masterUrl": "172.17.10.101", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
     "port": 5050,
     "frameworkName": "Simple Apache Flink HA framework",
     "logging": {
@@ -57,6 +57,7 @@ var scheduler = new Scheduler({
         "taskmanagers": {
             "priority": 2,
             "instances": 2,
+            "allowScaling": true, // Only allow scaling of the TaskManagers
             "executorInfo": null, // Can take a Mesos.ExecutorInfo object
             "containerInfo": ContainerInfo, // Mesos.ContainerInfo object
             "commandInfo": new Mesos.CommandInfo( // Strangely, this is needed, even when specifying ContainerInfo...

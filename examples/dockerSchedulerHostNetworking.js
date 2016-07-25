@@ -19,7 +19,7 @@ var ContainerInfo = new Mesos.ContainerInfo(
 );
 
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.101",
+    "masterUrl": "172.17.10.101", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
     "port": 5050,
     "frameworkName": "My first Docker framework (host networking)",
     "logging": {
