@@ -54,6 +54,7 @@ A `tasks` sub-object can contain objects with task information:
 
 * `instances`: The number of instances (tasks) you want to launch (will be 1 if you don't specify this property).
 * `priority`: The priority of which the different tasks shall be launched (lower is better). If none is specified, tasks will be launched based on the task naming.
+* `allowScaling`: A boolean value which indicates whether this task permits scaling operations (default: `false`).
 * `commandInfo`: A [Mesos.CommandInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397) definition (**mandatory**).
 * `containerInfo`: A [Mesos.ContainerInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744) definition.
 * `executorInfo`: A [Mesos.ExecutorInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460) definition.
