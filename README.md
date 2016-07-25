@@ -19,7 +19,7 @@ There are some basic event handler methods provided for the `Scheduler` class, w
 
 For both the `Scheduler` and `Executor` classes, the belonging event handler methods can be overwritten with custom logic. To do that, you can supply a `options.handlers` property map object (where the property name is the uppercase `Event` name) when instantiating a class:
 
-```
+```javascript
 var scheduler = new Scheduler({
     ...
     "handlers": {
@@ -97,14 +97,14 @@ The following events from the Scheduler calls are exposed:
 
 Also, you can have a look at the `examples` folder to see examples for command-based and Docker-based schedulers.
 
-```
+```javascript
 "use strict";
 
 var Scheduler = require("mesos-framework").Scheduler;
 var Mesos = require("mesos-framework").Mesos.getMesos();
 
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.101", // If Mesos DNS is not used, use the actual IP address of the leading master!
+    "masterUrl": "172.17.10.101", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
     "port": 5050,
     "frameworkName": "My first Command framework",
     "logging": {
@@ -219,7 +219,7 @@ The following events from the Executor calls are exposed:
 The module also exposes the Mesos protocol buffer object, which is loaded via [protobuf.js](https://github.com/dcodeIO/ProtoBuf.js/). It can be used to create the objects which can be then passed to the scheduler/executor methods.
 
 **Example:**
-```
+```javascript
 var Mesos = require("mesos-framework").Mesos.getMesos();
 
 var TaskID = new Mesos.TaskID("my-task-id");
@@ -228,7 +228,7 @@ var TaskID = new Mesos.TaskID("my-task-id");
 You can also instantiate Mesos protocol buffer objects from plain JSON. Be sure to follow the structure defined in the `mesos.proto` protobuf though, otherwise this will raise an error...
 
 **Example:**
-```
+```javascript
 var Builder = require("mesos-framework").Mesos.getBuilder();
 
 var taskId = {

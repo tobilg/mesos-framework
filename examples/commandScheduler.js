@@ -4,7 +4,7 @@ var Scheduler = require("../index").Scheduler;
 var Mesos = require("../index").Mesos.getMesos();
 
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.101", // If Mesos DNS is not used, use the actual IP address of the leading master!
+    "masterUrl": "172.17.10.101", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
     "port": 5050,
     "frameworkName": "My first Command framework",
     "logging": {
