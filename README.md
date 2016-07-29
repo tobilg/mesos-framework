@@ -47,6 +47,8 @@ The option properties you can specify to create a `Scheduler` are the following:
 * `port`: The port of the leading Mesos master (**mandatory**).
 * `frameworkName`: The desired framework name (will choose a standard name if not specified).
 * `restartStates`: An array of [TaskStates](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1310) which should trigger a restart of a task. For example, regularly finished tasks (in state `TASK_FINISHED`) are not restarted by default.
+* `masterConnectionTimeout`: The number of seconds to wait before a connection to the leading Mesos master is considered as timed out (default: `10`).
+* `frameworkFailoverTimeout`: The number of seconds to wait before a framework is considered as `failed` by the leading Mesos master, which will then terminate the existing tasks/executors (default: `604800`).
 * `tasks`: An object (map) with the task info (see below). It's possible to create different (prioritized) tasks, e.g. launching different containers with different instance counts. See the [Docker Scheduler example](https://github.com/tobilg/mesos-framework/blob/master/examples/dockerSchedulerBridgeNetworking.js).
 * `handlers`: An object containing custom handler functions for the `Scheduler` events, where the property name is the uppercase `Event` name.
 
@@ -62,6 +64,14 @@ A `tasks` sub-object can contain objects with task information:
 * `portMappings`: The array of portMapping objects, each containing a numeric `port` value (for container ports), and a `protocol` string (either `tcp` or `udp`). 
 * `healthChecks`: A [Mesos.HealthCheck](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L302) definition.
 * `labels`: A [Mesos.Labels](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1845) definition.
+
+#### High availability
+
+Currently, `mesos-framework` doesn't support HA setups for the scheduler instances, meaning that you can only run one instance at once. If you run the scheduler application via Marathon, you should be able to make use of the health checks to let them restart the scheduler applicaiton once it fails.
+ 
+See also the example implementation of a framework at [mesos-framework-boilerplate](https://github.com/tobilg/mesos-framework-boilerplate).
+
+`mesos-framework` has support for the detection of the leading master via Mesos DNS. You can use `leader.mesos` as the `masterUrl`, enabling that upon re-registration of the scheduler, the correct master address will be used (Mesos DNS lookup). If you just provided an IP address or a hostname, `mesos-framework` will try to establish a new connection to the given address and look for redirection information (the "leader change" case). If this request times out, there is no way to automatically determine the current leader, so the scheduler stops itsef (the "failed Master" case).
 
 #### Events
 

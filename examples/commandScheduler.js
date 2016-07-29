@@ -4,7 +4,7 @@ var Scheduler = require("../index").Scheduler;
 var Mesos = require("../index").Mesos.getMesos();
 
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.101", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
+    "masterUrl": "172.17.10.103", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
     "port": 5050,
     "frameworkName": "My first Command framework",
     "logging": {
@@ -54,7 +54,7 @@ scheduler.on("subscribed", function (obj) {
         scheduler.teardown();
         // Shutdown process
         process.exit(0);
-    }, 60000);
+    }, 600000);
 
 });
 
@@ -70,8 +70,10 @@ scheduler.on("heartbeat", function (heartbeatTimestamp) {
 
 // Capture "error" events
 scheduler.on("error", function (error) {
-    scheduler.logger.info("ERROR: " + JSON.stringify(error));
-    scheduler.logger.info(error.stack);
+    scheduler.logger.error("ERROR: " + (error.message ? error.message : JSON.stringify(error)));
+    if (error.stack) {
+        scheduler.logger.error(error.stack);
+    }
 });
 
 // Start framework scheduler
