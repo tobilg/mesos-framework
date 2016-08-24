@@ -1,7 +1,7 @@
 # mesos-framework
 
 This project provides a high-level wrapper around the Mesos HTTP APIs for [schedulers](http://mesos.apache.org/documentation/latest/scheduler-http-api/) and [executors](http://mesos.apache.org/documentation/latest/executor-http-api/).
-It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos versions are is >= 0.28.2.
+It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos versions are those >= 0.28.2.
 
 ## Installation
 
