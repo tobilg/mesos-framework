@@ -1,7 +1,7 @@
 # mesos-framework
 
-This project provides a low-level wrapper around the Mesos HTTP APIs for [schedulers](http://mesos.apache.org/documentation/latest/scheduler-http-api/) and [executors](http://mesos.apache.org/documentation/latest/executor-http-api/).
-It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos version is 0.28.2.
+This project provides a high-level wrapper around the Mesos HTTP APIs for [schedulers](http://mesos.apache.org/documentation/latest/scheduler-http-api/) and [executors](http://mesos.apache.org/documentation/latest/executor-http-api/).
+It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos versions are is >= 0.28.2.
 
 ## Installation
 
@@ -67,7 +67,7 @@ A `tasks` sub-object can contain objects with task information:
 
 #### High availability
 
-Currently, `mesos-framework` doesn't support HA setups for the scheduler instances, meaning that you can only run one instance at once. If you run the scheduler application via Marathon, you should be able to make use of the health checks to let them restart the scheduler applicaiton once it fails.
+Currently, `mesos-framework` doesn't support HA setups for the scheduler instances, meaning that you can only run one instance at once. If you run the scheduler application via Marathon, you should be able to make use of the health checks to let them restart the scheduler application once it fails.
  
 See also the example implementation of a framework at [mesos-framework-boilerplate](https://github.com/tobilg/mesos-framework-boilerplate).
 
