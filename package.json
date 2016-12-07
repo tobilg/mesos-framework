@@ -24,7 +24,8 @@
     "protobufjs": "^5.0.1",
     "uuid": "^2.0.2",
     "winston": "^2.2.0",
-    "winston-daily-rotate-file": "^1.1.5"
+    "winston-daily-rotate-file": "^1.1.5",
+    "node-zookeeper-client": "^0.2.2"
   },
   "devDependencies": {
     "jsdoc": "^3.4.0",
