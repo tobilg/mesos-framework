@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Mesos - Documentation</title>
+    <title>TaskHelper - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -28,7 +28,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Mesos</h1>
+    <h1 class="page-title">TaskHelper</h1>
     
 
     
@@ -41,7 +41,7 @@
 <header>
     
         <h2>
-        Mesos
+        TaskHelper
         </h2>
         
     
@@ -54,14 +54,14 @@
 
     
 
-    <h4 class="name" id="Mesos"><span class="type-signature"></span>new Mesos<span class="signature">()</span><span class="type-signature"> &rarr; {object}</span></h4>
+    <h4 class="name" id="TaskHelper"><span class="type-signature"></span>new TaskHelper<span class="signature">(scheduler)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>The Mesos protocol buffers helper</p>
+    <p>Represents a TaskHelper object</p>
 </div>
 
 
@@ -70,6 +70,55 @@
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>scheduler</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The scheduler object.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -105,7 +154,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mesos.js.html">mesos.js</a>, <a href="mesos.js.html#line17">line 17</a>
+        <a href="taskHelper.js.html">taskHelper.js</a>, <a href="taskHelper.js.html#line8">line 8</a>
     </li></ul></dd>
     
 
@@ -128,28 +177,6 @@
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>An object with the Mesos protocol buffer definitions</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">object</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -176,14 +203,14 @@
 
     
 
-    <h4 class="name" id="getBuilder"><span class="type-signature"></span>getBuilder<span class="signature">()</span><span class="type-signature"> &rarr; {ProtoBuf.Builder|undefined|ProtoBuf.Builder}</span></h4>
+    <h4 class="name" id="deleteTask"><span class="type-signature"></span>deleteTask<span class="signature">(taskId)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Get a ProtoBuf.Builder instance</p>
+    <p>Delete task nodes from ZooKeeper.</p>
 </div>
 
 
@@ -192,6 +219,55 @@
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>taskId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The id of the task which should be deleted from ZooKeeper.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -227,7 +303,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mesos.js.html">mesos.js</a>, <a href="mesos.js.html#line37">line 37</a>
+        <a href="taskHelper.js.html">taskHelper.js</a>, <a href="taskHelper.js.html#line116">line 116</a>
     </li></ul></dd>
     
 
@@ -250,34 +326,6 @@
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>A ProtoBuf.Builder instance</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">ProtoBuf.Builder</span>
-|
-
-<span class="param-type">undefined</span>
-|
-
-<span class="param-type">ProtoBuf.Builder</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -286,11 +334,15 @@
 
     
 
-    <h4 class="name" id="getMesos"><span class="type-signature"></span>getMesos<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Mesos.html">Mesos</a>}</span></h4>
+    <h4 class="name" id="loadTasks"><span class="type-signature"></span>loadTasks<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
+
+<div class="description">
+    <p>Load the task nodes belonging to the framework from ZooKeeper.</p>
+</div>
 
 
 
@@ -333,7 +385,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mesos.js.html">mesos.js</a>, <a href="mesos.js.html#line29">line 29</a>
+        <a href="taskHelper.js.html">taskHelper.js</a>, <a href="taskHelper.js.html#line22">line 22</a>
     </li></ul></dd>
     
 
@@ -356,24 +408,6 @@
 
 
 
-<h5>Returns:</h5>
-
-        
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="Mesos.html">Mesos</a></span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -382,14 +416,14 @@
 
     
 
-    <h4 class="name" id="getProtoBuf"><span class="type-signature"></span>getProtoBuf<span class="signature">()</span><span class="type-signature"> &rarr; {function}</span></h4>
+    <h4 class="name" id="saveTask"><span class="type-signature"></span>saveTask<span class="signature">(task)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Get a reference to the protobuf.js module</p>
+    <p>Save task nodes from ZooKeeper.</p>
 </div>
 
 
@@ -398,6 +432,55 @@
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>task</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The task object which should be persisted to ZooKeeper.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -433,7 +516,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mesos.js.html">mesos.js</a>, <a href="mesos.js.html#line45">line 45</a>
+        <a href="taskHelper.js.html">taskHelper.js</a>, <a href="taskHelper.js.html#line93">line 93</a>
     </li></ul></dd>
     
 
@@ -456,28 +539,6 @@
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>A reference to the protobuf.js module</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">function</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
