@@ -29,7 +29,8 @@
   },
   "devDependencies": {
     "jsdoc": "^3.4.0",
-    "minami": "^1.1.1"
+    "minami": "^1.1.1",
+    "sinon": "^1.17.6"
   },
   "repository": {
     "type": "git",
