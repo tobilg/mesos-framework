@@ -277,10 +277,12 @@ describe('Scheduler constructor', function() {
     });
     describe("Request functions", function() {
         beforeEach(function() {
-            this.request = sinon.stub(helpers, "doRequest");
+            sandbox = sinon.sandbox.create();
+            this.request = sandbox.stub(helpers, "doRequest");
         });
         afterEach(function() {
             helpers.doRequest.restore();
+            sandbox.restore();
         });
         it("kill Success", function(done) {
             this.request.callsArgWith(1, null);
@@ -294,6 +296,5 @@ describe('Scheduler constructor', function() {
                 done();
             });
         });
-
     });
 });
