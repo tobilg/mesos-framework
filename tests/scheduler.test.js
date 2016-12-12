@@ -11,7 +11,7 @@ var zookeeper = require("node-zookeeper-client");
 var expect = require('chai').expect;
 var sinon = require("sinon");
 
-describe('Scheduler', function() {
+describe('Scheduler constructor', function() {
     var sandbox;
     it('Create the Scheduler with default options', function () {
         var scheduler = Scheduler({});
@@ -274,5 +274,26 @@ describe('Scheduler', function() {
                 done();
             });
         });
+    });
+    describe("Request functions", function() {
+        beforeEach(function() {
+            this.request = sinon.stub(helpers, "doRequest");
+        });
+        afterEach(function() {
+            helpers.doRequest.restore();
+        });
+        it("kill Success", function(done) {
+            this.request.callsArgWith(1, null);
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("ready", function() {
+                scheduler.kill("1234","12345");
+            });
+            scheduler.on("sent_kill", function() {
+                done();
+            });
+        });
+
     });
 });

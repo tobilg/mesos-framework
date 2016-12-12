@@ -32,6 +32,8 @@
     "jsdoc": "^3.4.0",
     "minami": "^1.1.1",
     "mocha": "^3.2.0",
+    "mock-req": "^0.2.0",
+    "mock-res": "^0.3.3",
     "sinon": "^1.17.6"
   },
   "repository": {

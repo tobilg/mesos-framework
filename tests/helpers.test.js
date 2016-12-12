@@ -1,7 +1,13 @@
 var helpers = require("../lib/helpers");
 var mesos = require("../lib/mesos")().getMesos();
 
+var winston = require('winston');
+var http = require("http");
+
 var expect = require('chai').expect;
+var sinon = require("sinon");
+var MockReq = require("mock-req");
+var MockRes = require("mock-res");
 
 describe('helpers', function() {
     it('Test the CloneDeep helper', function () {
@@ -86,6 +92,93 @@ describe('helpers', function() {
             var enumerated = helpers.stringifyEnumsRecursive(ContainerInfo);
             expect(enumerated.type).to.equal("DOCKER");
             expect(enumerated.docker.network).to.equal("HOST");
+        });
+    });
+    describe("getLogger", function () {
+        it("Default logger", function () {
+            var logger = helpers.getLogger();
+            expect(logger).to.be.an("Object");
+            expect(logger).to.be.an.instanceof(winston.Logger);
+        });
+        it("Filename logger", function () {
+            var logger = helpers.getLogger("logs","tests.log");
+            expect(logger).to.be.an("Object");
+            expect(logger).to.be.an.instanceof(winston.Logger);
+        });
+    });
+    describe("doRequest", function() {
+        beforeEach(function() {
+            this.request = sinon.stub(http, "request");
+        });
+        afterEach(function() {
+            http.request.restore();
+        });
+        it("OK state", function(done) {
+            var data = "OK";
+            var res = new MockRes();
+            res.writeHead(202);
+            res.write(data);
+            res.end();
+            var req = new MockReq({ method: 'POST' });
+            this.request.callsArgWith(1, res).returns(req);
+            helpers.doRequest("",function (error, jsonResult) {
+                console.log("Error is: " + JSON.stringify(error));
+                console.log("Result is:" + JSON.stringify(jsonResult));
+                expect(error).to.be.a("null");
+                expect(jsonResult.body).to.equal(data);
+                expect(jsonResult.statusCode).to.equal(202);
+                done();
+            });
+        });
+        it("400 error", function(done) {
+            var data = "OK";
+            var res = new MockRes();
+            res.writeHead(400);
+            res.write(data);
+            res.end();
+            var req = new MockReq({ method: 'POST' });
+            this.request.callsArgWith(1, res).returns(req);
+            helpers.doRequest("",function (error, jsonResult) {
+                console.log("Error is: " + JSON.stringify(error));
+                console.log("Result is:" + JSON.stringify(jsonResult));
+                expect(error).not.to.be.a("null");
+                expect(jsonResult).to.be.a("null");
+                done();
+            });
+        });
+        it("req error", function(done) {
+            var data = "OK";
+            var res = new MockRes();
+            res.writeHead(400);
+            res.write(data);
+            res.end();
+            var req = new MockReq({ method: 'POST' });
+            this.request.returns(req);
+            helpers.doRequest("",function (error, jsonResult) {
+                console.log("Error is: " + JSON.stringify(error));
+                console.log("Result is:" + JSON.stringify(jsonResult));
+                expect(error).not.to.be.a("null");
+                expect(jsonResult).to.be.a("null");
+                done();
+            });
+            req.emit("error", data);
+        });
+        it("res error", function(done) {
+            var data = "OK";
+            var res = new MockRes();
+            res.writeHead(400);
+            res.write(data);
+            //res.end();
+            var req = new MockReq({ method: 'POST' });
+            this.request.callsArgWith(1, res).returns(req);
+            helpers.doRequest("",function (error, jsonResult) {
+                console.log("Error is: " + JSON.stringify(error));
+                console.log("Result is:" + JSON.stringify(jsonResult));
+                expect(error).not.to.be.a("null");
+                expect(jsonResult).to.be.a("null");
+                done();
+            });
+            res.emit("error", data);
         });
     });
 });
