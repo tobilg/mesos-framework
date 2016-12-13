@@ -338,10 +338,30 @@ describe('Scheduler constructor', function() {
             scheduler.on("sent_shutdown", function() {
                 sent = true;
                 expect(sent).to.be.true;
-                done();
             });
             setTimeout(function () {
                 expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("shutdown fail", function(done) {
+            this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            scheduler.on("ready", function() {
+                scheduler.shutdown("1234","12345");
+            });
+            var sent = false;
+            scheduler.on("sent_shutdown", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
                 done();
             }, 400);
         });
@@ -357,10 +377,69 @@ describe('Scheduler constructor', function() {
             scheduler.on("sent_reconcile", function() {
                 sent = true;
                 expect(sent).to.be.true;
-                done();
             });
             setTimeout(function () {
                 expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("reconcile fail", function(done) {
+            this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            scheduler.on("ready", function() {
+                scheduler.reconcile("1234","12345");
+            });
+            var sent = false;
+            scheduler.on("sent_reconcile", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
+                done();
+            }, 400);
+        });
+        it("revive Success", function(done) {
+            this.request.callsArgWith(1, null);
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("ready", function() {
+                scheduler.revive();
+            });
+            var sent = false;
+            scheduler.on("sent_revive", function() {
+                sent = true;
+                expect(sent).to.be.true;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("revive fail", function(done) {
+            this.request.callsArgWith(1,  { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            scheduler.on("ready", function() {
+                scheduler.revive();
+            });
+            var sent = false;
+            scheduler.on("sent_revive", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
                 done();
             }, 400);
         });
@@ -370,17 +449,155 @@ describe('Scheduler constructor', function() {
                     task1:{isSubmitted:true}
                 },useZk: false, logging: {level: "debug"}});
             scheduler.on("ready", function() {
-                scheduler.killTasks = [];
-                scheduler.reconcile("1234","12345");
+                scheduler.killTasks = [{taskId: "1234", runtimeInfo:{agentId:"12345"}}, {taskId: "12354", runtimeInfo:{agentId:"123455"}}];
+                scheduler.reconcileTasks = [{taskId: "12345", runtimeInfo:{agentId:"123456"}}, {taskId: "12364", runtimeInfo:{agentId:"123465"}}, {taskId: "123754", runtimeInfo:{}}];
+                scheduler.sync();
+            });
+            var sent = 0;
+            scheduler.on("sent_reconcile", function() {
+                sent++;
+                expect(sent).to.be.above(0);
+            });
+            scheduler.on("sent_kill", function() {
+                sent++;
+                expect(sent).to.be.above(0);
+            });
+            setTimeout(function () {
+                expect(sent).to.equal(4);
+                expect(scheduler.killTasks).to.have.length.of(0);
+                expect(scheduler.reconcileTasks).to.have.length.of(0);
+                done();
+            }, 400);
+        });
+        it("sync Success with zk and bad task", function(done) {
+            this.request.callsArgWith(1, null);
+            var taskHelper = new TaskHelper({"zkClient": {}, "logger": {}, "pendingTasks":[], "launchedTasks":[], scheduler:{}});
+            sandbox.stub(taskHelper, "deleteTask");
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("ready", function() {
+                scheduler.killTasks = [{taskId: "1234", runtimeInfo:{agentId:"12345"}}, {taskId: "12354", runtimeInfo:{agentId:"123455"}}];
+                scheduler.reconcileTasks = [{taskId: "12345", runtimeInfo:{agentId:"123456"}}, {taskId: "12364", runtimeInfo:{agentId:"123465"}}, {taskId: "123754", runtimeInfo:{}}];
+                scheduler.options.useZk = true;
+                scheduler.taskHelper = taskHelper;
+                scheduler.sync();
+            });
+            var sentRec = 0;
+            var sentKill = 0;
+            scheduler.on("sent_reconcile", function() {
+                sentRec++;
+                expect(sentRec).to.be.above(0);
+            });
+            scheduler.on("sent_kill", function() {
+                sentKill++;
+                expect(sentKill).to.be.above(0);
+            });
+            setTimeout(function () {
+                expect(sentRec).to.equal(3);
+                expect(sentKill).to.equal(2);
+                done();
+            }, 400);
+        });
+        it("teardown Success", function(done) {
+            this.request.callsArgWith(1, null);
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("ready", function() {
+                scheduler.teardown();
             });
             var sent = false;
-            scheduler.on("sent_reconcile", function() {
+            scheduler.on("sent_teardown", function() {
                 sent = true;
                 expect(sent).to.be.true;
-                done();
             });
             setTimeout(function () {
                 expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("teardown fail", function(done) {
+            this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            scheduler.on("ready", function() {
+                scheduler.teardown();
+            });
+            var sent = false;
+            scheduler.on("sent_teardown", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
+                done();
+            }, 400);
+        });
+        it("acknowledge success", function(done) {
+            this.request.callsArgWith(1, null); // { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            scheduler.on("ready", function() {
+                scheduler.acknowledge({status:{agent_id:"1234", task_id:"123456",uuid:"1232153212"}});
+            });
+            var sent = false;
+            scheduler.on("sent_acknowledge", function() {
+                sent = true;
+                expect(sent).to.be.true;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("acknowledge no uuid", function(done) {
+            this.request.callsArgWith(1, null); // { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            scheduler.on("ready", function() {
+                scheduler.acknowledge({status:{agent_id:"1234", task_id:"123456"}});
+            });
+            var sent = false;
+            scheduler.on("sent_acknowledge", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
+                done();
+            }, 400);
+        });
+            it("acknowledge fail", function(done) {
+            this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            scheduler.on("ready", function() {
+                scheduler.acknowledge({status:{agent_id:"1234", task_id:"123456", uuid:"12312451251"}});
+            });
+            var sent = false;
+            scheduler.on("sent_acknowledge", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
                 done();
             }, 400);
         });
