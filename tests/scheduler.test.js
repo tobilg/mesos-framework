@@ -229,7 +229,7 @@ describe('Scheduler constructor', function() {
             zkClient.getData.restore();
             sandbox.stub(zkClient, "getData", function(path,watch,cb) {
                 setTimeout(function() {
-                    cb(null, null, 1);
+                    cb(zookeeper.Exception.create(zookeeper.Exception.CONNECTION_LOSS), null, 1);
                 }, 100);
             });
             var scheduler = Scheduler({tasks: {
