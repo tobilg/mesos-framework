@@ -17,6 +17,10 @@ describe('Scheduler', function() {
         var scheduler = Scheduler({});
         expect(scheduler).to.be.instanceOf(Scheduler);
         expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.have.lengthOf(0);
+        expect(scheduler.requestTemplate.path).to.equal("/api/v1/scheduler");
+        expect(scheduler.requestTemplate.host).to.equal(scheduler.options.masterUrl);
+        expect(scheduler.requestTemplate.port).to.equal(scheduler.options.port);
     });
     it('Create the Scheduler with a task', function () {
         var scheduler = Scheduler({tasks: {task1:{}}});
