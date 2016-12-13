@@ -238,7 +238,6 @@ describe('Scheduler constructor', function() {
             scheduler.on("ready", function() {
                 isReady = true;
                 console.log("got to ready");
-                done();
             });
             setTimeout(function () {
                 expect(isReady).to.be.false;
