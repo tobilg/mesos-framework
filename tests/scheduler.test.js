@@ -284,7 +284,7 @@ describe('Scheduler constructor', function() {
             helpers.doRequest.restore();
             sandbox.restore();
         });
-        it.skip("kill Success", function(done) {
+        it("kill Success", function(done) {
             this.request.callsArgWith(1, null);
             var scheduler = new Scheduler({tasks: {
                     task1:{isSubmitted:true}
@@ -292,9 +292,16 @@ describe('Scheduler constructor', function() {
             scheduler.on("ready", function() {
                 scheduler.kill("1234","12345");
             });
+            var sent = false;
             scheduler.on("sent_kill", function() {
+                sent = true;
+                expect(sent).to.be.true;
                 done();
             });
+            setTimeout(function () {
+                expect(sent).to.be.true;
+                done();
+            }, 400);
         });
     });
 });
