@@ -235,6 +235,9 @@ describe('Scheduler constructor', function() {
             var scheduler = Scheduler({tasks: {
                     task1:{isSubmitted:true}
                 },useZk: true, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
             scheduler.on("ready", function() {
                 isReady = true;
                 console.log("got to ready");
@@ -293,6 +296,85 @@ describe('Scheduler constructor', function() {
             });
             var sent = false;
             scheduler.on("sent_kill", function() {
+                sent = true;
+                expect(sent).to.be.true;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("kill Fail", function(done) {
+            var self = this;
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            scheduler.on("ready", function() {
+                self.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+                scheduler.kill("1234","12345");
+            });
+            var sent = false;
+            scheduler.on("sent_kill", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
+                done();
+            }, 400);
+        });
+        it("shutdown Success", function(done) {
+            this.request.callsArgWith(1, null);
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("ready", function() {
+                scheduler.shutdown("1234","12345");
+            });
+            var sent = false;
+            scheduler.on("sent_shutdown", function() {
+                sent = true;
+                expect(sent).to.be.true;
+                done();
+            });
+            setTimeout(function () {
+                expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("reconcile Success", function(done) {
+            this.request.callsArgWith(1, null);
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("ready", function() {
+                scheduler.reconcile("1234","12345");
+            });
+            var sent = false;
+            scheduler.on("sent_reconcile", function() {
+                sent = true;
+                expect(sent).to.be.true;
+                done();
+            });
+            setTimeout(function () {
+                expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("sync Success", function(done) {
+            this.request.callsArgWith(1, null);
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("ready", function() {
+                scheduler.killTasks = [];
+                scheduler.reconcile("1234","12345");
+            });
+            var sent = false;
+            scheduler.on("sent_reconcile", function() {
                 sent = true;
                 expect(sent).to.be.true;
                 done();
