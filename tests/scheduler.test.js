@@ -234,7 +234,7 @@ describe('Scheduler constructor', function() {
             });
             var scheduler = Scheduler({tasks: {
                     task1:{isSubmitted:true}
-                },useZk: true, logging: {level: "debug"}});
+                },useZk: true, logging: {level: "debug"}, zkClient: zkClient});
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
             });
