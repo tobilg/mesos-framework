@@ -3,6 +3,7 @@ var Scheduler = require("../").Scheduler;
 var helpers = require("../lib/helpers");
 var TaskHelper = require("../lib/taskHelper");
 var winston = require('winston');
+var mesos = (require("../lib/mesos"))().getMesos();
 
 // Lib require for stubs
 var zookeeper = require("node-zookeeper-client");
@@ -15,6 +16,11 @@ describe('Scheduler constructor', function() {
     var sandbox;
     it('Create the Scheduler with default options', function () {
         var scheduler = Scheduler({});
+        expect(scheduler).to.be.instanceOf(Scheduler);
+        expect(scheduler.tasks).to.be.an('array');
+    });
+    it('Create the Scheduler with custom log file', function () {
+        var scheduler = Scheduler({logging:{path:"logs", fileName:"tests.log"}});
         expect(scheduler).to.be.instanceOf(Scheduler);
         expect(scheduler.tasks).to.be.an('array');
     });
@@ -496,6 +502,8 @@ describe('Scheduler constructor', function() {
             setTimeout(function () {
                 expect(sentRec).to.equal(3);
                 expect(sentKill).to.equal(2);
+                expect(scheduler.killTasks).to.have.length.of(0);
+                expect(scheduler.reconcileTasks).to.have.length.of(0);
                 done();
             }, 400);
         });
@@ -580,7 +588,7 @@ describe('Scheduler constructor', function() {
                 done();
             }, 400);
         });
-            it("acknowledge fail", function(done) {
+        it("acknowledge fail", function(done) {
             this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
             var scheduler = new Scheduler({tasks: {
                     task1:{isSubmitted:true}
@@ -593,6 +601,248 @@ describe('Scheduler constructor', function() {
             });
             var sent = false;
             scheduler.on("sent_acknowledge", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
+                done();
+            }, 400);
+        });
+        it("accept success", function(done) {
+            this.request.callsArgWith(1, null);//{ message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            var sent = false;
+            var toLaunch = [];
+            var demandedResources = [
+                        helpers.stringifyEnumsRecursive(new mesos.Resource("cpus", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(1))),
+                        helpers.stringifyEnumsRecursive(new mesos.Resource("mem", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(128)))
+                    ];
+            scheduler.frameworkId = "123445547452563";
+            toLaunch.push(
+                        new mesos.TaskInfo(
+                            "312312", // Task name
+                            new mesos.TaskID("23242"),   // TaskID
+                            {value:"321312"},             // AgentID
+                            demandedResources,          // Resources
+                            null,   // ExecutorInfo
+                            null,     // CommandInfo
+                            null, // ContainerInfo
+                            null,     // HealthCheck
+                            null, // KillPolicy
+                            null, // Data
+                            null, // Labels
+                            null  // DiscoveryInfo
+                        )
+                    );
+            var Operations = helpers.stringifyEnumsRecursive(
+                        new mesos.Offer.Operation(
+                            mesos.Offer.Operation.Type.LAUNCH,
+                            new mesos.Offer.Operation.Launch(toLaunch)
+                        )
+                    );
+            scheduler.on("ready", function() {
+                scheduler.accept([{value:"12312312"}], Operations, null);
+            });
+            scheduler.on("sent_accept", function() {
+                sent = true;
+                expect(sent).to.be.true;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("accept error", function(done) {
+            this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            var sent = false;
+            var toLaunch = [];
+            var demandedResources = [
+                        helpers.stringifyEnumsRecursive(new mesos.Resource("cpus", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(1))),
+                        helpers.stringifyEnumsRecursive(new mesos.Resource("mem", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(128)))
+                    ];
+            scheduler.frameworkId = "123445547452563";
+            toLaunch.push(
+                        new mesos.TaskInfo(
+                            "312312", // Task name
+                            new mesos.TaskID("23242"),   // TaskID
+                            {value:"321312"},             // AgentID
+                            demandedResources,          // Resources
+                            null,   // ExecutorInfo
+                            null,     // CommandInfo
+                            null, // ContainerInfo
+                            null,     // HealthCheck
+                            null, // KillPolicy
+                            null, // Data
+                            null, // Labels
+                            null  // DiscoveryInfo
+                        )
+                    );
+            var Operations = helpers.stringifyEnumsRecursive(
+                        new mesos.Offer.Operation(
+                            mesos.Offer.Operation.Type.LAUNCH,
+                            new mesos.Offer.Operation.Launch(toLaunch)
+                        )
+                    );
+            scheduler.on("ready", function() {
+                scheduler.accept([{value:"12312312"}], Operations, null);
+            });
+            scheduler.on("sent_accept", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
+                done();
+            }, 400);
+        });
+        it("decline success", function(done) {
+            this.request.callsArgWith(1, null);//{ message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            var sent = false;
+
+            scheduler.frameworkId = "123445547452563";
+
+            scheduler.on("ready", function() {
+                scheduler.decline([{value:"12312312"}], {});
+            });
+            scheduler.on("sent_decline", function() {
+                sent = true;
+                expect(sent).to.be.true;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("decline error", function(done) {
+            this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            var sent = false;
+
+            scheduler.frameworkId = "123445547452563";
+
+            scheduler.on("ready", function() {
+                scheduler.decline([{value:"12312312"}], {});
+            });
+            scheduler.on("sent_decline", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
+                done();
+            }, 400);
+        });
+        it("message success", function(done) {
+            this.request.callsArgWith(1, null);//{ message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            var sent = false;
+
+            scheduler.frameworkId = "123445547452563";
+
+            scheduler.on("ready", function() {
+                scheduler.message("12312312", "dasfasfafas", "sdfasfasfgasgloewy2398y423r5fqwncas");
+            });
+            scheduler.on("sent_message", function() {
+                sent = true;
+                expect(sent).to.be.true;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("message fail", function(done) {
+            this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            var sent = false;
+
+            scheduler.frameworkId = "123445547452563";
+
+            scheduler.on("ready", function() {
+                scheduler.message("12312312", "dasfasfafas", "sdfasfasfgasgloewy2398y423r5fqwncas");
+            });
+            scheduler.on("sent_message", function() {
+                sent = true;
+                expect(sent).to.be.false;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.false;
+                done();
+            }, 400);
+        });
+        it("request success", function(done) {
+            this.request.callsArgWith(1, null);//{ message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            var sent = false;
+
+            scheduler.frameworkId = "123445547452563";
+
+            scheduler.on("ready", function() {
+                scheduler.request(["12312312","fasfafas", "sdfasfasfgasgloewy2398y423r5fqwncas"]);
+            });
+            scheduler.on("sent_request", function() {
+                sent = true;
+                expect(sent).to.be.true;
+            });
+            setTimeout(function () {
+                expect(sent).to.be.true;
+                done();
+            }, 400);
+        });
+        it("request fail", function(done) {
+            this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+            });
+            var sent = false;
+
+            scheduler.frameworkId = "123445547452563";
+
+            scheduler.on("ready", function() {
+                scheduler.request(["12312312","fasfafas", "sdfasfasfgasgloewy2398y423r5fqwncas"]);
+            });
+            scheduler.on("sent_request", function() {
                 sent = true;
                 expect(sent).to.be.false;
             });
