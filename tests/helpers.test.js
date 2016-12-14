@@ -130,6 +130,33 @@ describe('helpers', function() {
                 done();
             });
         });
+        it("OK state with stream-id", function(done) {
+            var data = "OK";
+            var res = new MockRes();
+            res.writeHead(202);
+            res.write(data);
+            res.end();
+            var req = new MockReq({ method: 'POST' });
+            this.request.callsArgWith(1, res).returns(req);
+            this.requestTemplate = {
+                host: "sfdsdfsfds",
+                port: "5050",
+                path: "/api/v1/scheduler",
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                    }
+                };
+            this.mesosStreamId = "123233523512";
+            helpers.doRequest.call(this, "",function (error, jsonResult) {
+                console.log("Error is: " + JSON.stringify(error));
+                console.log("Result is:" + JSON.stringify(jsonResult));
+                expect(error).to.be.a("null");
+                expect(jsonResult.body).to.equal(data);
+                expect(jsonResult.statusCode).to.equal(202);
+                done();
+            });
+        });
         it("400 error", function(done) {
             var data = "OK";
             var res = new MockRes();

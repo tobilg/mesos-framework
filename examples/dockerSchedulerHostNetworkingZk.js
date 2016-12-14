@@ -21,7 +21,7 @@ var ContainerInfo = new Mesos.ContainerInfo(
 var scheduler = new Scheduler({
     "masterUrl": "172.17.11.101", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
     "port": 5050,
-    "frameworkName": "My first Docker framework (host networking)",
+    "frameworkName": "My first Docker framework (host networking)1",
     "logging": {
         "path": "logs",
         "fileName": "mesos-framework-docker-host.log",
@@ -51,7 +51,9 @@ var scheduler = new Scheduler({
                 "ports": 1,
                 "disk": 0
             },
-            "healthChecks": null, // Add your health checks here
+            "healthChecks": [
+                //new Mesos.HealthCheck(new Mesos.HealthCheck.HTTP(8080, "/health", [200]), 10.0, 20.0, 3)
+            ], // Add your health checks here
             "labels": null // Add your labels (an array of { "key": "value" } objects)
         }
     },
