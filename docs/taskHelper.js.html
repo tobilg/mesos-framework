@@ -1,4 +1,44 @@
-"use strict";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>taskHelper.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Executor.html">Executor</a><ul class='methods'><li data-type='method'><a href="Executor.html#message">message</a></li><li data-type='method'><a href="Executor.html#subscribe">subscribe</a></li><li data-type='method'><a href="Executor.html#update">update</a></li></ul></li><li><a href="Mesos.html">Mesos</a><ul class='methods'><li data-type='method'><a href="Mesos.html#getBuilder">getBuilder</a></li><li data-type='method'><a href="Mesos.html#getMesos">getMesos</a></li><li data-type='method'><a href="Mesos.html#getProtoBuf">getProtoBuf</a></li></ul></li><li><a href="Scheduler.html">Scheduler</a><ul class='methods'><li data-type='method'><a href="Scheduler.html#accept">accept</a></li><li data-type='method'><a href="Scheduler.html#acknowledge">acknowledge</a></li><li data-type='method'><a href="Scheduler.html#decline">decline</a></li><li data-type='method'><a href="Scheduler.html#getRunningTasks">getRunningTasks</a></li><li data-type='method'><a href="Scheduler.html#kill">kill</a></li><li data-type='method'><a href="Scheduler.html#message">message</a></li><li data-type='method'><a href="Scheduler.html#reconcile">reconcile</a></li><li data-type='method'><a href="Scheduler.html#request">request</a></li><li data-type='method'><a href="Scheduler.html#revive">revive</a></li><li data-type='method'><a href="Scheduler.html#shutdown">shutdown</a></li><li data-type='method'><a href="Scheduler.html#subscribe">subscribe</a></li><li data-type='method'><a href="Scheduler.html#sync">sync</a></li><li data-type='method'><a href="Scheduler.html#teardown">teardown</a></li></ul></li><li><a href="TaskHelper.html">TaskHelper</a><ul class='methods'><li data-type='method'><a href="TaskHelper.html#deleteTask">deleteTask</a></li><li data-type='method'><a href="TaskHelper.html#loadTasks">loadTasks</a></li><li data-type='method'><a href="TaskHelper.html#saveTask">saveTask</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">taskHelper.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
 
 /**
  * Represents a TaskHelper object
@@ -24,8 +64,6 @@ TaskHelper.prototype.loadTasks = function() {
     self.zkClient.getChildren(self.zkServicePath + "/tasks", function (error, children, stat) {
         if (error) {
             self.logger.error("Could not load task information.");
-            // We're ready to subscribe
-            self.scheduler.emit("ready");
         } else if (children) {
             var childStates = {};
             children.forEach(function (child) {
@@ -49,11 +87,12 @@ TaskHelper.prototype.loadTasks = function() {
                     self.logger.debug("Loading task: " + JSON.stringify(task));
                     var found = false;
                     var i = 0;
-                    for (i = 0;i < pending.length; i++) {
+                    for (i = 0;i &lt; pending.length; i++) {
                         var pendingTask = pending[i];
                         self.logger.debug("Pending task: \"" + JSON.stringify(pendingTask) + "\"");
                         if (pendingTask.name == task.name) {
-                            if (task.runtimeInfo && task.runtimeInfo.agentId) {
+                            // Don't load tasks in staging
+                            if (task.runtimeInfo &amp;&amp; task.runtimeInfo.agentId) {
                                 self.scheduler.launchedTasks.push(task);
                                 pending.splice(i, 1);
                                 self.scheduler.reconcileTasks.push(task);
@@ -64,7 +103,7 @@ TaskHelper.prototype.loadTasks = function() {
                             break;
                         }
                     }
-                    if (!found) {
+                    if (i == pending.length &amp;&amp; !found) {
                         self.logger.info("Setting task ID " + task.taskId + " to be killed");
                         self.scheduler.killTasks.push(task);
                     }
@@ -126,3 +165,22 @@ TaskHelper.prototype.deleteTask = function (taskId) {
 };
 
 module.exports = TaskHelper;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Dec 09 2016 12:28:09 GMT+0100 (CET) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

@@ -4,7 +4,7 @@ var Scheduler = require("../index").Scheduler;
 var Mesos = require("../index").Mesos.getMesos();
 
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.103", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
+    "masterUrl": "172.17.11.101", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
     "port": 5050,
     "frameworkName": "My first Command framework",
     "logging": {
@@ -14,7 +14,7 @@ var scheduler = new Scheduler({
     "tasks": {
         "sleepProcesses": {
             "priority": 1,
-            "instances": 3,
+            "instances": 1,
             "commandInfo": new Mesos.CommandInfo(
                 null, // URI
                 null, // Environment
@@ -76,5 +76,7 @@ scheduler.on("error", function (error) {
     }
 });
 
-// Start framework scheduler
-scheduler.subscribe();
+scheduler.on("ready", function () {
+    // Start framework scheduler
+    scheduler.subscribe();
+});
