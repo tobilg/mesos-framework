@@ -1,54 +1,54 @@
 var helpers = require("../lib/helpers");
 var mesos = require("../lib/mesos")().getMesos();
 
-var winston = require('winston');
+var winston = require("winston");
 var http = require("http");
 
-var expect = require('chai').expect;
+var expect = require("chai").expect;
 var sinon = require("sinon");
 var MockReq = require("mock-req");
 var MockRes = require("mock-res");
 
-describe('helpers', function() {
-    it('Test the CloneDeep helper', function () {
-        var objects = [{ 'a': 1 }, { 'b': 2 }];
+describe("helpers", function() {
+    it("Test the CloneDeep helper", function () {
+        var objects = [{ "a": 1 }, { "b": 2 }];
  
         var deep = helpers.cloneDeep(objects);
         expect(deep[0] === objects[0]).to.be.false;
     });
     describe("sortTasksByPriority", function () {
-        it('Sort the task array with 2 submitted tasks', function () {
+        it("Sort the task array with 2 submitted tasks", function () {
             var tasks = helpers.sortTasksByPriority({
                     task1:{isSubmitted:true},
                     task2:{isSubmitted:true}});
-            expect(tasks).to.be.an('array');
+            expect(tasks).to.be.an("array");
             expect(tasks).to.have.lengthOf(2);
         });
-        it('Sort the task array with 3 submitted tasks with priority', function () {
+        it("Sort the task array with 3 submitted tasks with priority", function () {
             var tasks = helpers.sortTasksByPriority({
                     task1:{isSubmitted:true, priority:1},
                     task2:{isSubmitted:true, priority:2},
                     task3:{isSubmitted:true, priority:1}
                 });
-            expect(tasks).to.be.an('array');
+            expect(tasks).to.be.an("array");
             expect(tasks).to.have.lengthOf(3);
         });
-        it('Sort the task array with 3 submitted tasks with priority and multiple instances', function () {
+        it("Sort the task array with 3 submitted tasks with priority and multiple instances", function () {
             var tasks = helpers.sortTasksByPriority({
                     task1:{isSubmitted:true, priority:1},
                     task2:{isSubmitted:true, priority:2},
                     task3:{isSubmitted:true, priority:1, instances:2}
                 });
-            expect(tasks).to.be.an('array');
+            expect(tasks).to.be.an("array");
             expect(tasks).to.have.lengthOf(4);
         });
-        it.skip('Sort the task array with 3 submitted tasks with priority and out of order names', function () {
+        it.skip("Sort the task array with 3 submitted tasks with priority and out of order names", function () {
             var tasks = helpers.sortTasksByPriority({
                     task3:{isSubmitted:true, priority:1},
                     task2:{isSubmitted:true, priority:2},
                     task1:{isSubmitted:true, priority:1}
                 });
-            expect(tasks).to.be.an('array');
+            expect(tasks).to.be.an("array");
             expect(tasks).to.have.lengthOf(3);
             expect(tasks[0].name).to.equal("task1-1");
         });
@@ -119,7 +119,7 @@ describe('helpers', function() {
             res.writeHead(202);
             res.write(data);
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             helpers.doRequest("",function (error, jsonResult) {
                 console.log("Error is: " + JSON.stringify(error));
@@ -136,7 +136,7 @@ describe('helpers', function() {
             res.writeHead(202);
             res.write(data);
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             this.requestTemplate = {
                 host: "sfdsdfsfds",
@@ -144,7 +144,7 @@ describe('helpers', function() {
                 path: "/api/v1/scheduler",
                 method: "POST",
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json"
                     }
                 };
             this.mesosStreamId = "123233523512";
@@ -163,7 +163,7 @@ describe('helpers', function() {
             res.writeHead(400);
             res.write(data);
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             helpers.doRequest("",function (error, jsonResult) {
                 console.log("Error is: " + JSON.stringify(error));
@@ -179,7 +179,7 @@ describe('helpers', function() {
             res.writeHead(400);
             res.write(data);
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.returns(req);
             helpers.doRequest("",function (error, jsonResult) {
                 console.log("Error is: " + JSON.stringify(error));
@@ -196,7 +196,7 @@ describe('helpers', function() {
             res.writeHead(400);
             res.write(data);
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             helpers.doRequest("",function (error, jsonResult) {
                 console.log("Error is: " + JSON.stringify(error));

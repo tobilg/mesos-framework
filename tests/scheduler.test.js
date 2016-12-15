@@ -2,72 +2,72 @@
 var Scheduler = require("../").Scheduler;
 var helpers = require("../lib/helpers");
 var TaskHelper = require("../lib/taskHelper");
-var winston = require('winston');
+var winston = require("winston");
 var mesos = (require("../lib/mesos"))().getMesos();
 
 // Lib require for stubs
 var zookeeper = require("node-zookeeper-client");
 
 // Testing require
-var expect = require('chai').expect;
+var expect = require("chai").expect;
 var sinon = require("sinon");
 
-describe('Scheduler constructor', function() {
+describe("Scheduler constructor", function() {
     var sandbox;
-    it('Create the Scheduler with default options', function () {
+    it("Create the Scheduler with default options", function () {
         var scheduler = Scheduler({});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(0);
         expect(scheduler.requestTemplate.path).to.equal("/api/v1/scheduler");
         expect(scheduler.requestTemplate.host).to.equal(scheduler.options.masterUrl);
         expect(scheduler.requestTemplate.port).to.equal(scheduler.options.port);
     });
-    it('Create the Scheduler with custom log file', function () {
+    it("Create the Scheduler with custom log file", function () {
         var scheduler = Scheduler({logging:{path:"logs", fileName:"tests.log"}});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
     });
-    it('Create the Scheduler with a task', function () {
+    it("Create the Scheduler with a task", function () {
         var scheduler = Scheduler({tasks: {task1:{}}});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(1);
     });
-    it.skip('Create the Scheduler with a submitted task', function () {
+    it.skip("Create the Scheduler with a submitted task", function () {
         var scheduler = Scheduler({tasks: {task1:{isSubmitted:true}}});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(1);
         expect(scheduler.pendingTasks).to.have.lengthOf(0);
     });
-    it('Create the Scheduler with 2 submitted tasks (sort test)', function () {
+    it("Create the Scheduler with 2 submitted tasks (sort test)", function () {
         var scheduler = Scheduler({tasks: {
                 task1:{isSubmitted:true},
                 task2:{isSubmitted:true}
             }});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(2);
     });
-    it('Create the Scheduler with 3 submitted tasks with priority (sort test)', function () {
+    it("Create the Scheduler with 3 submitted tasks with priority (sort test)", function () {
         var scheduler = Scheduler({tasks: {
                 task1:{isSubmitted:true, priority:1},
                 task2:{isSubmitted:true, priority:2},
                 task3:{isSubmitted:true, priority:1}
             }});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(3);
     });
-    it('Create the Scheduler with 3 submitted tasks with priority and multiple instances (sort test)', function () {
+    it("Create the Scheduler with 3 submitted tasks with priority and multiple instances (sort test)", function () {
         var scheduler = Scheduler({tasks: {
                 task1:{isSubmitted:true, priority:1},
                 task2:{isSubmitted:true, priority:2},
                 task3:{isSubmitted:true, priority:1, instances:2}
             }});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(4);
     });
     describe("Create scheduler with an already submitted task", function () {
@@ -88,7 +88,7 @@ describe('Scheduler constructor', function() {
                 }});
 
             expect(scheduler).to.be.instanceOf(Scheduler);
-            expect(scheduler.tasks).to.be.an('array');
+            expect(scheduler.tasks).to.be.an("array");
             expect(scheduler.tasks).to.have.lengthOf(2);
             expect(scheduler.pendingTasks).to.have.lengthOf(0);
         });
@@ -96,7 +96,7 @@ describe('Scheduler constructor', function() {
     describe("Create scheduler with ZK", function () {
         var zkClient = zookeeper.createClient("127.0.0.1");
         var logger = helpers.getLogger(null, null, "debug");
-        var taskHelper = new TaskHelper({"zkClient": zkClient, "logger": logger, "pendingTasks":[], "launchedTasks":[], scheduler:{}})
+        var taskHelper = new TaskHelper({"zkClient": zkClient, "logger": logger, "pendingTasks":[], "launchedTasks":[], scheduler:{}});
         before(function () {
             sandbox = sinon.sandbox.create();
 
@@ -127,7 +127,7 @@ describe('Scheduler constructor', function() {
         it("Success path", function (done) {
             var scheduler = new Scheduler({tasks: {
                     task1:{isSubmitted:true}
-                },useZk: true, logging: {level: "debug"}, zkClient: zkClient, taskHelper: taskHelper});
+                }, useZk: true, logging: {level: "debug"}, zkClient: zkClient, taskHelper: taskHelper});
             scheduler.on("ready", function() {
                 done();
             });
@@ -175,7 +175,7 @@ describe('Scheduler constructor', function() {
                 var self = this;
                 setTimeout(function() {
                     var err = zookeeper.Exception.create(zookeeper.Exception.CONNECTION_LOSS);
-                    self.emit("error", err)
+                    self.emit("error", err);
                     cb(err, null, 1);
                 }, 100);
             });
