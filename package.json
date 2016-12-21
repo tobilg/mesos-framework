@@ -34,7 +34,8 @@
     "mocha": "^3.2.0",
     "mock-req": "^0.2.0",
     "mock-res": "^0.3.3",
-    "sinon": "^1.17.6"
+    "sinon": "^1.17.6",
+    "istanbul": "0.4.5"
   },
   "repository": {
     "type": "git",
