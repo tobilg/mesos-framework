@@ -4,17 +4,17 @@
 var handlers = require("../lib/schedulerHandlers");
 var helpers = require("../lib/helpers");
 var TaskHelper = require("../lib/taskHelper");
-var winston = require('winston');
+var winston = require("winston");
 var util = require("util");
-var EventEmitter = require('events').EventEmitter;
+var EventEmitter = require("events").EventEmitter;
 var path = require("path");
 var Mesos = require("../lib/mesos")().getMesos();
 
 // Testing require
-var expect = require('chai').expect;
+var expect = require("chai").expect;
 var sinon = require("sinon");
 
-describe('Offers handlers tests', function () {
+describe("Offers handlers tests", function () {
 
     var accept = true;
 
@@ -119,7 +119,7 @@ describe('Offers handlers tests', function () {
         }
     });
 
-    it('Recive an offer but there are no pending tasks', function (done) {
+    it("Recive an offer but there are no pending tasks", function (done) {
         scheduler.pendingTasks = [];
         var logger = helpers.getLogger(null, null, "debug");
         scheduler.logger = logger;
@@ -133,7 +133,7 @@ describe('Offers handlers tests', function () {
     });
 
 
-    it('Recive an offer while suitable task is pending', function (done) {
+    it("Recive an offer while suitable task is pending", function (done) {
 
         var task1 = {
             "name": "My Task",
@@ -178,7 +178,7 @@ describe('Offers handlers tests', function () {
         }, 500); //timeout with an error in one second
     });
 
-    it('Recive an offer while suitable task with runtimeInfo is pending', function (done) {
+    it("Recive an offer while suitable task with runtimeInfo is pending", function (done) {
 
         var runtimeInfo = {agentId: "12345"}
         var task1 = {
@@ -223,7 +223,7 @@ describe('Offers handlers tests', function () {
     });
 
 
-    it('Recive an offer while unsuitable task is pending', function (done) {
+    it("Recive an offer while unsuitable task is pending", function (done) {
 
         var task1 = {
             "name": "My Task",
@@ -264,7 +264,7 @@ describe('Offers handlers tests', function () {
 });
 
 
-describe('Update handlers tests', function () {
+describe("Update handlers tests", function () {
 
     var acknowleged;
     var killed;
@@ -325,7 +325,7 @@ describe('Update handlers tests', function () {
     };
 
 
-    it('Recive an update no uuid', function (done) {
+    it("Recive an update no uuid", function (done) {
 
         var update = {
             "status": {
@@ -356,7 +356,7 @@ describe('Update handlers tests', function () {
 
     });
 
-    it('Recive an update with uuid', function (done) {
+    it("Recive an update with uuid", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -387,7 +387,7 @@ describe('Update handlers tests', function () {
 
     });
 
-    it('Recive an update for launched task to be killed - no restart', function (done) {
+    it("Recive an update for launched task to be killed - no restart", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -428,7 +428,7 @@ describe('Update handlers tests', function () {
 
     });
 
-    it('Recive an update for launched task to be killed - restart', function (done) {
+    it("Recive an update for launched task to be killed - restart", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -461,7 +461,7 @@ describe('Update handlers tests', function () {
 
     });
 
-    it('Recive an update for launched task is failed - no restart', function (done) {
+    it("Recive an update for launched task is failed - no restart", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -495,7 +495,7 @@ describe('Update handlers tests', function () {
     });
 
 
-    it('Recive an update after reconciliation - no delete', function (done) {
+    it("Recive an update after reconciliation - no delete", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -532,7 +532,7 @@ describe('Update handlers tests', function () {
     });
 
 
-    it('Recive an update after reconciliation - delete', function (done) {
+    it("Recive an update after reconciliation - delete", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 

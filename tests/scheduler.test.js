@@ -2,10 +2,10 @@
 var Scheduler = require("../").Scheduler;
 var helpers = require("../lib/helpers");
 var TaskHelper = require("../lib/taskHelper");
-var winston = require('winston');
 var http = require("http");
 var util = require("util");
-var EventEmitter = require('events').EventEmitter;
+var EventEmitter = require("events").EventEmitter;
+var winston = require("winston");
 var mesos = (require("../lib/mesos"))().getMesos();
 var schedulerHandlers = require("../lib/schedulerHandlers");
 
@@ -13,70 +13,70 @@ var schedulerHandlers = require("../lib/schedulerHandlers");
 var zookeeper = require("node-zookeeper-client");
 
 // Testing require
-var expect = require('chai').expect;
+var expect = require("chai").expect;
 var sinon = require("sinon");
 var MockReq = require("mock-req");
 var MockRes = require("mock-res");
 
-describe('Scheduler constructor', function() {
+describe("Scheduler constructor", function() {
     var sandbox;
     it("Check mesos access function", function () {
         (require("../lib/mesos"))().getProtoBuf();
     });
-    it('Create the Scheduler with default options', function () {
+    it("Create the Scheduler with default options", function () {
         var scheduler = Scheduler({});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(0);
         expect(scheduler.requestTemplate.path).to.equal("/api/v1/scheduler");
         expect(scheduler.requestTemplate.host).to.equal(scheduler.options.masterUrl);
         expect(scheduler.requestTemplate.port).to.equal(scheduler.options.port);
     });
-    it('Create the Scheduler with custom log file', function () {
+    it("Create the Scheduler with custom log file", function () {
         var scheduler = Scheduler({logging:{path:"logs", fileName:"tests.log"}});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
     });
-    it('Create the Scheduler with a task', function () {
+    it("Create the Scheduler with a task", function () {
         var scheduler = Scheduler({tasks: {task1:{}}});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(1);
     });
-    it.skip('Create the Scheduler with a submitted task', function () {
+    it.skip("Create the Scheduler with a submitted task", function () {
         var scheduler = Scheduler({tasks: {task1:{isSubmitted:true}}});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(1);
         expect(scheduler.pendingTasks).to.have.lengthOf(0);
     });
-    it('Create the Scheduler with 2 submitted tasks (sort test)', function () {
+    it("Create the Scheduler with 2 submitted tasks (sort test)", function () {
         var scheduler = Scheduler({tasks: {
                 task1:{isSubmitted:true},
                 task2:{isSubmitted:true}
             }});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(2);
     });
-    it('Create the Scheduler with 3 submitted tasks with priority (sort test)', function () {
+    it("Create the Scheduler with 3 submitted tasks with priority (sort test)", function () {
         var scheduler = Scheduler({tasks: {
                 task1:{isSubmitted:true, priority:1},
                 task2:{isSubmitted:true, priority:2},
                 task3:{isSubmitted:true, priority:1}
             }});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(3);
     });
-    it('Create the Scheduler with 3 submitted tasks with priority and multiple instances (sort test)', function () {
+    it("Create the Scheduler with 3 submitted tasks with priority and multiple instances (sort test)", function () {
         var scheduler = Scheduler({tasks: {
                 task1:{isSubmitted:true, priority:1},
                 task2:{isSubmitted:true, priority:2},
                 task3:{isSubmitted:true, priority:1, instances:2}
             }});
         expect(scheduler).to.be.instanceOf(Scheduler);
-        expect(scheduler.tasks).to.be.an('array');
+        expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(4);
     });
     describe("Create scheduler with an already submitted task", function () {
@@ -97,7 +97,7 @@ describe('Scheduler constructor', function() {
                 }});
 
             expect(scheduler).to.be.instanceOf(Scheduler);
-            expect(scheduler.tasks).to.be.an('array');
+            expect(scheduler.tasks).to.be.an("array");
             expect(scheduler.tasks).to.have.lengthOf(2);
             expect(scheduler.pendingTasks).to.have.lengthOf(0);
         });
@@ -105,7 +105,7 @@ describe('Scheduler constructor', function() {
     describe("Create scheduler with ZK", function () {
         var zkClient = zookeeper.createClient("127.0.0.1");
         var logger = helpers.getLogger(null, null, "debug");
-        var taskHelper = new TaskHelper({"zkClient": zkClient, "logger": logger, "pendingTasks":[], "launchedTasks":[], scheduler:{}})
+        var taskHelper = new TaskHelper({"zkClient": zkClient, "logger": logger, "pendingTasks":[], "launchedTasks":[], scheduler:{}});
         before(function () {
             sandbox = sinon.sandbox.create();
 
@@ -136,7 +136,7 @@ describe('Scheduler constructor', function() {
         it("Success path", function (done) {
             var scheduler = new Scheduler({tasks: {
                     task1:{isSubmitted:true}
-                },useZk: true, logging: {level: "debug"}, zkClient: zkClient, taskHelper: taskHelper});
+                }, useZk: true, logging: {level: "debug"}, zkClient: zkClient, taskHelper: taskHelper});
             scheduler.on("ready", function() {
                 done();
             });
@@ -184,7 +184,7 @@ describe('Scheduler constructor', function() {
                 var self = this;
                 setTimeout(function() {
                     var err = zookeeper.Exception.create(zookeeper.Exception.CONNECTION_LOSS);
-                    self.emit("error", err)
+                    self.emit("error", err);
                     cb(err, null, 1);
                 }, 100);
             });
@@ -895,7 +895,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {};
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -914,7 +914,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {};
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -934,7 +934,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"location":"http://1.2.3.4:5030/fgs/fgdsg"};
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.onFirstCall().callsArgWith(1, res).returns(req);
             var res2 = new MockRes();
             res2.writeHead(500);
@@ -966,7 +966,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"location":"1.2.3.4:5030"};
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.onFirstCall().callsArgWith(1, res).returns(req);
             var res2 = new MockRes();
             res2.writeHead(500);
@@ -995,7 +995,7 @@ describe('Scheduler constructor', function() {
             var res = new MockRes();
             res.writeHead(500);
             res.headers = {};
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1019,7 +1019,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {};
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1039,7 +1039,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1063,7 +1063,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1087,7 +1087,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1111,7 +1111,7 @@ describe('Scheduler constructor', function() {
             res.writeHead(200);
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1140,7 +1140,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1164,7 +1164,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1187,7 +1187,7 @@ describe('Scheduler constructor', function() {
             res.writeHead(200);
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1215,7 +1215,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1245,7 +1245,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1276,7 +1276,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1314,7 +1314,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1366,9 +1366,9 @@ describe('Scheduler constructor', function() {
             res3.write(data);
             res3.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
-            var req2 = new MockReq({ method: 'POST' });
-            var req3 = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
+            var req2 = new MockReq({ method: "POST" });
+            var req3 = new MockReq({ method: "POST" });
             this.request.onFirstCall().callsArgWith(1, res).returns(req);
             this.request.onSecondCall().callsArgWith(1, res2).returns(req2);
             this.request.onThirdCall().callsArgWith(1, res3).returns(req3);
@@ -1429,9 +1429,9 @@ describe('Scheduler constructor', function() {
             res3.write(data);
             res3.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
-            var req2 = new MockReq({ method: 'POST' });
-            var req3 = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
+            var req2 = new MockReq({ method: "POST" });
+            var req3 = new MockReq({ method: "POST" });
             this.request.onFirstCall().callsArgWith(1, res).returns(req);
             this.request.onSecondCall().callsArgWith(1, res2).returns(req2);
             this.request.onThirdCall().callsArgWith(1, res3).returns(req3);
@@ -1507,7 +1507,7 @@ describe('Scheduler constructor', function() {
             res2.write(data);
             res2.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.onFirstCall().callsArgWith(1, res).returns(req);
             this.request.onSecondCall().callsArgWith(1, res2).returns(req);
             var scheduler = new Scheduler({tasks: {
@@ -1551,7 +1551,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1581,7 +1581,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1611,7 +1611,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.request.callsArgWith(1, res).returns(req);
             var scheduler = new Scheduler({tasks: {
                 task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
@@ -1679,7 +1679,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.httpRequest.callsArgWith(1, res).returns(req);
             zkClient.getData.callsArgWith(2, zookeeper.Exception.create(zookeeper.Exception.NO_NODE));
             zkClient.mkdirp.callsArgWith(1, null);
@@ -1714,7 +1714,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.httpRequest.callsArgWith(1, res).returns(req);
             zkClient.getData.callsArgWith(2, null, "122353532");
             zkClient.mkdirp.callsArgWith(1, null);
@@ -1749,7 +1749,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.httpRequest.callsArgWith(1, res).returns(req);
             zkClient.getData.callsArgWith(2, zookeeper.Exception.create(zookeeper.Exception.NO_NODE));
             zkClient.mkdirp.callsArgWith(1, zookeeper.Exception.create(zookeeper.Exception.NO_NODE));
@@ -1784,7 +1784,7 @@ describe('Scheduler constructor', function() {
             res.write(data);
             res.headers = {"mesos-stream-id":"123412412"};
             //res.end();
-            var req = new MockReq({ method: 'POST' });
+            var req = new MockReq({ method: "POST" });
             this.httpRequest.callsArgWith(1, res).returns(req);
             zkClient.getData.callsArgWith(2, zookeeper.Exception.create(zookeeper.Exception.NO_NODE));
             zkClient.mkdirp.callsArgWith(1, null);

@@ -4,9 +4,9 @@
 var Scheduler = require("../").Scheduler;
 var helpers = require("../lib/helpers");
 var TaskHelper = require("../lib/taskHelper");
-var winston = require('winston');
+var winston = require("winston");
 var util = require("util");
-var EventEmitter = require('events').EventEmitter;
+var EventEmitter = require("events").EventEmitter;
 var path = require("path");
 var Mesos = require("../lib/mesos")().getMesos();
 
@@ -14,11 +14,11 @@ var Mesos = require("../lib/mesos")().getMesos();
 var zookeeper = require("node-zookeeper-client");
 
 // Testing require
-var expect = require('chai').expect;
+var expect = require("chai").expect;
 var sinon = require("sinon");
 
-describe('Task helper constructor', function () {
-    it('Create TaskHelper based on scheduler instance', function () {
+describe("Task helper constructor", function () {
+    it("Create TaskHelper based on scheduler instance", function () {
         var scheduler = Scheduler({});
         expect(scheduler).to.be.instanceOf(Scheduler);
         var taskHelper = TaskHelper(scheduler);
@@ -27,7 +27,7 @@ describe('Task helper constructor', function () {
     });
 
 });
-describe('Load tasks from Zk:', function () {
+describe("Load tasks from Zk:", function () {
 
     var zkClient = zookeeper.createClient("127.0.0.1");
     var eventFired = false;
@@ -56,11 +56,11 @@ describe('Load tasks from Zk:', function () {
         sandbox.restore();
         done();
     });
-    it('ZK is down while getting children', function (done) {
+    it("ZK is down while getting children", function (done) {
         var logger = helpers.getLogger(null, null, "debug");
         var schedulerStub = new SchedulerStub();
 
-        schedulerStub.on('ready', function () {
+        schedulerStub.on("ready", function () {
             eventFired = true;
         });
 
@@ -80,7 +80,7 @@ describe('Load tasks from Zk:', function () {
 
         expect(eventFired).to.equal(true);
     });
-    it('ZK is down while getting data', function (done) {
+    it("ZK is down while getting data", function (done) {
 
         zkClient.getChildren.restore();
         sandbox.stub(zkClient, "getChildren", function (path, cb) {
@@ -95,7 +95,7 @@ describe('Load tasks from Zk:', function () {
         var logger = helpers.getLogger(null, null, "debug");
         var schedulerStub = new SchedulerStub();
 
-        schedulerStub.on('ready', function () {
+        schedulerStub.on("ready", function () {
             eventFired = true;
         });
 
@@ -115,7 +115,7 @@ describe('Load tasks from Zk:', function () {
 
         expect(eventFired).to.equal(true);
     });
-    it('Succeed to load tasks but not found in pending (should kill)', function (done) {
+    it("Succeed to load tasks but not found in pending (should kill)", function (done) {
 
         zkClient.getChildren.restore();
 
@@ -156,7 +156,7 @@ describe('Load tasks from Zk:', function () {
         schedulerStub.pendingTasks = [];
         schedulerStub.killTasks = [];
 
-        schedulerStub.on('ready', function () {
+        schedulerStub.on("ready", function () {
             eventFired = true;
         });
 
@@ -179,7 +179,7 @@ describe('Load tasks from Zk:', function () {
         // check that tasks were killed
         expect(schedulerStub.killTasks.length).to.equal(2);
     });
-    it('Succeed to load tasks and found in pending (should restore)', function (done) {
+    it("Succeed to load tasks and found in pending (should restore)", function (done) {
         zkClient.getChildren.restore();
         sandbox.stub(zkClient, "getChildren", function (path, cb) {
             cb(null, ["one", "two"], 1);
@@ -204,7 +204,7 @@ describe('Load tasks from Zk:', function () {
         schedulerStub.launchedTasks = [];
         schedulerStub.reconcileTasks = [];
 
-        schedulerStub.on('ready', function () {
+        schedulerStub.on("ready", function () {
             eventFired = true;
         });
 
@@ -229,7 +229,7 @@ describe('Load tasks from Zk:', function () {
         expect(schedulerStub.launchedTasks.length).to.equal(2);
         expect(schedulerStub.reconcileTasks.length).to.equal(2);
     });
-    it('Succeed to load task list but fail to load task', function (done) {
+    it("Succeed to load task list but fail to load task", function (done) {
         zkClient.getChildren.restore();
         sandbox.stub(zkClient, "getChildren", function (path, cb) {
             cb(null, ["one", "two"], 1);
@@ -259,7 +259,7 @@ describe('Load tasks from Zk:', function () {
         schedulerStub.launchedTasks = [];
         schedulerStub.reconcileTasks = [];
 
-        schedulerStub.on('ready', function () {
+        schedulerStub.on("ready", function () {
             eventFired = true;
         });
 
@@ -285,7 +285,7 @@ describe('Load tasks from Zk:', function () {
         expect(schedulerStub.launchedTasks.length).to.equal(1);
         expect(schedulerStub.reconcileTasks.length).to.equal(1);
     });
-    it('Succeed to load tasks and no tasks', function (done) {
+    it("Succeed to load tasks and no tasks", function (done) {
         zkClient.getChildren.restore();
         sandbox.stub(zkClient, "getChildren", function (path, cb) {
             cb(null, [], 1);
@@ -310,7 +310,7 @@ describe('Load tasks from Zk:', function () {
         schedulerStub.launchedTasks = [];
         schedulerStub.reconcileTasks = [];
 
-        schedulerStub.on('ready', function () {
+        schedulerStub.on("ready", function () {
             eventFired = true;
         });
 
@@ -335,7 +335,7 @@ describe('Load tasks from Zk:', function () {
         expect(schedulerStub.launchedTasks.length).to.equal(0);
         expect(schedulerStub.reconcileTasks.length).to.equal(0);
     });
-    it('Succeed to load tasks and found in pending but no runtimeInfo (should delete from zk)', function (done) {
+    it("Succeed to load tasks and found in pending but no runtimeInfo (should delete from zk)", function (done) {
 
         zkClient.getChildren.restore();
 
@@ -366,7 +366,7 @@ describe('Load tasks from Zk:', function () {
         schedulerStub.launchedTasks = [];
         schedulerStub.reconcileTasks = [];
 
-        schedulerStub.on('ready', function () {
+        schedulerStub.on("ready", function () {
             eventFired = true;
         });
 
@@ -393,7 +393,7 @@ describe('Load tasks from Zk:', function () {
     });
 });
 
-describe('Delete task:', function () {
+describe("Delete task:", function () {
     var sandbox;
     var zkClient = zookeeper.createClient("127.0.0.1");
     before(function () {
@@ -407,7 +407,7 @@ describe('Delete task:', function () {
         done();
     });
 
-    it('Succeeds', function () {
+    it("Succeeds", function () {
         var logger = helpers.getLogger(null, null, "error");
         var logspy = sinon.spy(logger, "debug");
 
@@ -426,7 +426,7 @@ describe('Delete task:', function () {
         sinon.assert.calledOnce(logspy);
     });
 
-    it('ZK is down while trying to remove task', function () {
+    it("ZK is down while trying to remove task", function () {
 
         var logger = helpers.getLogger(null, null, "error");
         var logspy = sinon.spy(logger, "error");
@@ -449,7 +449,7 @@ describe('Delete task:', function () {
 
 });
 
-describe('Save task:', function () {
+describe("Save task:", function () {
     var sandbox;
     var zkClient = zookeeper.createClient("127.0.0.1");
     before(function () {
@@ -463,7 +463,7 @@ describe('Save task:', function () {
         done();
     });
 
-    it('ZK create dir fails', function () {
+    it("ZK create dir fails", function () {
 
         sandbox.stub(zkClient, "mkdirp", function (path, cb) {
             cb(zookeeper.Exception.create(zookeeper.Exception.CONNECTION_LOSS), null);
@@ -483,7 +483,7 @@ describe('Save task:', function () {
         sinon.assert.calledOnce(logspy);
     });
 
-    it('ZK save data fails', function () {
+    it("ZK save data fails", function () {
 
         var logger = helpers.getLogger(null, null, "error");
         var logspy = sinon.spy(logger, "error");
@@ -509,7 +509,7 @@ describe('Save task:', function () {
         sinon.assert.calledOnce(logspy);
     });
 
-    it('Succeeds', function () {
+    it("Succeeds", function () {
 
         var logger = helpers.getLogger(null, null, "error");
         var debugSpy = sinon.spy(logger, "debug");
