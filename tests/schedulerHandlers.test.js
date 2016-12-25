@@ -428,6 +428,47 @@ describe("Update handlers tests", function () {
 
     });
 
+    it("Recive an update for launched task to be finished - no restart", function (done) {
+
+        var logger = helpers.getLogger(null, null, "debug");
+
+        var update = {
+            "status": {
+                "task_id": {"value": "12344-my-task"},
+                "state": "TASK_FINISHED",
+                "source": "SOURCE_EXECUTOR",
+                "bytes": "uhdjfhuagdj63d7hadkf",
+                "uuid": "jhadf73jhakdlfha723adf",
+                "executor_id": {"value": "12344-my-executor"},
+                "agent_id": {"value": "12344-my-agent"}
+            }
+        };
+
+        var taskHelper = sinon.createStubInstance(TaskHelper);
+        scheduler.taskHelper = taskHelper;
+
+        var runtimeInfo = {agentId: "12345"}
+
+        scheduler.pendingTasks = [];
+        scheduler.launchedTasks = [task1];
+        scheduler.logger = logger;
+        scheduler.frameworkId = "12124-235325-32425";
+        scheduler.options = {
+            "frameworkName": "myfmw",
+            "restartStates": ["TASK_FAILED", "TASK_LOST", "TASK_ERROR"]
+        };
+
+        scheduler.options.useZk = true;
+
+        handlers["UPDATE"].call(scheduler, update);
+        setTimeout(function () {
+            expect(scheduler.launchedTasks.length).to.equal(0);
+            expect(scheduler.taskHelper.deleteTask())
+            done();
+        }, 500); //timeout with an error in one second
+
+    });
+
     it("Recive an update for launched task to be killed - restart", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
@@ -568,3 +609,4 @@ describe("Update handlers tests", function () {
 
     });
 });
+
