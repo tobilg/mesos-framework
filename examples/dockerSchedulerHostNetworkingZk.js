@@ -3,23 +3,45 @@
 var Scheduler = require("../index").Scheduler;
 var Mesos = require("../index").Mesos.getMesos();
 
+var ContainerInfo = new Mesos.ContainerInfo(
+    Mesos.ContainerInfo.Type.DOCKER, // Type
+    null, // Volumes
+    null, // Hostname
+    new Mesos.ContainerInfo.DockerInfo(
+        "tobilg/mini-webserver", // Image
+        Mesos.ContainerInfo.DockerInfo.Network.HOST, // Network
+        null,  // PortMappings
+        false, // Privileged
+        null,  // Parameters
+        false, // forcePullImage
+        null   // Volume Driver
+    )
+);
+
 var scheduler = new Scheduler({
     "masterUrl": "172.17.11.101", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
     "port": 5050,
-    "frameworkName": "My first Command framework",
+    "frameworkName": "My first Docker framework (host networking)1",
     "logging": {
-        "level": "debug" // Set log Level to debug (default is info)
+        "path": "logs",
+        "fileName": "mesos-framework-docker-host.log",
+        "level": "debug"
     },
-    "restartStates": ["TASK_FAILED", "TASK_KILLED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"], // Overwrite the restartStates (by default, TASK_FINISHED tasks are NOT restarted!)
+    "useZk": true,
+    "zkUrl": "172.17.11.101:2181",
     "tasks": {
-        "sleepProcesses": {
+        "webservers": {
             "priority": 1,
             "instances": 1,
-            "commandInfo": new Mesos.CommandInfo(
+            "executorInfo": null, // Can take a Mesos.ExecutorInfo object
+            "containerInfo": ContainerInfo, // Mesos.ContainerInfo object
+            "commandInfo": new Mesos.CommandInfo( // Strangely, this is needed, even when specifying ContainerInfo...
                 null, // URI
-                null, // Environment
-                true, // Is shell?
-                "sleep 10;", // Command
+                new Mesos.Environment([
+                    new Mesos.Environment.Variable("FOO", "BAR")
+                ]), // Environment
+                false, // Is shell?
+                null, // Command
                 null, // Arguments
                 null // User
             ),
@@ -28,7 +50,11 @@ var scheduler = new Scheduler({
                 "mem": 128,
                 "ports": 1,
                 "disk": 0
-            }
+            },
+            "healthChecks": [
+                //new Mesos.HealthCheck(new Mesos.HealthCheck.HTTP(8080, "/health", [200]), 10.0, 20.0, 3)
+            ], // Add your health checks here
+            "labels": null // Add your labels (an array of { "key": "value" } objects)
         }
     },
     "handlers": {
@@ -70,10 +96,8 @@ scheduler.on("heartbeat", function (heartbeatTimestamp) {
 
 // Capture "error" events
 scheduler.on("error", function (error) {
-    scheduler.logger.error("ERROR: " + (error.message ? error.message : JSON.stringify(error)));
-    if (error.stack) {
-        scheduler.logger.error(error.stack);
-    }
+    scheduler.logger.info("ERROR: " + JSON.stringify(error));
+    scheduler.logger.info(error.stack);
 });
 
 scheduler.on("ready", function () {

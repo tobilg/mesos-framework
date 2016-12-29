@@ -10,6 +10,8 @@ var scheduler = new Scheduler({
     "logging": {
         "level": "debug" // Set log Level to debug (default is info)
     },
+    "useZk": true,
+    "zkUrl": "172.17.11.101:2181",
     "restartStates": ["TASK_FAILED", "TASK_KILLED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"], // Overwrite the restartStates (by default, TASK_FINISHED tasks are NOT restarted!)
     "tasks": {
         "sleepProcesses": {

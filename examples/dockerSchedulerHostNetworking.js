@@ -121,5 +121,7 @@ scheduler.on("error", function (error) {
     scheduler.logger.info(error.stack);
 });
 
-// Start framework scheduler
-scheduler.subscribe();
+scheduler.on("ready", function () {
+    // Start framework scheduler
+    scheduler.subscribe();
+});

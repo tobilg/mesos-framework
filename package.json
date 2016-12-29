@@ -1,6 +1,6 @@
 {
   "name": "mesos-framework",
-  "version": "0.2.9",
+  "version": "0.3.1",
   "description": "A wrapper around the Mesos HTTP APIs for Schedulers and Executors. Write your Mesos framework in pure JavaScript!",
   "keywords": [
     "mesos",
@@ -14,21 +14,28 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/mocha/bin/mocha ./tests",
     "generate-docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose"
   },
   "author": "TobiLG",
   "license": "MIT",
   "dependencies": {
     "lodash": "^4.13.1",
+    "node-zookeeper-client": "^0.2.2",
     "protobufjs": "^5.0.1",
     "uuid": "^2.0.2",
     "winston": "^2.2.0",
     "winston-daily-rotate-file": "^1.1.5"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
     "jsdoc": "^3.4.0",
-    "minami": "^1.1.1"
+    "minami": "^1.1.1",
+    "mocha": "^3.2.0",
+    "mock-req": "^0.2.0",
+    "mock-res": "^0.3.3",
+    "sinon": "^1.17.6",
+    "istanbul": "0.4.5"
   },
   "repository": {
     "type": "git",
