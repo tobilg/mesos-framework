@@ -1479,6 +1479,9 @@ describe("Scheduler constructor", function() {
             setTimeout(function () {
                 expect(called).to.be.true;
                 expect(self.request.calledThrice).to.be.true;
+                expect(self.request.args[0][0].headers).to.not.have.property("mesos-stream-id");
+                expect(self.request.args[1][0].headers).to.not.have.property("mesos-stream-id");
+                expect(self.request.args[2][0].headers).to.not.have.property("mesos-stream-id");
                 expect(process.exit.calledOnce).to.be.true;
                 process.exit.restore();
                 done();
@@ -1539,6 +1542,8 @@ describe("Scheduler constructor", function() {
             setTimeout(function () {
                 expect(called).to.be.true;
                 expect(self.request.calledTwice).to.be.true;
+                expect(self.request.args[0][0].headers).to.not.have.property("mesos-stream-id");
+                expect(self.request.args[1][0].headers).to.not.have.property("mesos-stream-id");
                 done();
             }, 400);
         });
