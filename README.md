@@ -1,5 +1,7 @@
 # mesos-framework
 
+[![Package version](https://img.shields.io/npm/v/mesos-framework.svg)](https://www.npmjs.com/package/mesos-framework) [![Package downloads](https://img.shields.io/npm/dt/mesos-framework.svg)](https://www.npmjs.com/package/mesos-framework) [![Package license](https://img.shields.io/npm/l/mesos-framework.svg)](https://www.npmjs.com/package/mesos-framework) [![Build Status](https://travis-ci.org/tobilg/mesos-framework.svg?branch=master)](https://travis-ci.org/tobilg/mesos-framework)
+
 This project provides a high-level wrapper around the Mesos HTTP APIs for [schedulers](http://mesos.apache.org/documentation/latest/scheduler-http-api/) and [executors](http://mesos.apache.org/documentation/latest/executor-http-api/).
 It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos versions are those >= 0.28.2.
 
