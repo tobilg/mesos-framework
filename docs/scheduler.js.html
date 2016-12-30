@@ -69,7 +69,7 @@ function Scheduler (options) {
     var self = this;
 
     self.options = {};
-    self.options.frameworkName = options.frameworkName.replace(/ /g, "-") || "mesos-framework." + uuid.v4();
+    self.options.frameworkName = (options.frameworkName ? options.frameworkName.replace(/ /g, "-") : "mesos-framework." + uuid.v4());
     self.options.user = options.user || "root";
     self.options.restartStates = options.restartStates || ["TASK_FAILED", "TASK_LOST", "TASK_ERROR"]; // Task in TASK_FINISHED will NOT be restarted by default!
     self.options.frameworkFailoverTimeout = options.frameworkFailoverTimeout || 604800; // One week
@@ -101,6 +101,8 @@ function Scheduler (options) {
     if (options.hasOwnProperty("tasks")) {
         self.tasks = helpers.sortTasksByPriority(options.tasks);
     }
+
+    self.logger.debug(JSON.stringify(self.tasks));
 
     self.pendingTasks = [];
     self.launchedTasks = [];
@@ -153,9 +155,10 @@ function Scheduler (options) {
     // Add custom event handlers if present
     if (options.handlers &amp;&amp; Object.getOwnPropertyNames(options.handlers).length > 0) {
         Object.getOwnPropertyNames(options.handlers).forEach(function (handlerName) {
+            var ucHandlerName = handlerName.toUpperCase();
             // Check if name is allowed, is a function and the length of the function arguments fit to the ones defined in allowedEventHandlers
-            if (Object.getOwnPropertyNames(allowedEventHandlers).indexOf(handlerName.toUpperCase()) > -1 &amp;&amp; helpers.isFunction(options.handlers[handlerName]) &amp;&amp; options.handlers[handlerName].length === allowedEventHandlers[handlerName]) {
-                self.customEventHandlers[handlerName.toUpperCase()] = options.handlers[handlerName];
+            if (Object.getOwnPropertyNames(allowedEventHandlers).indexOf(ucHandlerName) > -1 &amp;&amp; helpers.isFunction(options.handlers[handlerName]) &amp;&amp; options.handlers[handlerName].length === allowedEventHandlers[ucHandlerName]) {
+                self.customEventHandlers[ucHandlerName] = options.handlers[handlerName];
             }
         });
     }
@@ -177,11 +180,11 @@ function Scheduler (options) {
     }
 
     if (options.hasOwnProperty("tasks")) {
-        self.logger.info(JSON.stringify(helpers.sortTasksByPriority(options.tasks)));
+        self.logger.debug(JSON.stringify(helpers.sortTasksByPriority(options.tasks)));
     }
 
     // Store the long-running request
-    self.request = {};
+    self.httpRequest = {};
 
     // Handling of ZooKeeper-related stuff
     if (self.options.useZk) {
@@ -191,11 +194,16 @@ function Scheduler (options) {
         // Set default path for the service
         self.zkServicePath = self.options.zkPrefix + self.options.frameworkName;
 
-        // Create ZK client
-        self.zkClient = zookeeper.createClient(self.options.zkUrl);
+        // Create ZK client (getting from options is only to be used for unit tests!)
+        self.zkClient = options.zkClient || zookeeper.createClient(self.options.zkUrl);
 
-        // Instantiate TaskHelper
-        self.taskHelper = new TaskHelper(self);
+        // Instantiate TaskHelper (getting from options is only to be used for unit tests!)
+        self.taskHelper = options.taskHelper || new TaskHelper(self);
+
+        // For unit tests
+        if (options.taskHelper) {
+            self.taskHelper.scheduler = self;
+        }
 
         // Set path for the framework id
         var zkPath = self.zkServicePath + "/framework-id";
@@ -212,12 +220,14 @@ function Scheduler (options) {
             // Check if path with framework id exists
             self.zkClient.getData(zkPath, null, function (error, data, stat) {
 
+                self.logger.debug("error before if:" + JSON.stringify(error));
                 if (error) {
 
+                    self.logger.debug("error:" + JSON.stringify(error));
                     // Check if node doesn't exist yet
                     if (error.getCode() == zookeeper.Exception.NO_NODE) {
 
-                        self.logger.debug("Node " + zkPath + " doesn't exist yet. Will be created of framework launch");
+                        self.logger.debug("Node " + zkPath + " doesn't exist yet. Will be created on framework launch");
 
                         // Add event handler for the SUBSCRIBE event, to set the framework id to ZooKeeper
                         self.once("subscribed", function (obj) {
@@ -250,7 +260,10 @@ function Scheduler (options) {
                         });
 
                         // We're ready to subscribe
-                        self.emit("ready");
+                        // Timeout to let init finish
+                        setTimeout(function() {
+                            self.emit("ready");
+                        }, 100);
 
                     } else {
                         // Other error
@@ -346,15 +359,18 @@ Scheduler.prototype.subscribe = function () {
         // Derive the leader info
         var leaderInfo = location.replace(/\/\//g, "").split(":");
 
+        // Check for scheme and move window accordingly
+        var schemeIndex = leaderInfo.length > 2 ? 0 : -1;
+
         // Set new leading master info
-        self.options.masterUrl = leaderInfo[0];
+        self.options.masterUrl = leaderInfo[schemeIndex + 1];
 
         // If the port part contains slashes -> URLs, then fiix it by just getting the port
-        if (leaderInfo[1].indexOf("\/") > -1) {
-            var temp = leaderInfo[1].split("/");
+        if (leaderInfo[schemeIndex + 2].indexOf("\/") > -1) {
+            var temp = leaderInfo[schemeIndex + 2].split("/");
             self.options.port = temp[0];
         } else {
-            self.options.port = leaderInfo[1];
+            self.options.port = leaderInfo[schemeIndex + 2];
         }
 
         self.logger.info("SUBSCRIBE: Leader info: " + self.options.masterUrl + ":" + self.options.port);
@@ -364,7 +380,7 @@ Scheduler.prototype.subscribe = function () {
 
     }
 
-    self.request = http.request(self.requestTemplate, function (res) {
+    self.httpRequest = http.request(self.requestTemplate, function (res) {
 
         self.logger.info("SUBSCRIBE: Response status: " + res.statusCode);
 
@@ -445,22 +461,30 @@ Scheduler.prototype.subscribe = function () {
 
         } else {
             res.on("data",function (chunk) {
-                if (chunk.length > 0)
-                    self.logger.error("Error registering with mesos: " + chunk.toString());
+                if (chunk.length > 0) {
+                    self.emit("error", {message: "Error registering with mesos: " + chunk.toString() + " , code: " + res.statusCode.toString()});
+                } else {
+                    self.emit("error", {message: "Error registering with mesos - empty response, code: " + res.statusCode.toString()});
+                }
             });
         }
 
     });
 
-    self.request.on('error', function (e) {
+    self.httpRequest.on('error', function (e) {
         self.emit("error", { message: "There was a problem with the request: " + (e.message ? e.message : JSON.stringify(e)) });
     });
 
     // Register a timeout for triggering of re-registrations of the scheduler
-    self.request.on('socket', function (socket) {
+    self.httpRequest.on('socket', function (socket) {
         socket.setTimeout(self.options.masterConnectionTimeout);
         socket.on('timeout', function() {
             self.logger.error("Received a timeout on the long-running Master connection! Will try to re-register the framework scheduler!");
+
+            // We need to remove the stream id from the headers before re-subscribing!
+            self.mesosStreamId = undefined;
+            delete self.requestTemplate.headers["mesos-stream-id"];
+
             // If we're using Mesos DNS, we can directy re-register, because Mesos DNS will discover the current leader automatically
             if (self.options.masterUrl === "leader.mesos") {
                 self.logger.info("Using Mesos DNS, will re-register to 'leader.mesos'!");
@@ -526,10 +550,10 @@ Scheduler.prototype.subscribe = function () {
     );
 
     // Write data to request body
-    self.request.write(JSON.stringify(Call));
+    self.httpRequest.write(JSON.stringify(Call));
 
     // End request
-    self.request.end();
+    self.httpRequest.end();
 
 };
 
@@ -659,6 +683,8 @@ Scheduler.prototype.kill = function (taskId, agentId) {
             }
         }
     };
+
+    self.logger.debug("Killing task ID: " + taskId);
 
     if (self.options.useZk)
         self.taskHelper.deleteTask(taskId);
@@ -889,9 +915,11 @@ Scheduler.prototype.sync = function () {
                 self.taskHelper.deleteTask(self.reconcileTasks[i].taskId);
         }
     }
+    self.reconcileTasks = [];
     for (var i = 0; i &lt; self.killTasks.length; i++) {
         self.kill(self.killTasks[i].taskId, self.killTasks[i].runtimeInfo.agentId);
     }
+    self.killTasks = [];
     if (self.options.useZk) {
         self.reconcile();
     }
@@ -910,7 +938,7 @@ module.exports = Scheduler;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Dec 09 2016 12:28:09 GMT+0100 (CET) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Dec 30 2016 13:57:21 GMT+0100 (CET) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
