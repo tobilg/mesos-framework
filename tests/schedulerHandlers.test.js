@@ -178,6 +178,46 @@ describe("Offers handlers tests", function () {
         }, 500); //timeout with an error in one second
     });
 
+    it("Recive an offer with insufficient ports", function (done) {
+        var task1 = {
+            "name": "My Task",
+            "task_id": {"value": "12220-3440-12532-my-task"},
+            "containerInfo": ContainerInfo,
+            "commandInfo": new Mesos.CommandInfo(
+                null, // URI
+                new Mesos.Environment([
+                    new Mesos.Environment.Variable("FOO", "BAR")
+                ]), // Environment
+                false, // Is shell?
+                null, // Command
+                null, // Arguments
+                null // User
+            ),
+            "portMappings": [
+                {"port": 8081, "protocol": "tcp"}
+            ],
+            "resources": {
+                "cpus": 0.2,
+                "mem": 128,
+                "ports": 12,
+                "disk": 10
+            }
+        };
+        var logger = helpers.getLogger(null, null, "debug");
+        scheduler.pendingTasks = [task1];
+        scheduler.launchedTasks = [];
+        scheduler.logger = logger;
+        scheduler.frameworkId = "12124-235325-32425";
+        scheduler.options = {"frameworkName": "myfmw"}
+        handlers["OFFERS"].call(scheduler, offers);
+        setTimeout(function () {
+            expect(accept).to.equal(false);
+            expect(scheduler.launchedTasks.length).to.equal(0);
+            done();
+        }, 500); //timeout with an error in one second
+    });
+
+
     it("Recive an offer while suitable task with runtimeInfo is pending", function (done) {
 
         var runtimeInfo = {agentId: "12345"}
@@ -346,7 +386,7 @@ describe("Update handlers tests", function () {
         scheduler.options = {
             "frameworkName": "myfmw",
             "restartStates": ["TASK_FAILED", "TASK_KILLED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"]
-        }
+        };
 
         handlers["UPDATE"].call(scheduler, update);
         setTimeout(function () {
@@ -415,6 +455,47 @@ describe("Update handlers tests", function () {
         scheduler.options = {
             "frameworkName": "myfmw",
             "restartStates": ["TASK_FAILED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"]
+        };
+
+        scheduler.options.useZk = true;
+
+        handlers["UPDATE"].call(scheduler, update);
+        setTimeout(function () {
+            expect(scheduler.launchedTasks.length).to.equal(0);
+            expect(scheduler.taskHelper.deleteTask())
+            done();
+        }, 500); //timeout with an error in one second
+
+    });
+
+    it("Recive an update for launched task to be finished - no restart", function (done) {
+
+        var logger = helpers.getLogger(null, null, "debug");
+
+        var update = {
+            "status": {
+                "task_id": {"value": "12344-my-task"},
+                "state": "TASK_FINISHED",
+                "source": "SOURCE_EXECUTOR",
+                "bytes": "uhdjfhuagdj63d7hadkf",
+                "uuid": "jhadf73jhakdlfha723adf",
+                "executor_id": {"value": "12344-my-executor"},
+                "agent_id": {"value": "12344-my-agent"}
+            }
+        };
+
+        var taskHelper = sinon.createStubInstance(TaskHelper);
+        scheduler.taskHelper = taskHelper;
+
+        var runtimeInfo = {agentId: "12345"}
+
+        scheduler.pendingTasks = [];
+        scheduler.launchedTasks = [task1];
+        scheduler.logger = logger;
+        scheduler.frameworkId = "12124-235325-32425";
+        scheduler.options = {
+            "frameworkName": "myfmw",
+            "restartStates": ["TASK_FAILED", "TASK_LOST", "TASK_ERROR"]
         };
 
         scheduler.options.useZk = true;
@@ -568,3 +649,4 @@ describe("Update handlers tests", function () {
 
     });
 });
+
