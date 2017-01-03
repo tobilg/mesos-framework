@@ -26,13 +26,16 @@ scheduler.on("subscribed", function (obj) {
     // Display the framework id
     scheduler.logger.info("Framework Id is " + obj.frameworkId);
 
+    // Check if there are task running
+    scheduler.reconcile();
+
     // Trigger shutdown after one minute
     setTimeout(function() {
         // Send "TEARDOWN" request
         scheduler.teardown();
         // Shutdown process
         process.exit(0);
-    }, 10000);
+    }, 15000);
 
 });
 
@@ -47,4 +50,16 @@ scheduler.on("error", function (error) {
 scheduler.on("ready", function () {
     // Start framework scheduler
     scheduler.subscribe();
+});
+
+scheduler.on("update", function (updateObj) {
+    scheduler.logger.info(JSON.stringify(updateObj));
+
+    // If the update's reason is REASON_RECONCILIATION then we know that we triggered it -> Shutdown all executors
+    if (updateObj.status.reason === "REASON_RECONCILIATION") {
+        process.nextTick(function() {
+            scheduler.shutdown(updateObj.status.agent_id.value, updateObj.status.executor_id.value);
+        });
+    }
+    
 });
