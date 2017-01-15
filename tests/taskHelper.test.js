@@ -186,9 +186,9 @@ describe("Load tasks from Zk:", function () {
             cb(null, ["one", "two", "three"], 1);
         });
 
-        var task1 = {name: "/task1", state: "TASK_RUNNING", taskId: "1", runtimeInfo: {agentId: "12345"}};
-        var task2 = {name: "/task2", state: "TASK_RUNNING", taskId: "2", runtimeInfo: {agentId: "12346"}};
-        var task3 = {name: "/task3", state: "TASK_FINISHED", taskId: "3", runtimeInfo: {agentId: "12446"}};
+        var task1 = {name: "/task1", taskId: "1", runtimeInfo: {agentId: "12345", state: "TASK_RUNNING"}};
+        var task2 = {name: "/task2", taskId: "2", runtimeInfo: {agentId: "12346", state: "TASK_RUNNING"}};
+        var task3 = {name: "/task3", taskId: "3", runtimeInfo: {agentId: "12446", state: "TASK_FINISHED"}};
 
         sandbox.stub(zkClient, "getData", function (path, cb) {
             if (path.includes("one")) {
@@ -245,8 +245,8 @@ describe("Load tasks from Zk:", function () {
         });
 
         var deleted = false;
-        var task1 = {name: "/task1", state: "TASK_RUNNING", taskId: "1", runtimeInfo: {agentId: "12345"}};
-        var task2 = {name: "/task2", state: "TASK_RUNNING", taskId: "2", runtimeInfo: {agentId: "12346"}};
+        var task1 = {name: "/task1", taskId: "1", runtimeInfo: {agentId: "12345", state: "TASK_RUNNING"}};
+        var task2 = {name: "/task2", taskId: "2", runtimeInfo: {agentId: "12346", state: "TASK_RUNNING"}};
 
         sandbox.stub(zkClient, "getData", function (path, cb) {
             if (path.includes("one")) {
