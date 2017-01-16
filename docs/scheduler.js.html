@@ -23,7 +23,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Executor.html">Executor</a><ul class='methods'><li data-type='method'><a href="Executor.html#message">message</a></li><li data-type='method'><a href="Executor.html#subscribe">subscribe</a></li><li data-type='method'><a href="Executor.html#update">update</a></li></ul></li><li><a href="Mesos.html">Mesos</a><ul class='methods'><li data-type='method'><a href="Mesos.html#getBuilder">getBuilder</a></li><li data-type='method'><a href="Mesos.html#getMesos">getMesos</a></li><li data-type='method'><a href="Mesos.html#getProtoBuf">getProtoBuf</a></li></ul></li><li><a href="Scheduler.html">Scheduler</a><ul class='methods'><li data-type='method'><a href="Scheduler.html#accept">accept</a></li><li data-type='method'><a href="Scheduler.html#acknowledge">acknowledge</a></li><li data-type='method'><a href="Scheduler.html#decline">decline</a></li><li data-type='method'><a href="Scheduler.html#getRunningTasks">getRunningTasks</a></li><li data-type='method'><a href="Scheduler.html#kill">kill</a></li><li data-type='method'><a href="Scheduler.html#message">message</a></li><li data-type='method'><a href="Scheduler.html#reconcile">reconcile</a></li><li data-type='method'><a href="Scheduler.html#request">request</a></li><li data-type='method'><a href="Scheduler.html#revive">revive</a></li><li data-type='method'><a href="Scheduler.html#shutdown">shutdown</a></li><li data-type='method'><a href="Scheduler.html#subscribe">subscribe</a></li><li data-type='method'><a href="Scheduler.html#sync">sync</a></li><li data-type='method'><a href="Scheduler.html#teardown">teardown</a></li></ul></li><li><a href="TaskHelper.html">TaskHelper</a><ul class='methods'><li data-type='method'><a href="TaskHelper.html#deleteTask">deleteTask</a></li><li data-type='method'><a href="TaskHelper.html#loadTasks">loadTasks</a></li><li data-type='method'><a href="TaskHelper.html#saveTask">saveTask</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Executor.html">Executor</a><ul class='methods'><li data-type='method'><a href="Executor.html#message">message</a></li><li data-type='method'><a href="Executor.html#subscribe">subscribe</a></li><li data-type='method'><a href="Executor.html#update">update</a></li></ul></li><li><a href="Mesos.html">Mesos</a><ul class='methods'><li data-type='method'><a href="Mesos.html#getBuilder">getBuilder</a></li><li data-type='method'><a href="Mesos.html#getMesos">getMesos</a></li><li data-type='method'><a href="Mesos.html#getProtoBuf">getProtoBuf</a></li></ul></li><li><a href="Scheduler.html">Scheduler</a><ul class='methods'><li data-type='method'><a href="Scheduler.html#accept">accept</a></li><li data-type='method'><a href="Scheduler.html#acknowledge">acknowledge</a></li><li data-type='method'><a href="Scheduler.html#decline">decline</a></li><li data-type='method'><a href="Scheduler.html#getRunningTasks">getRunningTasks</a></li><li data-type='method'><a href="Scheduler.html#kill">kill</a></li><li data-type='method'><a href="Scheduler.html#message">message</a></li><li data-type='method'><a href="Scheduler.html#reconcile">reconcile</a></li><li data-type='method'><a href="Scheduler.html#request">request</a></li><li data-type='method'><a href="Scheduler.html#revive">revive</a></li><li data-type='method'><a href="Scheduler.html#shutdown">shutdown</a></li><li data-type='method'><a href="Scheduler.html#subscribe">subscribe</a></li><li data-type='method'><a href="Scheduler.html#sync">sync</a></li><li data-type='method'><a href="Scheduler.html#teardown">teardown</a></li></ul></li><li><a href="TaskHealthHelper.html">TaskHealthHelper</a></li><li><a href="TaskHelper.html">TaskHelper</a><ul class='methods'><li data-type='method'><a href="TaskHelper.html#deleteTask">deleteTask</a></li><li data-type='method'><a href="TaskHelper.html#loadTasks">loadTasks</a></li><li data-type='method'><a href="TaskHelper.html#saveTask">saveTask</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -69,17 +69,29 @@ function Scheduler (options) {
     var self = this;
 
     self.options = {};
-    self.options.frameworkName = options.frameworkName.replace(/ /g, "-") || "mesos-framework." + uuid.v4();
+    self.options.frameworkName = (options.frameworkName ? options.frameworkName.replace(/ /g, "-") : "mesos-framework." + uuid.v4());
     self.options.user = options.user || "root";
     self.options.restartStates = options.restartStates || ["TASK_FAILED", "TASK_LOST", "TASK_ERROR"]; // Task in TASK_FINISHED will NOT be restarted by default!
     self.options.frameworkFailoverTimeout = options.frameworkFailoverTimeout || 604800; // One week
     self.options.masterConnectionTimeout = options.masterConnectionTimeout*1000 || 10000; // Ten seconds
     self.options.killUnknownTasks = options.killUnknownTasks || false;
+    self.options.serialNumberedTasks = (options.serialNumberedTasks === false) ? false : true;
 
     // ZooKeeper
     self.options.useZk = options.useZk || false;
     self.options.zkUrl = options.zkUrl || "master.mesos:2181";
     self.options.zkPrefix = options.zkPrefix || "/dcos-service-";
+
+    // Logging
+    self.logger = helpers.getLogger((options.logging &amp;&amp; options.logging.path ? options.logging.path : null), (options.logging &amp;&amp; options.logging.fileName ? options.logging.fileName : null), (options.logging &amp;&amp; options.logging.level ? options.logging.level : null));
+
+
+    // Port allocation
+    self.options.staticPorts = options.staticPorts || false;
+
+    if (self.options.staticPorts){
+        self.logger.info("Scheduler configured with fixed ports");
+    }
 
     // Master discovery
     self.options.masterUrl = options.masterUrl || "127.0.0.1";
@@ -91,9 +103,6 @@ function Scheduler (options) {
     self.lastHeartbeat = null;
     self.zkClient = null;
 
-    // Logging
-    self.logger = helpers.getLogger((options.logging &amp;&amp; options.logging.path ? options.logging.path : null), (options.logging &amp;&amp; options.logging.fileName ? options.logging.fileName : null), (options.logging &amp;&amp; options.logging.level ? options.logging.level : null));
-
     // Tasks
     self.tasks = [];
 
@@ -101,6 +110,8 @@ function Scheduler (options) {
     if (options.hasOwnProperty("tasks")) {
         self.tasks = helpers.sortTasksByPriority(options.tasks);
     }
+
+    self.logger.debug(JSON.stringify(self.tasks));
 
     self.pendingTasks = [];
     self.launchedTasks = [];
@@ -153,9 +164,10 @@ function Scheduler (options) {
     // Add custom event handlers if present
     if (options.handlers &amp;&amp; Object.getOwnPropertyNames(options.handlers).length > 0) {
         Object.getOwnPropertyNames(options.handlers).forEach(function (handlerName) {
+            var ucHandlerName = handlerName.toUpperCase();
             // Check if name is allowed, is a function and the length of the function arguments fit to the ones defined in allowedEventHandlers
-            if (Object.getOwnPropertyNames(allowedEventHandlers).indexOf(handlerName.toUpperCase()) > -1 &amp;&amp; helpers.isFunction(options.handlers[handlerName]) &amp;&amp; options.handlers[handlerName].length === allowedEventHandlers[handlerName]) {
-                self.customEventHandlers[handlerName.toUpperCase()] = options.handlers[handlerName];
+            if (Object.getOwnPropertyNames(allowedEventHandlers).indexOf(ucHandlerName) > -1 &amp;&amp; helpers.isFunction(options.handlers[handlerName]) &amp;&amp; options.handlers[handlerName].length === allowedEventHandlers[ucHandlerName]) {
+                self.customEventHandlers[ucHandlerName] = options.handlers[handlerName];
             }
         });
     }
@@ -177,11 +189,11 @@ function Scheduler (options) {
     }
 
     if (options.hasOwnProperty("tasks")) {
-        self.logger.info(JSON.stringify(helpers.sortTasksByPriority(options.tasks)));
+        self.logger.debug(JSON.stringify(helpers.sortTasksByPriority(options.tasks)));
     }
 
     // Store the long-running request
-    self.request = {};
+    self.httpRequest = {};
 
     // Handling of ZooKeeper-related stuff
     if (self.options.useZk) {
@@ -191,11 +203,16 @@ function Scheduler (options) {
         // Set default path for the service
         self.zkServicePath = self.options.zkPrefix + self.options.frameworkName;
 
-        // Create ZK client
-        self.zkClient = zookeeper.createClient(self.options.zkUrl);
+        // Create ZK client (getting from options is only to be used for unit tests!)
+        self.zkClient = options.zkClient || zookeeper.createClient(self.options.zkUrl);
 
-        // Instantiate TaskHelper
-        self.taskHelper = new TaskHelper(self);
+        // Instantiate TaskHelper (getting from options is only to be used for unit tests!)
+        self.taskHelper = options.taskHelper || new TaskHelper(self);
+
+        // For unit tests
+        if (options.taskHelper) {
+            self.taskHelper.scheduler = self;
+        }
 
         // Set path for the framework id
         var zkPath = self.zkServicePath + "/framework-id";
@@ -212,12 +229,14 @@ function Scheduler (options) {
             // Check if path with framework id exists
             self.zkClient.getData(zkPath, null, function (error, data, stat) {
 
+                self.logger.debug("error before if:" + JSON.stringify(error));
                 if (error) {
 
+                    self.logger.debug("error:" + JSON.stringify(error));
                     // Check if node doesn't exist yet
                     if (error.getCode() == zookeeper.Exception.NO_NODE) {
 
-                        self.logger.debug("Node " + zkPath + " doesn't exist yet. Will be created of framework launch");
+                        self.logger.debug("Node " + zkPath + " doesn't exist yet. Will be created on framework launch");
 
                         // Add event handler for the SUBSCRIBE event, to set the framework id to ZooKeeper
                         self.once("subscribed", function (obj) {
@@ -250,7 +269,10 @@ function Scheduler (options) {
                         });
 
                         // We're ready to subscribe
-                        self.emit("ready");
+                        // Timeout to let init finish
+                        setTimeout(function() {
+                            self.emit("ready");
+                        }, 100);
 
                     } else {
                         // Other error
@@ -327,6 +349,9 @@ Scheduler.prototype.subscribe = function () {
             } else if (event.type === "MESSAGE") {
                 // Emit with usable message object (parsed to ascii)
                 self.emit("message", { agentId: event[event.type.toLocaleLowerCase()].agent_id, executorId: event[event.type.toLocaleLowerCase()].executor_id, data: new Buffer(event[event.type.toLocaleLowerCase()].data, "base64").toString("ascii") });
+            } else if (event.type === "ERROR") {
+                // Emit an actual error object to identify errors from mesos master
+                self.emit("error", new Error("Error received from Mesos master: " + event[event.type.toLocaleLowerCase()].message));
             } else {
                 // Emit original objects for all other types
                 self.emit(event.type.toLocaleLowerCase(), event[event.type.toLocaleLowerCase()]);
@@ -346,15 +371,18 @@ Scheduler.prototype.subscribe = function () {
         // Derive the leader info
         var leaderInfo = location.replace(/\/\//g, "").split(":");
 
+        // Check for scheme and move window accordingly
+        var schemeIndex = leaderInfo.length > 2 ? 0 : -1;
+
         // Set new leading master info
-        self.options.masterUrl = leaderInfo[0];
+        self.options.masterUrl = leaderInfo[schemeIndex + 1];
 
         // If the port part contains slashes -> URLs, then fiix it by just getting the port
-        if (leaderInfo[1].indexOf("\/") > -1) {
-            var temp = leaderInfo[1].split("/");
+        if (leaderInfo[schemeIndex + 2].indexOf("\/") > -1) {
+            var temp = leaderInfo[schemeIndex + 2].split("/");
             self.options.port = temp[0];
         } else {
-            self.options.port = leaderInfo[1];
+            self.options.port = leaderInfo[schemeIndex + 2];
         }
 
         self.logger.info("SUBSCRIBE: Leader info: " + self.options.masterUrl + ":" + self.options.port);
@@ -364,7 +392,9 @@ Scheduler.prototype.subscribe = function () {
 
     }
 
-    self.request = http.request(self.requestTemplate, function (res) {
+    var handledTimeout = false;
+
+    self.httpRequest = http.request(self.requestTemplate, function (res) {
 
         self.logger.info("SUBSCRIBE: Response status: " + res.statusCode);
 
@@ -392,11 +422,14 @@ Scheduler.prototype.subscribe = function () {
 
                 // Local cache for chunked JSON messages
                 var cache = "";
+                var expectedLength = 0;
 
                 // Watch for data/chunks
                 res.on('data', function (chunk) {
 
-                    var expectedLength = 0;
+                    if (chunk instanceof Buffer) {
+                        chunk = chunk.toString();
+                    }
 
                     if (chunk.indexOf("\n") > -1) {
                         var temp = chunk.split("\n");
@@ -408,6 +441,7 @@ Scheduler.prototype.subscribe = function () {
                             } else {
                                 // Empty cache
                                 cache = "";
+                                expectedLength = 0;
                                 // Handle event
                                 handleEvent(temp[1]);
                             }
@@ -415,13 +449,17 @@ Scheduler.prototype.subscribe = function () {
                             self.emit("error", { message: "Other linebreak count found than expected! Actual count: " + temp.length });
                         }
                     } else {
-                        if (cache.length > 0) {
-                            // Concatenate cached partial data with this chunk
+                        if (cache.length > 0 &amp;&amp; (cache.length + chunk.length) >= expectedLength) {
+                            // Concatenate cached partial data with this chunk and handle only when done
                             var eventData = cache + chunk;
                             // Handle event
                             handleEvent(eventData);
                             // Empty cache
                             cache = "";
+                            expectedLength = 0;
+                        } else if (cache.length > 0 &amp;&amp; (cache.length + chunk.length) &lt; expectedLength) {
+                            // Concatenate cached data with current chunk, for cases in which the stream buffer is smaller than the data.
+                            cache += chunk;
                         }
                     }
                 });
@@ -429,8 +467,14 @@ Scheduler.prototype.subscribe = function () {
                 res.on('end', function () {
                     self.emit("error", { message: "Long-running connection was closed!" });
                     self.logger.info("Long-running connection was closed!");
-                    // Re-subscribe
-                    self.subscribe();
+                    if (!handledTimeout) {
+                        // Re-subscribe
+                        // We need to remove the stream id from the headers before re-subscribing!
+                        self.mesosStreamId = undefined;
+                        delete self.requestTemplate.headers["mesos-stream-id"];
+                        delete self.requestTemplate.headers["Mesos-Stream-Id"];
+                        self.subscribe();
+                    }
                 });
 
                 res.on('finish', function () {
@@ -445,24 +489,34 @@ Scheduler.prototype.subscribe = function () {
 
         } else {
             res.on("data",function (chunk) {
-                if (chunk.length > 0)
-                    self.logger.error("Error registering with mesos: " + chunk.toString());
+                if (chunk.length > 0) {
+                    self.emit("error", {message: "Error registering with mesos: " + chunk.toString() + " , code: " + res.statusCode.toString()});
+                } else {
+                    self.emit("error", {message: "Error registering with mesos - empty response, code: " + res.statusCode.toString()});
+                }
             });
         }
 
     });
 
-    self.request.on('error', function (e) {
+    self.httpRequest.on('error', function (e) {
         self.emit("error", { message: "There was a problem with the request: " + (e.message ? e.message : JSON.stringify(e)) });
     });
 
     // Register a timeout for triggering of re-registrations of the scheduler
-    self.request.on('socket', function (socket) {
+    self.httpRequest.on('socket', function (socket) {
         socket.setTimeout(self.options.masterConnectionTimeout);
         socket.on('timeout', function() {
             self.logger.error("Received a timeout on the long-running Master connection! Will try to re-register the framework scheduler!");
+            handledTimeout = true;
+            socket.destroy();
+
             // If we're using Mesos DNS, we can directy re-register, because Mesos DNS will discover the current leader automatically
             if (self.options.masterUrl === "leader.mesos") {
+                // We need to remove the stream id from the headers before re-subscribing!
+                self.mesosStreamId = undefined;
+                delete self.requestTemplate.headers["mesos-stream-id"];
+                delete self.requestTemplate.headers["Mesos-Stream-Id"];
                 self.logger.info("Using Mesos DNS, will re-register to 'leader.mesos'!");
                 // Subscribe
                 self.subscribe();
@@ -526,10 +580,10 @@ Scheduler.prototype.subscribe = function () {
     );
 
     // Write data to request body
-    self.request.write(JSON.stringify(Call));
+    self.httpRequest.write(JSON.stringify(Call));
 
     // End request
-    self.request.end();
+    self.httpRequest.end();
 
 };
 
@@ -659,6 +713,8 @@ Scheduler.prototype.kill = function (taskId, agentId) {
             }
         }
     };
+
+    self.logger.debug("Killing task ID: " + taskId);
 
     if (self.options.useZk)
         self.taskHelper.deleteTask(taskId);
@@ -889,9 +945,11 @@ Scheduler.prototype.sync = function () {
                 self.taskHelper.deleteTask(self.reconcileTasks[i].taskId);
         }
     }
+    self.reconcileTasks = [];
     for (var i = 0; i &lt; self.killTasks.length; i++) {
         self.kill(self.killTasks[i].taskId, self.killTasks[i].runtimeInfo.agentId);
     }
+    self.killTasks = [];
     if (self.options.useZk) {
         self.reconcile();
     }
@@ -910,7 +968,7 @@ module.exports = Scheduler;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Dec 09 2016 12:28:09 GMT+0100 (CET) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon Jan 16 2017 10:33:15 GMT+0100 (CET) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

@@ -54,7 +54,7 @@ describe("Scheduler constructor", function() {
         var scheduler = Scheduler({tasks: {
                 task1:{isSubmitted:true},
                 task2:{isSubmitted:true}
-            }});
+            }, "staticPorts": true, "serialNumberedTasks": false});
         expect(scheduler).to.be.instanceOf(Scheduler);
         expect(scheduler.tasks).to.be.an("array");
         expect(scheduler.tasks).to.have.lengthOf(2);
@@ -887,6 +887,8 @@ describe("Scheduler constructor", function() {
         });
         afterEach(function() {
             http.request.restore();
+            delete process.env.PORT0;
+            delete process.env.HOST;
         });
         it("error http status (fail)", function(done) {
             var data = "OK";
@@ -1268,7 +1270,7 @@ describe("Scheduler constructor", function() {
             }, 400);
         });
         it("OK http status - with stream id, valid JSON response, valid type (subscribed)", function(done) {
-            var data = "2\n{\"type\":\"SUBSCRIBED\",\"subscribed\":{\"framework_id\":{\"value\":\"122353532\"}}}";
+            var data = "73\n{\"type\":\"SUBSCRIBED\",\"subscribed\":{\"framework_id\":{\"value\":\"122353532\"}}}";
             var res = new MockRes();
             var errorSet = false;
             var called = false;
@@ -1297,14 +1299,85 @@ describe("Scheduler constructor", function() {
                 done();
             }, 400);
         });
+        it("OK http status - with stream id, valid JSON response, valid type - HOST and PORT set (subscribed)", function(done) {
+            var data = "73\n{\"type\":\"SUBSCRIBED\",\"subscribed\":{\"framework_id\":{\"value\":\"122353532\"}}}";
+            var res = new MockRes();
+            var errorSet = false;
+            var called = false;
+            res.writeHead(200);
+            res.write(data);
+            res.headers = {"mesos-stream-id":"123412412"};
+            //res.end();
+            var req = new MockReq({ method: "POST" });
+            this.request.callsArgWith(1, res).returns(req);
+            process.env.PORT0 = "1234";
+            process.env.HOST = "localhost";
+            var scheduler = new Scheduler({tasks: {
+                task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+                errorSet = true;
+            });
+            scheduler.on("subscribed", function(event) {
+                console.log(JSON.stringify(event));
+                called = true;
+            });
+            scheduler.on("ready", function () {
+                scheduler.subscribe();
+            });
+            setTimeout(function () {
+                expect(errorSet).to.be.false;
+                expect(called).to.be.true;
+                done();
+            }, 400);
+        });
+        it("OK http status - with stream id, valid JSON response, chunked, valid type (subscribed)", function(done) {
+            var data = "73\n{\"type\"";
+            var data2 = ":\"SUBSCRIBED\",\"subscribed\":";
+            var data3 = "{\"framework_id\":{\"value\":\"122353532\"}}}";
+            var res = new MockRes();
+            var errorSet = false;
+            var called = false;
+            res.writeHead(200);
+            res.write(data);
+            res.headers = {"mesos-stream-id":"123412412"};
+            //res.end();
+            var req = new MockReq({ method: "POST" });
+            this.request.callsArgWith(1, res).returns(req);
+            var scheduler = new Scheduler({tasks: {
+                task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+                errorSet = true;
+            });
+            scheduler.on("subscribed", function(event) {
+                console.log(JSON.stringify(event));
+                called = true;
+            });
+            scheduler.on("ready", function () {
+                scheduler.subscribe();
+                res.write(data2);
+                res.write(data3);
+            });
+            setTimeout(function () {
+                expect(errorSet).to.be.false;
+                expect(called).to.be.true;
+                done();
+            }, 400);
+        });
         it("OK http status - with stream id, valid JSON response, valid type and timeout (subscribed)", function(done) {
             function SocketStub() {
                 // Inherit from EventEmitter
                 EventEmitter.call(this);
                 return this;
-            };
+            }
 
             util.inherits(SocketStub, EventEmitter);
+            SocketStub.prototype.destroy = function (error) {
+                if (error) {
+                    this.emit("error", error);
+                }
+            };
 
             var data = "2\n{\"type\":\"SUBSCRIBED\",\"subscribed\":{\"framework_id\":{\"value\":\"122353532\"}}}";
             var res = new MockRes();
@@ -1347,9 +1420,14 @@ describe("Scheduler constructor", function() {
                 // Inherit from EventEmitter
                 EventEmitter.call(this);
                 return this;
-            };
+            }
 
             util.inherits(SocketStub, EventEmitter);
+            SocketStub.prototype.destroy = function (error) {
+                if (error) {
+                    this.emit("error", error);
+                }
+            };
 
             var self = this;
             var data = "2\n{\"type\":\"SUBSCRIBED\",\"subscribed\":{\"framework_id\":{\"value\":\"122353532\"}}}";
@@ -1409,9 +1487,14 @@ describe("Scheduler constructor", function() {
                 // Inherit from EventEmitter
                 EventEmitter.call(this);
                 return this;
-            };
+            }
 
             util.inherits(SocketStub, EventEmitter);
+            SocketStub.prototype.destroy = function (error) {
+                if (error) {
+                    this.emit("error", error);
+                }
+            };
 
             var self = this;
             var data = "2\n{\"type\":\"SUBSCRIBED\",\"subscribed\":{\"framework_id\":{\"value\":\"122353532\"}}}";
@@ -1492,9 +1575,14 @@ describe("Scheduler constructor", function() {
                 // Inherit from EventEmitter
                 EventEmitter.call(this);
                 return this;
-            };
+            }
 
             util.inherits(SocketStub, EventEmitter);
+            SocketStub.prototype.destroy = function (error) {
+                if (error) {
+                    this.emit("error", error);
+                }
+            };
 
             var self = this;
             var data = "2\n{\"type\":\"SUBSCRIBED\",\"subscribed\":{\"framework_id\":{\"value\":\"122353532\"}}}";
@@ -1604,6 +1692,30 @@ describe("Scheduler constructor", function() {
             setTimeout(function () {
                 expect(errorSet).to.be.false;
                 expect(called).to.be.true;
+                done();
+            }, 400);
+        });
+        it("OK http status - with stream id, valid JSON response, valid type (error)", function(done) {
+            var data = "2\n{\"type\":\"ERROR\", \"ERROR\":{\"message\": \"Mesos error\"}}";
+            var res = new MockRes();
+            var errorSet = false;
+            res.writeHead(200);
+            res.write(data);
+            res.headers = {"mesos-stream-id":"123412412"};
+            //res.end();
+            var req = new MockReq({ method: "POST" });
+            this.request.callsArgWith(1, res).returns(req);
+            var scheduler = new Scheduler({tasks: {
+                task1:{isSubmitted:true}},useZk: false, logging: {level: "debug"}});
+            scheduler.on("error", function(error) {
+                console.log(JSON.stringify(error));
+                errorSet = true;
+            });
+            scheduler.on("ready", function () {
+                scheduler.subscribe();
+            });
+            setTimeout(function () {
+                expect(errorSet).to.be.true;
                 done();
             }, 400);
         });

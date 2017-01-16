@@ -23,7 +23,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Executor.html">Executor</a><ul class='methods'><li data-type='method'><a href="Executor.html#message">message</a></li><li data-type='method'><a href="Executor.html#subscribe">subscribe</a></li><li data-type='method'><a href="Executor.html#update">update</a></li></ul></li><li><a href="Mesos.html">Mesos</a><ul class='methods'><li data-type='method'><a href="Mesos.html#getBuilder">getBuilder</a></li><li data-type='method'><a href="Mesos.html#getMesos">getMesos</a></li><li data-type='method'><a href="Mesos.html#getProtoBuf">getProtoBuf</a></li></ul></li><li><a href="Scheduler.html">Scheduler</a><ul class='methods'><li data-type='method'><a href="Scheduler.html#accept">accept</a></li><li data-type='method'><a href="Scheduler.html#acknowledge">acknowledge</a></li><li data-type='method'><a href="Scheduler.html#decline">decline</a></li><li data-type='method'><a href="Scheduler.html#getRunningTasks">getRunningTasks</a></li><li data-type='method'><a href="Scheduler.html#kill">kill</a></li><li data-type='method'><a href="Scheduler.html#message">message</a></li><li data-type='method'><a href="Scheduler.html#reconcile">reconcile</a></li><li data-type='method'><a href="Scheduler.html#request">request</a></li><li data-type='method'><a href="Scheduler.html#revive">revive</a></li><li data-type='method'><a href="Scheduler.html#shutdown">shutdown</a></li><li data-type='method'><a href="Scheduler.html#subscribe">subscribe</a></li><li data-type='method'><a href="Scheduler.html#sync">sync</a></li><li data-type='method'><a href="Scheduler.html#teardown">teardown</a></li></ul></li><li><a href="TaskHelper.html">TaskHelper</a><ul class='methods'><li data-type='method'><a href="TaskHelper.html#deleteTask">deleteTask</a></li><li data-type='method'><a href="TaskHelper.html#loadTasks">loadTasks</a></li><li data-type='method'><a href="TaskHelper.html#saveTask">saveTask</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Executor.html">Executor</a><ul class='methods'><li data-type='method'><a href="Executor.html#message">message</a></li><li data-type='method'><a href="Executor.html#subscribe">subscribe</a></li><li data-type='method'><a href="Executor.html#update">update</a></li></ul></li><li><a href="Mesos.html">Mesos</a><ul class='methods'><li data-type='method'><a href="Mesos.html#getBuilder">getBuilder</a></li><li data-type='method'><a href="Mesos.html#getMesos">getMesos</a></li><li data-type='method'><a href="Mesos.html#getProtoBuf">getProtoBuf</a></li></ul></li><li><a href="Scheduler.html">Scheduler</a><ul class='methods'><li data-type='method'><a href="Scheduler.html#accept">accept</a></li><li data-type='method'><a href="Scheduler.html#acknowledge">acknowledge</a></li><li data-type='method'><a href="Scheduler.html#decline">decline</a></li><li data-type='method'><a href="Scheduler.html#getRunningTasks">getRunningTasks</a></li><li data-type='method'><a href="Scheduler.html#kill">kill</a></li><li data-type='method'><a href="Scheduler.html#message">message</a></li><li data-type='method'><a href="Scheduler.html#reconcile">reconcile</a></li><li data-type='method'><a href="Scheduler.html#request">request</a></li><li data-type='method'><a href="Scheduler.html#revive">revive</a></li><li data-type='method'><a href="Scheduler.html#shutdown">shutdown</a></li><li data-type='method'><a href="Scheduler.html#subscribe">subscribe</a></li><li data-type='method'><a href="Scheduler.html#sync">sync</a></li><li data-type='method'><a href="Scheduler.html#teardown">teardown</a></li></ul></li><li><a href="TaskHealthHelper.html">TaskHealthHelper</a></li><li><a href="TaskHelper.html">TaskHelper</a><ul class='methods'><li data-type='method'><a href="TaskHelper.html#deleteTask">deleteTask</a></li><li data-type='method'><a href="TaskHelper.html#loadTasks">loadTasks</a></li><li data-type='method'><a href="TaskHelper.html#saveTask">saveTask</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -47,7 +47,8 @@
 
 
     <section class="readme">
-        <article><h1>mesos-framework</h1><p>This project provides a high-level wrapper around the Mesos HTTP APIs for <a href="http://mesos.apache.org/documentation/latest/scheduler-http-api/">schedulers</a> and <a href="http://mesos.apache.org/documentation/latest/executor-http-api/">executors</a>.
+        <article><h1>mesos-framework</h1><p><a href="https://www.npmjs.com/package/mesos-framework"><img src="https://img.shields.io/npm/v/mesos-framework.svg" alt="Package version"></a> <a href="https://www.npmjs.com/package/mesos-framework"><img src="https://img.shields.io/npm/dt/mesos-framework.svg" alt="Package downloads"></a> <a href="https://www.npmjs.com/package/mesos-framework"><img src="https://img.shields.io/npm/l/mesos-framework.svg" alt="Package license"></a> <a href="https://travis-ci.org/tobilg/mesos-framework"><img src="https://travis-ci.org/tobilg/mesos-framework.svg?branch=master" alt="Build Status"></a></p>
+<p>This project provides a high-level wrapper around the Mesos HTTP APIs for <a href="http://mesos.apache.org/documentation/latest/scheduler-http-api/">schedulers</a> and <a href="http://mesos.apache.org/documentation/latest/executor-http-api/">executors</a>.
 It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos versions are those &gt;= 0.28.2.</p>
 <h2>Installation</h2><p>You can use <code>mesos-framework</code> in your own projects by running</p>
 <pre class="prettyprint source"><code>npm i mesos-framework --save</code></pre><h2>Documentation</h2><p>The <code>mesos-framework</code> project is not a Mesos framework itself, but can be imagined as a &quot;framework-framework&quot; (or meta framework), meaning that it provides a certain abstraction around the HTTP APIs for schedulers and executors, together with some convenience methods.</p>
@@ -78,6 +79,8 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
 <li><code>frameworkFailoverTimeout</code>: The number of seconds to wait before a framework is considered as <code>failed</code> by the leading Mesos master, which will then terminate the existing tasks/executors (default: <code>604800</code>).</li>
 <li><code>tasks</code>: An object (map) with the task info (see below). It's possible to create different (prioritized) tasks, e.g. launching different containers with different instance counts. See the <a href="https://github.com/tobilg/mesos-framework/blob/master/examples/dockerSchedulerBridgeNetworking.js">Docker Scheduler example</a>.</li>
 <li><code>handlers</code>: An object containing custom handler functions for the <code>Scheduler</code> events, where the property name is the uppercase <code>Event</code> name.</li>
+<li><code>staticPorts</code>: A boolean to indicate whether to use fixed ports in the framework or not. Default is <code>false</code>.</li>
+<li><code>serialNumberedTasks</code>: A boolean to indicate whether to add a task serial number to the task name launched in mesos (from the framework's prespective there are always serial numbers in use, they are also part of the task IDs), disabling this is useful for service access with a single mesos DNS name. Defaults to <code>true</code>.</li>
 </ul>
 <p>A <code>tasks</code> sub-object can contain objects with task information:</p>
 <ul>
@@ -87,7 +90,7 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
 <li><code>commandInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397">Mesos.CommandInfo</a> definition (<strong>mandatory</strong>).</li>
 <li><code>containerInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744">Mesos.ContainerInfo</a> definition.</li>
 <li><code>executorInfo</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460">Mesos.ExecutorInfo</a> definition.</li>
-<li><code>resources</code>: The array of <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L641">Mesos.Resource</a> definitions (<strong>mandatory</strong>).</li>
+<li><code>resources</code>: The object of <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L641">Mesos.Resource</a> types, such as <code>cpu</code>, <code>mem</code>, <code>ports</code> and <code>disk</code> (<strong>mandatory</strong>) with an optional fixedPorts number array (included in the general port count).</li>
 <li><code>portMappings</code>: The array of portMapping objects, each containing a numeric <code>port</code> value (for container ports), and a <code>protocol</code> string (either <code>tcp</code> or <code>udp</code>). </li>
 <li><code>healthChecks</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L302">Mesos.HealthCheck</a> definition.</li>
 <li><code>labels</code>: A <a href="https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1845">Mesos.Labels</a> definition.</li>
@@ -105,10 +108,11 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
 <li><code>message</code>: A custom message generated by the executor that is forwarded to the scheduler by the master. Emits an object containing the <code>agentId</code>, the <code>executorId</code> and the ASCII-encoded <code>data</code>. </li>
 <li><code>heartbeat</code>: This event is periodically sent by the master to inform the scheduler that a connection is alive. Emits the timestamp of the last heartbeat event.</li>
 <li><code>failure</code>: Sent by the master when an agent is removed from the cluster (e.g., failed health checks) or when an executor is terminated. Emits the base object from the Master for this event. </li>
-<li><code>error</code>: Sent by the master when an asynchronous error event is generated (e.g., a framework is not authorized to subscribe with the given role). Emits the base object from the Master for this event.</li>
+<li><code>error</code>: Sent by the master when an asynchronous error event is generated (e.g., a framework is not authorized to subscribe with the given role), or if another error occurred. </li>
 </ul>
 <p><strong>Events from Scheduler</strong><br>The following events from the Scheduler calls are exposed:</p>
 <ul>
+<li><code>ready</code>: Is emitted when the scheduler is instantiated and ready to subscribe to the Mesos master. Every <code>scheduler.subscribe()</code> call should be wrapped by an event handle reacting to this event. See the examples.</li>
 <li><code>sent_subscribe</code>: Is emitted when the scheduler has sent the <code>SUBSCRIBE</code> request.</li>
 <li><code>sent_accept</code>: Is emitted when the scheduler has sent an <code>ACCEPT</code> request to accept an offer from the Master.</li>
 <li><code>sent_decline</code>: Is emitted when the scheduler has sent a <code>DECLINE</code> request to decline an offer from the Master.</li>
@@ -122,6 +126,7 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
 <li><code>sent_request</code>: Is emitted when the scheduler has sent a <code>REQUEST</code> request to the Master to request new resources.</li>
 <li><code>updated_task</code>: Is emitted when a task was updated. Contains an object with <code>taskId</code>, <code>executorId</code> and <code>state</code>.  </li>
 <li><code>removed_task</code>: Is emitted when a task was removed. Contains the <code>taskId</code>.</li>
+<li><code>task_launched</code>: Is emitted when a task moves to the running state, to handle initialization. Contains the task structure.</li>
 </ul>
 <h4>Example</h4><p>Also, you can have a look at the <code>examples</code> folder to see examples for command-based and Docker-based schedulers.</p>
 <pre class="prettyprint source lang-javascript"><code>&quot;use strict&quot;;
@@ -256,7 +261,7 @@ var TaskID = new (Builder.build(&quot;mesos.TaskID&quot;))(taskId);</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Dec 09 2016 12:28:09 GMT+0100 (CET) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon Jan 16 2017 10:33:15 GMT+0100 (CET) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

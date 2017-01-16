@@ -42,7 +42,7 @@ describe("helpers", function() {
             expect(tasks).to.be.an("array");
             expect(tasks).to.have.lengthOf(4);
         });
-        it.skip("Sort the task array with 3 submitted tasks with priority and out of order names", function () {
+        it("Sort the task array with 3 submitted tasks with priority and out of order names", function () {
             var tasks = helpers.sortTasksByPriority({
                     task3:{isSubmitted:true, priority:1},
                     task2:{isSubmitted:true, priority:2},
@@ -51,6 +51,32 @@ describe("helpers", function() {
             expect(tasks).to.be.an("array");
             expect(tasks).to.have.lengthOf(3);
             expect(tasks[0].name).to.equal("task1-1");
+        });
+        it("Sort the task array with static ports out of order", function () {
+            var tasks = helpers.sortTasksByPriority({
+                task1: {isSubmitted: true, priority: 1, resources: {ports: 2, staticPorts: [9001, 8000]}}
+            });
+            expect(tasks).to.be.an("array");
+            expect(tasks).to.have.lengthOf(1);
+            expect(tasks[0].resources.staticPorts[0]).to.equal(8000);
+        });
+        it("Sort the task array with static ports out of order - no ports set", function () {
+            try {
+                helpers.sortTasksByPriority({
+                    task1: {isSubmitted: true, priority: 1, resources: {staticPorts: [9001, 8000]}}
+                });
+            } catch (error) {
+                expect(error).to.be.an.error;
+            }
+        });
+        it("Sort the task array with static ports out of order - not enough ports set", function () {
+            try {
+                helpers.sortTasksByPriority({
+                    task1: {isSubmitted: true, priority: 1, resources: {ports: 1, staticPorts: [9001, 8000]}}
+                });
+            } catch (error) {
+                expect(error).to.be.an.error;
+            }
         });
     });
     describe("Enum enumeration", function () {
