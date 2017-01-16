@@ -44,6 +44,7 @@ describe("Vault Health Checker", function () {
         this.checkInstance = sandbox.stub(healthCheck, "checkRunningInstances");
         healthCheck.setupHealthCheck();
         expect(this.checkInstance.called).to.be.false;
+        clearInterval(healthCheck.interval);
     });
     it("No tasks, no new default options", function () {
         var scheduler = new Scheduler({useZk: false, logging: {level: "debug"}, "frameworkName": "testFramework"});
@@ -62,6 +63,7 @@ describe("Vault Health Checker", function () {
         setTimeout(function() {
             expect(self.checkInstance.called).to.be.true;
             expect(self.checkInstance.callCount).to.be.at.least(2);
+            clearInterval(healthCheck.interval);
             done();
         }, 600);
     });
@@ -73,20 +75,6 @@ describe("Vault Health Checker", function () {
             healthCheck = new TaskHealthHelper(scheduler, {url: "/v1/sys/health?standbyok", "interval": 0.2});
             self.checkInstance = sandbox.stub(healthCheck, "checkRunningInstances");
             healthCheck.setupHealthCheck();
-            healthCheck.stopHealthCheck();
-        });
-        setTimeout(function() {
-            expect(self.checkInstance.called).to.be.false;
-            done();
-        }, 400);
-    });
-    it("Stop no setup", function (done) {
-        var scheduler = new Scheduler({useZk: false, logging: {level: "debug"}, "frameworkName": "testFramework"});
-        var healthCheck;
-        var self = this;
-        scheduler.on("ready", function() {
-            healthCheck = new TaskHealthHelper(scheduler, {url: "/v1/sys/health?standbyok", "interval": 0.2});
-            self.checkInstance = sandbox.stub(healthCheck, "checkRunningInstances");
             healthCheck.stopHealthCheck();
         });
         setTimeout(function() {
