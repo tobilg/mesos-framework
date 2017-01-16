@@ -56,6 +56,8 @@ The option properties you can specify to create a `Scheduler` are the following:
 * `frameworkFailoverTimeout`: The number of seconds to wait before a framework is considered as `failed` by the leading Mesos master, which will then terminate the existing tasks/executors (default: `604800`).
 * `tasks`: An object (map) with the task info (see below). It's possible to create different (prioritized) tasks, e.g. launching different containers with different instance counts. See the [Docker Scheduler example](https://github.com/tobilg/mesos-framework/blob/master/examples/dockerSchedulerBridgeNetworking.js).
 * `handlers`: An object containing custom handler functions for the `Scheduler` events, where the property name is the uppercase `Event` name.
+* `staticPorts`: A boolean to indicate whether to use fixed ports in the framework or not. Default is `false`.
+* `serialNumberedTasks`: A boolean to indicate whether to add a task serial number to the task name launched in mesos (from the framework's prespective there are always serial numbers in use, they are also part of the task IDs), disabling this is useful for service access with a single mesos DNS name. Defaults to `true`.
 
 A `tasks` sub-object can contain objects with task information:
 
@@ -65,7 +67,7 @@ A `tasks` sub-object can contain objects with task information:
 * `commandInfo`: A [Mesos.CommandInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397) definition (**mandatory**).
 * `containerInfo`: A [Mesos.ContainerInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744) definition.
 * `executorInfo`: A [Mesos.ExecutorInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460) definition.
-* `resources`: The object of [Mesos.Resource](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L641) types, such as `cpu`, `mem`, `ports` and `disk` (**mandatory**).
+* `resources`: The object of [Mesos.Resource](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L641) types, such as `cpu`, `mem`, `ports` and `disk` (**mandatory**) with an optional fixedPorts number array (included in the general port count).
 * `portMappings`: The array of portMapping objects, each containing a numeric `port` value (for container ports), and a `protocol` string (either `tcp` or `udp`). 
 * `healthChecks`: A [Mesos.HealthCheck](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L302) definition.
 * `labels`: A [Mesos.Labels](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1845) definition.
@@ -113,6 +115,7 @@ The following events from the Scheduler calls are exposed:
 * `sent_request`: Is emitted when the scheduler has sent a `REQUEST` request to the Master to request new resources.
 * `updated_task`: Is emitted when a task was updated. Contains an object with `taskId`, `executorId` and `state`.  
 * `removed_task`: Is emitted when a task was removed. Contains the `taskId`.
+* `task_launched`: Is emitted when a task moves to the running state, to handle initialization. Contains the task structure.
 
 #### Example
 
