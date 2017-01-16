@@ -23,7 +23,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Executor.html">Executor</a><ul class='methods'><li data-type='method'><a href="Executor.html#message">message</a></li><li data-type='method'><a href="Executor.html#subscribe">subscribe</a></li><li data-type='method'><a href="Executor.html#update">update</a></li></ul></li><li><a href="Mesos.html">Mesos</a><ul class='methods'><li data-type='method'><a href="Mesos.html#getBuilder">getBuilder</a></li><li data-type='method'><a href="Mesos.html#getMesos">getMesos</a></li><li data-type='method'><a href="Mesos.html#getProtoBuf">getProtoBuf</a></li></ul></li><li><a href="Scheduler.html">Scheduler</a><ul class='methods'><li data-type='method'><a href="Scheduler.html#accept">accept</a></li><li data-type='method'><a href="Scheduler.html#acknowledge">acknowledge</a></li><li data-type='method'><a href="Scheduler.html#decline">decline</a></li><li data-type='method'><a href="Scheduler.html#getRunningTasks">getRunningTasks</a></li><li data-type='method'><a href="Scheduler.html#kill">kill</a></li><li data-type='method'><a href="Scheduler.html#message">message</a></li><li data-type='method'><a href="Scheduler.html#reconcile">reconcile</a></li><li data-type='method'><a href="Scheduler.html#request">request</a></li><li data-type='method'><a href="Scheduler.html#revive">revive</a></li><li data-type='method'><a href="Scheduler.html#shutdown">shutdown</a></li><li data-type='method'><a href="Scheduler.html#subscribe">subscribe</a></li><li data-type='method'><a href="Scheduler.html#sync">sync</a></li><li data-type='method'><a href="Scheduler.html#teardown">teardown</a></li></ul></li><li><a href="TaskHelper.html">TaskHelper</a><ul class='methods'><li data-type='method'><a href="TaskHelper.html#deleteTask">deleteTask</a></li><li data-type='method'><a href="TaskHelper.html#loadTasks">loadTasks</a></li><li data-type='method'><a href="TaskHelper.html#saveTask">saveTask</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Executor.html">Executor</a><ul class='methods'><li data-type='method'><a href="Executor.html#message">message</a></li><li data-type='method'><a href="Executor.html#subscribe">subscribe</a></li><li data-type='method'><a href="Executor.html#update">update</a></li></ul></li><li><a href="Mesos.html">Mesos</a><ul class='methods'><li data-type='method'><a href="Mesos.html#getBuilder">getBuilder</a></li><li data-type='method'><a href="Mesos.html#getMesos">getMesos</a></li><li data-type='method'><a href="Mesos.html#getProtoBuf">getProtoBuf</a></li></ul></li><li><a href="Scheduler.html">Scheduler</a><ul class='methods'><li data-type='method'><a href="Scheduler.html#accept">accept</a></li><li data-type='method'><a href="Scheduler.html#acknowledge">acknowledge</a></li><li data-type='method'><a href="Scheduler.html#decline">decline</a></li><li data-type='method'><a href="Scheduler.html#getRunningTasks">getRunningTasks</a></li><li data-type='method'><a href="Scheduler.html#kill">kill</a></li><li data-type='method'><a href="Scheduler.html#message">message</a></li><li data-type='method'><a href="Scheduler.html#reconcile">reconcile</a></li><li data-type='method'><a href="Scheduler.html#request">request</a></li><li data-type='method'><a href="Scheduler.html#revive">revive</a></li><li data-type='method'><a href="Scheduler.html#shutdown">shutdown</a></li><li data-type='method'><a href="Scheduler.html#subscribe">subscribe</a></li><li data-type='method'><a href="Scheduler.html#sync">sync</a></li><li data-type='method'><a href="Scheduler.html#teardown">teardown</a></li></ul></li><li><a href="TaskHealthHelper.html">TaskHealthHelper</a></li><li><a href="TaskHelper.html">TaskHelper</a><ul class='methods'><li data-type='method'><a href="TaskHelper.html#deleteTask">deleteTask</a></li><li data-type='method'><a href="TaskHelper.html#loadTasks">loadTasks</a></li><li data-type='method'><a href="TaskHelper.html#saveTask">saveTask</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -75,11 +75,23 @@ function Scheduler (options) {
     self.options.frameworkFailoverTimeout = options.frameworkFailoverTimeout || 604800; // One week
     self.options.masterConnectionTimeout = options.masterConnectionTimeout*1000 || 10000; // Ten seconds
     self.options.killUnknownTasks = options.killUnknownTasks || false;
+    self.options.serialNumberedTasks = (options.serialNumberedTasks === false) ? false : true;
 
     // ZooKeeper
     self.options.useZk = options.useZk || false;
     self.options.zkUrl = options.zkUrl || "master.mesos:2181";
     self.options.zkPrefix = options.zkPrefix || "/dcos-service-";
+
+    // Logging
+    self.logger = helpers.getLogger((options.logging &amp;&amp; options.logging.path ? options.logging.path : null), (options.logging &amp;&amp; options.logging.fileName ? options.logging.fileName : null), (options.logging &amp;&amp; options.logging.level ? options.logging.level : null));
+
+
+    // Port allocation
+    self.options.staticPorts = options.staticPorts || false;
+
+    if (self.options.staticPorts){
+        self.logger.info("Scheduler configured with fixed ports");
+    }
 
     // Master discovery
     self.options.masterUrl = options.masterUrl || "127.0.0.1";
@@ -90,9 +102,6 @@ function Scheduler (options) {
     self.mesosStreamId = null;
     self.lastHeartbeat = null;
     self.zkClient = null;
-
-    // Logging
-    self.logger = helpers.getLogger((options.logging &amp;&amp; options.logging.path ? options.logging.path : null), (options.logging &amp;&amp; options.logging.fileName ? options.logging.fileName : null), (options.logging &amp;&amp; options.logging.level ? options.logging.level : null));
 
     // Tasks
     self.tasks = [];
@@ -340,6 +349,9 @@ Scheduler.prototype.subscribe = function () {
             } else if (event.type === "MESSAGE") {
                 // Emit with usable message object (parsed to ascii)
                 self.emit("message", { agentId: event[event.type.toLocaleLowerCase()].agent_id, executorId: event[event.type.toLocaleLowerCase()].executor_id, data: new Buffer(event[event.type.toLocaleLowerCase()].data, "base64").toString("ascii") });
+            } else if (event.type === "ERROR") {
+                // Emit an actual error object to identify errors from mesos master
+                self.emit("error", new Error("Error received from Mesos master: " + event[event.type.toLocaleLowerCase()].message));
             } else {
                 // Emit original objects for all other types
                 self.emit(event.type.toLocaleLowerCase(), event[event.type.toLocaleLowerCase()]);
@@ -380,6 +392,8 @@ Scheduler.prototype.subscribe = function () {
 
     }
 
+    var handledTimeout = false;
+
     self.httpRequest = http.request(self.requestTemplate, function (res) {
 
         self.logger.info("SUBSCRIBE: Response status: " + res.statusCode);
@@ -408,11 +422,14 @@ Scheduler.prototype.subscribe = function () {
 
                 // Local cache for chunked JSON messages
                 var cache = "";
+                var expectedLength = 0;
 
                 // Watch for data/chunks
                 res.on('data', function (chunk) {
 
-                    var expectedLength = 0;
+                    if (chunk instanceof Buffer) {
+                        chunk = chunk.toString();
+                    }
 
                     if (chunk.indexOf("\n") > -1) {
                         var temp = chunk.split("\n");
@@ -424,6 +441,7 @@ Scheduler.prototype.subscribe = function () {
                             } else {
                                 // Empty cache
                                 cache = "";
+                                expectedLength = 0;
                                 // Handle event
                                 handleEvent(temp[1]);
                             }
@@ -431,13 +449,17 @@ Scheduler.prototype.subscribe = function () {
                             self.emit("error", { message: "Other linebreak count found than expected! Actual count: " + temp.length });
                         }
                     } else {
-                        if (cache.length > 0) {
-                            // Concatenate cached partial data with this chunk
+                        if (cache.length > 0 &amp;&amp; (cache.length + chunk.length) >= expectedLength) {
+                            // Concatenate cached partial data with this chunk and handle only when done
                             var eventData = cache + chunk;
                             // Handle event
                             handleEvent(eventData);
                             // Empty cache
                             cache = "";
+                            expectedLength = 0;
+                        } else if (cache.length > 0 &amp;&amp; (cache.length + chunk.length) &lt; expectedLength) {
+                            // Concatenate cached data with current chunk, for cases in which the stream buffer is smaller than the data.
+                            cache += chunk;
                         }
                     }
                 });
@@ -445,8 +467,14 @@ Scheduler.prototype.subscribe = function () {
                 res.on('end', function () {
                     self.emit("error", { message: "Long-running connection was closed!" });
                     self.logger.info("Long-running connection was closed!");
-                    // Re-subscribe
-                    self.subscribe();
+                    if (!handledTimeout) {
+                        // Re-subscribe
+                        // We need to remove the stream id from the headers before re-subscribing!
+                        self.mesosStreamId = undefined;
+                        delete self.requestTemplate.headers["mesos-stream-id"];
+                        delete self.requestTemplate.headers["Mesos-Stream-Id"];
+                        self.subscribe();
+                    }
                 });
 
                 res.on('finish', function () {
@@ -480,13 +508,15 @@ Scheduler.prototype.subscribe = function () {
         socket.setTimeout(self.options.masterConnectionTimeout);
         socket.on('timeout', function() {
             self.logger.error("Received a timeout on the long-running Master connection! Will try to re-register the framework scheduler!");
-
-            // We need to remove the stream id from the headers before re-subscribing!
-            self.mesosStreamId = undefined;
-            delete self.requestTemplate.headers["mesos-stream-id"];
+            handledTimeout = true;
+            socket.destroy();
 
             // If we're using Mesos DNS, we can directy re-register, because Mesos DNS will discover the current leader automatically
             if (self.options.masterUrl === "leader.mesos") {
+                // We need to remove the stream id from the headers before re-subscribing!
+                self.mesosStreamId = undefined;
+                delete self.requestTemplate.headers["mesos-stream-id"];
+                delete self.requestTemplate.headers["Mesos-Stream-Id"];
                 self.logger.info("Using Mesos DNS, will re-register to 'leader.mesos'!");
                 // Subscribe
                 self.subscribe();
@@ -938,7 +968,7 @@ module.exports = Scheduler;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Dec 30 2016 13:57:21 GMT+0100 (CET) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon Jan 16 2017 10:33:15 GMT+0100 (CET) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
