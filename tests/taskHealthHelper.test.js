@@ -96,6 +96,20 @@ describe("Vault Health Checker", function () {
             done();
         }, 400);
     });
+    it("Stop no setup", function (done) {
+        var scheduler = new Scheduler({useZk: false, logging: {level: "debug"}, "frameworkName": "testFramework"});
+        var healthCheck;
+        var self = this;
+        scheduler.on("ready", function() {
+            healthCheck = new TaskHealthHelper(scheduler, {url: "/v1/sys/health?standbyok", "interval": 0.2});
+            self.checkInstance = sandbox.stub(healthCheck, "checkRunningInstances");
+            healthCheck.stopHealthCheck();
+        });
+        setTimeout(function() {
+            expect(self.checkInstance.called).to.be.false;
+            done();
+        }, 400);
+    });
     it("checkRunningInstances", function (done) {
         var scheduler = new Scheduler({useZk: false, logging: {level: "debug"}, "frameworkName": "testFramework"});
         var healthCheck;
@@ -304,6 +318,72 @@ describe("Vault Health Checker", function () {
             done();
         });
     });
+    it("checkInstance - prefix body check fail", function (done) {
+        var scheduler = new Scheduler({useZk: false, logging: {level: "debug"}, "frameworkName": "testFramework"});
+        var healthCheck;
+        var self = this;
+        var req = new MockReq({method: "GET"});
+        var res = new MockRes();
+        var task = {"runtimeInfo": {"state": "TASK_RUNNING", "network": {"hostname": "task1", "ports": ["23142"]}}};
+        self.httpRequest = sandbox.stub(http, "request");
+        this.httpRequest.callsArgWith(1, res).returns(req);
+        var check = function () {
+            return false;
+        };
+        scheduler.on("ready", function () {
+            healthCheck = new TaskHealthHelper(scheduler, {"propertyPrefix": "me", "checkBodyFunction": check, url: "/v1/sys/health?standbyok"});
+            self.healthRequestCreate = sandbox.stub(healthCheck, "healthRequestCreate");
+            self.setCheckFailed = sandbox.stub(healthCheck, "setCheckFailed", function () {
+                expect(self.setCheckFailed.called).to.be.true;
+                expect(self.setCheckFailed.callCount).to.be.equal(1);
+                expect(self.healthRequestCreate.callCount).to.be.equal(1);
+                expect(task.runtimeInfo.checkFailCount).to.be.an("undefined");
+                expect(task.runtimeInfo.healthy).to.be.an("undefined");
+                done();
+            });
+            healthCheck.checkInstance(task);
+            expect(self.healthRequestCreate.called).to.be.true;
+        });
+        res.write("fdsfdsfsd");
+        res.write("dsfdsfsd");
+        res.end();
+    });
+    it("checkInstance - prefix body check pass", function (done) {
+        var scheduler = new Scheduler({useZk: false, logging: {level: "debug"}, "frameworkName": "testFramework"});
+        var healthCheck;
+        var self = this;
+        var req = new MockReq({method: "GET"});
+        var res = new MockRes();
+        var task = {"runtimeInfo": {"state": "TASK_RUNNING", "network": {"hostname": "task1", "ports": ["23142"]}}};
+        self.httpRequest = sandbox.stub(http, "request");
+        this.httpRequest.callsArgWith(1, res).returns(req);
+        var check = function () {
+            return true;
+        };
+        scheduler.on("ready", function () {
+            healthCheck = new TaskHealthHelper(scheduler, {"propertyPrefix": "me", "checkBodyFunction": check, url: "/v1/sys/health?standbyok"});
+            self.healthRequestCreate = sandbox.stub(healthCheck, "healthRequestCreate");
+            self.setProperties = sandbox.stub(healthCheck, "setProperties", function (taskToSet, value) {
+                expect(self.setProperties.called).to.be.true;
+                expect(self.setProperties.callCount).to.be.equal(1);
+                expect(value).to.be.true;
+                expect(taskToSet).to.deep.equal(task);
+                expect(self.healthRequestCreate.callCount).to.be.equal(1);
+                expect(task.runtimeInfo.mecheckFailCount).to.equal(0);
+                expect(task.runtimeInfo.mehealthy).to.equal(true);
+                expect(task.runtimeInfo.checkFailCount).to.be.an("undefined");
+                expect(task.runtimeInfo.healthy).to.be.an("undefined");
+                done();
+            });
+            task.runtimeInfo.mecheckFailCount = 3;
+            expect(task.runtimeInfo.mecheckFailCount).to.equal(3);
+            healthCheck.checkInstance(task);
+            expect(self.healthRequestCreate.called).to.be.true;
+        });
+        res.write("fdsfdsfsd");
+        res.write("dsfdsfsd");
+        res.end();
+    });
     it("setCheckFailed - once on new task", function (done) {
         var scheduler = new Scheduler({useZk: false, logging: {level: "debug"}, "frameworkName": "testFramework"});
         var healthCheck;
@@ -402,7 +482,7 @@ describe("Vault Health Checker", function () {
         var emitted = false;
         scheduler.on("ready", function() {
             healthCheck = new TaskHealthHelper(scheduler, {"propertyPrefix": "me", "additionalProperties": [{"setUnhealthy": true, "name": "sealed", "inverse": true}], url: "/v1/sys/health?standbyok"});
-            scheduler.on("task_unhealthy", function (task) {
+            scheduler.on("metask_unhealthy", function (task) {
                 emitted = true;
             });
             healthCheck.setCheckFailed(task);
@@ -464,7 +544,7 @@ describe("Vault Health Checker", function () {
         var emitted = 0;
         scheduler.on("ready", function() {
             healthCheck = new TaskHealthHelper(scheduler, {"propertyPrefix": "me", "additionalProperties": [{"setUnhealthy": true, "name": "sealed", "inverse": false}], url: "/v1/sys/health?standbyok"});
-            scheduler.on("task_unhealthy", function (task) {
+            scheduler.on("metask_unhealthy", function (task) {
                 emitted += 1;
             });
             healthCheck.setCheckFailed(task);

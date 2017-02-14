@@ -61,22 +61,28 @@ describe("helpers", function() {
             expect(tasks[0].resources.staticPorts[0]).to.equal(8000);
         });
         it("Sort the task array with static ports out of order - no ports set", function () {
+            var errorSet = false;
             try {
                 helpers.sortTasksByPriority({
                     task1: {isSubmitted: true, priority: 1, resources: {staticPorts: [9001, 8000]}}
                 });
             } catch (error) {
                 expect(error).to.be.an.error;
+                errorSet = true;
             }
+            expect(errorSet).to.be.true;
         });
         it("Sort the task array with static ports out of order - not enough ports set", function () {
+            var errorSet = false;
             try {
                 helpers.sortTasksByPriority({
                     task1: {isSubmitted: true, priority: 1, resources: {ports: 1, staticPorts: [9001, 8000]}}
                 });
             } catch (error) {
                 expect(error).to.be.an.error;
+                errorSet = true;
             }
+            expect(errorSet).to.be.true;
         });
     });
     describe("Enum enumeration", function () {

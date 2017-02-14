@@ -122,6 +122,10 @@ describe("Offers handlers tests", function () {
                             "ranges": {
                                 "range": [
                                     {
+                                        "begin": 7000,
+                                        "end": 7009
+                                    },
+                                    {
                                         "begin": 8080,
                                         "end": 8090
                                     },
@@ -162,7 +166,7 @@ describe("Offers handlers tests", function () {
         setTimeout(function () {
             expect(accept).to.equal(false);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
 
@@ -184,7 +188,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks[0].runtimeInfo.agentId).to.equal("12325-23523-S23523");
             expect(scheduler.launchedTasks[0].mesosName).to.equal("My Task-121");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
 
@@ -194,7 +198,7 @@ describe("Offers handlers tests", function () {
 
         scheduler.pendingTasks = [task1];
         scheduler.launchedTasks = [];
-        task1.healthCheck = new Mesos.HealthCheck.HTTP(0, "/health", 200);
+        task1.healthCheck = new Mesos.HealthCheck(new Mesos.HealthCheck.HTTP(0, "/health", 200));
         scheduler.logger = logger;
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": false};
@@ -207,7 +211,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks[0].runtimeInfo.agentId).to.equal("12325-23523-S23523");
             expect(scheduler.launchedTasks[0].mesosName).to.equal("My Task");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer with insufficient ports", function (done) {
@@ -226,7 +230,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks.length).to.equal(0);
             expect(scheduler.pendingTasks[0].commandInfo.environment.variables).to.have.lengthOf(1);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer with no ports, with no disk", function (done) {
@@ -255,7 +259,7 @@ describe("Offers handlers tests", function () {
             expect(saved).to.be.true;
             expect(scheduler.launchedTasks.length).to.equal(1);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
     it("Recive an offer with static ports of one range", function (done) {
         task1.resources.ports = 2;
@@ -265,7 +269,7 @@ describe("Offers handlers tests", function () {
 
         var logger = helpers.getLogger(null, null, "debug");
         scheduler.pendingTasks = [task1];
-        task1.healthCheck = new Mesos.HealthCheck.HTTP(1, "/health", 200);
+        task1.healthCheck = new Mesos.HealthCheck(new Mesos.HealthCheck.HTTP(1, "/health", 200));
         scheduler.launchedTasks = [];
         scheduler.logger = logger;
         scheduler.frameworkId = "12124-235325-32425";
@@ -287,7 +291,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("PORT1");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].value).to.equal("8082");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer with static ports of one range and dynamic ports on the rest", function (done) {
@@ -310,7 +314,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("PORT1");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].value).to.equal("8082");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer with static ports of one range and dynamic ports on the rest", function (done) {
@@ -333,11 +337,34 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("PORT1");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].value).to.equal("9019");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
+    });
+    it("Recive an offer with static ports of one range (first range) and dynamic ports on the rest", function (done) {
+        task1.resources.ports = 31;
+        task1.resources.staticPorts = [7000, 7001];
+
+        var logger = helpers.getLogger(null, null, "debug");
+        scheduler.pendingTasks = [task1];
+        scheduler.launchedTasks = [];
+        scheduler.logger = logger;
+        scheduler.frameworkId = "12124-235325-32425";
+        scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
+        scheduler.options.staticPorts = true;
+        handlers["OFFERS"].call(scheduler, offers);
+        setTimeout(function () {
+            expect(accept).to.equal(true);
+            expect(scheduler.launchedTasks.length).to.equal(1);
+            expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].name).to.equal("PORT0");
+            expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].value).to.equal("7000");
+            expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("PORT1");
+            expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].value).to.equal("7001");
+            done();
+        }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with static ports of one range and dynamic ports on the rest - fail", function (done) {
-        task1.resources.ports = 32;
+    it("Recive an offer with " +
+        "static ports of one range and dynamic ports on the rest - fail", function (done) {
+        task1.resources.ports = 42;
         task1.resources.staticPorts = [8090, 9019];
 
         var logger = helpers.getLogger(null, null, "debug");
@@ -352,7 +379,7 @@ describe("Offers handlers tests", function () {
             expect(accept).to.equal(false);
             expect(scheduler.launchedTasks.length).to.equal(0);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer with static ports of two ranges", function (done) {
@@ -376,7 +403,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("PORT1");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].value).to.equal("9001");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer with static ports of two ranges and dynamic ports that fill more than one range", function (done) {
@@ -400,7 +427,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("PORT1");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].value).to.equal("9001");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer unknown range resource", function (done) {
@@ -443,7 +470,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].value).to.equal("9001");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("HOST");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer with no environment - static ports", function (done) {
@@ -469,7 +496,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].value).to.equal("9001");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("HOST");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer with no containerInfo - with lables - static ports", function (done) {
@@ -497,7 +524,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].value).to.equal("9001");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("HOST");*/
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer with static ports of two ranges, decline", function (done) {
@@ -518,7 +545,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks.length).to.equal(0);
             expect(scheduler.pendingTasks[0].commandInfo.environment.variables).to.have.lengthOf(1);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer with static ports of two ranges, decline below", function (done) {
@@ -539,7 +566,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks.length).to.equal(0);
             expect(scheduler.pendingTasks[0].commandInfo.environment.variables).to.have.lengthOf(1);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
     it("Recive an offer while suitable task with runtimeInfo is pending", function (done) {
@@ -563,7 +590,7 @@ describe("Offers handlers tests", function () {
             expect(scheduler.launchedTasks.length).to.equal(1);
             expect(scheduler.launchedTasks[0].runtimeInfo.agentId).to.equal("12325-23523-S23523");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 
 
@@ -585,7 +612,7 @@ describe("Offers handlers tests", function () {
             expect(accept).to.equal(false);
             expect(scheduler.pendingTasks[0].commandInfo.environment.variables).to.have.lengthOf(1);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
     });
 });
 
@@ -692,7 +719,7 @@ describe("Update handlers tests", function () {
         setTimeout(function () {
             expect(acknowleged).to.equal(false);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -724,7 +751,7 @@ describe("Update handlers tests", function () {
         setTimeout(function () {
             expect(acknowleged).to.equal(true);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -764,7 +791,7 @@ describe("Update handlers tests", function () {
         setTimeout(function () {
             expect(scheduler.launchedTasks.length).to.equal(0);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -804,7 +831,7 @@ describe("Update handlers tests", function () {
         setTimeout(function () {
             expect(scheduler.launchedTasks.length).to.equal(0);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -838,7 +865,7 @@ describe("Update handlers tests", function () {
             expect(scheduler.pendingTasks.length).to.equal(1);
             expect(scheduler.pendingTasks[0].commandInfo.environment.variables).to.have.lengthOf(5);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -882,7 +909,7 @@ describe("Update handlers tests", function () {
             expect(deleted).to.be.true;
             expect(scheduler.pendingTasks[0].commandInfo.environment.variables).to.have.lengthOf(0);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -926,7 +953,7 @@ describe("Update handlers tests", function () {
             expect(scheduler.pendingTasks.length).to.equal(0);
             expect(deleted).to.be.true;
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -965,7 +992,7 @@ describe("Update handlers tests", function () {
             expect(scheduler.pendingTasks.length).to.equal(0);
             expect(deleted).to.be.false;
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -998,7 +1025,7 @@ describe("Update handlers tests", function () {
         setTimeout(function () {
             expect(scheduler.launchedTasks[0].runtimeInfo.state).to.equal("TASK_FAILED");
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -1042,7 +1069,7 @@ describe("Update handlers tests", function () {
             expect(scheduler.launchedTasks[0].runtimeInfo.state).to.equal("TASK_RUNNING");
             expect(scheduler.launchedTasks[0].runtimeInfo.startTime).to.be.above(1484200000000);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -1088,7 +1115,7 @@ describe("Update handlers tests", function () {
             expect(scheduler.launchedTasks[0].runtimeInfo.state).to.equal("TASK_RUNNING");
             expect(scheduler.launchedTasks[0].runtimeInfo.startTime).to.equal(originalStartTime);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -1132,7 +1159,7 @@ describe("Update handlers tests", function () {
             expect(scheduler.launchedTasks[0].runtimeInfo.state).to.equal("TASK_RUNNING");
             expect(scheduler.launchedTasks[0].runtimeInfo.startTime).to.be.above(1484200000000);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -1168,7 +1195,7 @@ describe("Update handlers tests", function () {
         setTimeout(function () {
             expect(killed).to.equal(false);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -1213,7 +1240,7 @@ describe("Update handlers tests", function () {
             expect(killed).to.equal(false);
             expect(deleted).to.be.true;
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 
@@ -1249,7 +1276,7 @@ describe("Update handlers tests", function () {
         setTimeout(function () {
             expect(killed).to.equal(true);
             done();
-        }, 500); //timeout with an error in one second
+        }, 100); //timeout with an error in one second
 
     });
 });

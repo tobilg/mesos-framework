@@ -20,6 +20,7 @@ var MockRes = require("mock-res");
 
 describe("Scheduler constructor", function() {
     var sandbox;
+    var clock;
     it("Check mesos access function", function () {
         (require("../lib/mesos"))().getProtoBuf();
     });
@@ -106,9 +107,10 @@ describe("Scheduler constructor", function() {
         var zkClient = zookeeper.createClient("127.0.0.1");
         var logger = helpers.getLogger(null, null, "debug");
         var taskHelper = new TaskHelper({"zkClient": zkClient, "logger": logger, "pendingTasks":[], "launchedTasks":[], scheduler:{}});
-        before(function () {
+        beforeEach(function () {
             sandbox = sinon.sandbox.create();
 
+            clock = sinon.useFakeTimers();
             //sandbox.stub(zookeeper, "createClient" );
             /*sandbox.stub(zookeeper, "on", function(event, cb) {
                 if (event == "connected") {
@@ -129,8 +131,9 @@ describe("Scheduler constructor", function() {
             });
 
         });
-        after(function (done) {
+        afterEach(function (done) {
             sandbox.restore();
+            clock.restore();
             done();
         });
         it("Success path", function (done) {
@@ -140,6 +143,7 @@ describe("Scheduler constructor", function() {
             scheduler.on("ready", function() {
                 done();
             });
+            clock.tick(100);
         });
         it("Read no node error path", function (done) {
             zkClient.getData.restore();
@@ -154,6 +158,8 @@ describe("Scheduler constructor", function() {
             scheduler.on("ready", function() {
                 done();
             });
+            clock.tick(100);
+            clock.tick(100);
         });
         it("Read other error path", function (done) {
             var isReady = false;
@@ -176,6 +182,9 @@ describe("Scheduler constructor", function() {
                 expect(isReady).to.be.false;
                 done();
             }, 400);
+
+            clock.tick(100);
+            clock.tick(400);
         });
         it("Read zk OOB error", function (done) {
             var isReady = false;
@@ -200,6 +209,9 @@ describe("Scheduler constructor", function() {
                 expect(isReady).to.be.false;
                 done();
             }, 400);
+
+            clock.tick(100);
+            clock.tick(400);
         });
         it("Read null data", function (done) {
             var isReady = false;
@@ -221,6 +233,8 @@ describe("Scheduler constructor", function() {
                 expect(isReady).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("Read null data without helper", function (done) {
             var isReady = false;
@@ -242,6 +256,8 @@ describe("Scheduler constructor", function() {
                 expect(isReady).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("Connect fail", function (done) {
             var isReady = false;
@@ -265,6 +281,8 @@ describe("Scheduler constructor", function() {
                 expect(isReady).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("Custom handler - no case mixing", function (done) {
             var scheduler = new Scheduler({tasks: {
@@ -275,6 +293,7 @@ describe("Scheduler constructor", function() {
                 expect(Object.keys(scheduler.customEventHandlers)).not.to.have.lengthOf(0);
                 done();
             });
+            clock.tick(100);
         });
         it("Custom handler - case mixing", function (done) {
             var scheduler = new Scheduler({tasks: {
@@ -285,6 +304,7 @@ describe("Scheduler constructor", function() {
                 expect(Object.keys(scheduler.customEventHandlers)).not.to.have.lengthOf(0);
                 done();
             });
+            clock.tick(100);
         });
         it("Custom bad handlers (ignored)", function (done) {
             var scheduler = new Scheduler({tasks: {
@@ -294,16 +314,19 @@ describe("Scheduler constructor", function() {
                 expect(Object.keys(scheduler.customEventHandlers)).to.have.lengthOf(0);
                 done();
             });
+            clock.tick(100);
         });
     });
     describe("Request functions", function() {
         beforeEach(function() {
             sandbox = sinon.sandbox.create();
             this.request = sandbox.stub(helpers, "doRequest");
+            clock = sinon.useFakeTimers();
         });
         afterEach(function() {
             helpers.doRequest.restore();
             sandbox.restore();
+            clock.restore();
         });
         it("kill Success", function(done) {
             this.request.callsArgWith(1, null);
@@ -322,6 +345,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("kill Fail", function(done) {
             var self = this;
@@ -344,6 +369,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("shutdown Success", function(done) {
             this.request.callsArgWith(1, null);
@@ -362,6 +389,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("shutdown fail", function(done) {
             this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -383,6 +412,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("reconcile Success", function(done) {
             this.request.callsArgWith(1, null);
@@ -401,6 +432,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("reconcile fail", function(done) {
             this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -422,6 +455,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("revive Success", function(done) {
             this.request.callsArgWith(1, null);
@@ -440,6 +475,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("revive fail", function(done) {
             this.request.callsArgWith(1,  { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -461,6 +498,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("sync Success", function(done) {
             this.request.callsArgWith(1, null);
@@ -469,6 +508,7 @@ describe("Scheduler constructor", function() {
                 },useZk: false, logging: {level: "debug"}});
             scheduler.on("ready", function() {
                 scheduler.killTasks = [{taskId: "1234", runtimeInfo:{agentId:"12345"}}, {taskId: "12354", runtimeInfo:{agentId:"123455"}}];
+                scheduler.launchedTasks = [{taskId: "12s364", runtimeInfo:{agentId:"12346w5"}}, {taskId: "1237q54", runtimeInfo:{}}];
                 scheduler.reconcileTasks = [{taskId: "12345", runtimeInfo:{agentId:"123456"}}, {taskId: "12364", runtimeInfo:{agentId:"123465"}}, {taskId: "123754", runtimeInfo:{}}];
                 scheduler.sync();
             });
@@ -482,11 +522,13 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.above(0);
             });
             setTimeout(function () {
-                expect(sent).to.equal(4);
+                expect(sent).to.equal(5);
                 expect(scheduler.killTasks).to.have.length.of(0);
                 expect(scheduler.reconcileTasks).to.have.length.of(0);
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("sync Success with zk and bad task", function(done) {
             this.request.callsArgWith(1, null);
@@ -519,6 +561,8 @@ describe("Scheduler constructor", function() {
                 expect(scheduler.reconcileTasks).to.have.length.of(0);
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("teardown Success", function(done) {
             this.request.callsArgWith(1, null);
@@ -537,6 +581,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("teardown fail", function(done) {
             this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -558,6 +604,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("acknowledge success", function(done) {
             this.request.callsArgWith(1, null); // { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -579,6 +627,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("acknowledge no uuid", function(done) {
             this.request.callsArgWith(1, null); // { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -600,6 +650,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("acknowledge fail", function(done) {
             this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -621,6 +673,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("accept success", function(done) {
             this.request.callsArgWith(1, null);//{ message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -670,6 +724,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("accept error", function(done) {
             this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -719,6 +775,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("decline success", function(done) {
             this.request.callsArgWith(1, null);//{ message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -743,6 +801,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("decline error", function(done) {
             this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -767,6 +827,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("message success", function(done) {
             this.request.callsArgWith(1, null);//{ message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -791,6 +853,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("message fail", function(done) {
             this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -815,6 +879,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("request success", function(done) {
             this.request.callsArgWith(1, null);//{ message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -839,6 +905,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("request fail", function(done) {
             this.request.callsArgWith(1, { message: "Request was not accepted properly. Reponse status code was '400'. Body was 'malformed request'." });
@@ -863,6 +931,8 @@ describe("Scheduler constructor", function() {
                 expect(sent).to.be.false;
                 done();
             }, 400);
+            clock.tick(100);
+            clock.tick(400);
         });
         it("getRunningTasks", function(done) {
             var scheduler = new Scheduler({tasks: {
@@ -878,15 +948,18 @@ describe("Scheduler constructor", function() {
                 expect(tasks.length).to.equal(2);
                 done();
             });
+            clock.tick(100);
         });
     });
 
     describe("Subscribe flow", function() {
         beforeEach(function() {
             this.request = sinon.stub(http, "request");
+            clock = sinon.useFakeTimers();
         });
         afterEach(function() {
             http.request.restore();
+            clock.restore();
             delete process.env.PORT0;
             delete process.env.HOST;
         });
@@ -908,6 +981,7 @@ describe("Scheduler constructor", function() {
             scheduler.on("ready", function () {
                 scheduler.subscribe();
             });
+            clock.tick(100);
         });
         it("http redirect status no location (fail)", function(done) {
             var data = "OK";
@@ -927,11 +1001,13 @@ describe("Scheduler constructor", function() {
             scheduler.on("ready", function () {
                 scheduler.subscribe();
             });
+            clock.tick(100);
         });
         it("http redirect status with location (fail)", function(done) {
             var data = "OK";
             var res = new MockRes();
             var errors = 0;
+            //clock.restore();
             res.writeHead(307);
             res.write(data);
             res.headers = {"location":"http://1.2.3.4:5030/fgs/fgdsg"};
@@ -949,9 +1025,11 @@ describe("Scheduler constructor", function() {
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
                 errors++;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(97);
             });
             setTimeout(function (){
                 expect(scheduler.options.masterUrl).to.equal("1.2.3.4");
@@ -959,6 +1037,7 @@ describe("Scheduler constructor", function() {
                 expect(errors).to.equal(3);
                 done();
             }, 200);
+            clock.tick(100);
         });
         it("http redirect status with location without scheme and path (fail)", function(done) {
             var data = "OK";
@@ -981,9 +1060,11 @@ describe("Scheduler constructor", function() {
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
                 errors++;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(97);
             });
             setTimeout(function (){
                 expect(errors).to.equal(3);
@@ -991,6 +1072,7 @@ describe("Scheduler constructor", function() {
                 expect(scheduler.options.port).to.equal("5030");
                 done();
             }, 200);
+            clock.tick(100);
         });
         it("error http status no message (fail)", function(done) {
             var data = "";
@@ -1013,6 +1095,8 @@ describe("Scheduler constructor", function() {
             scheduler.on("ready", function () {
                 scheduler.subscribe();
             });
+            clock.tick(100);
+            clock.tick(100);
         });
         it("OK http status - no stream id (fail)", function(done) {
             var data = "OK";
@@ -1032,6 +1116,7 @@ describe("Scheduler constructor", function() {
             scheduler.on("ready", function () {
                 scheduler.subscribe();
             });
+            clock.tick(100);
         });
         it("OK http status - with stream id, really short response (fail)", function(done) {
             var data = "OK";
@@ -1048,14 +1133,17 @@ describe("Scheduler constructor", function() {
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
                 errorSet = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, invalid JSON response (fail)", function(done) {
             var data = "2\nOK";
@@ -1072,14 +1160,17 @@ describe("Scheduler constructor", function() {
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
                 errorSet = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, too many line ends (fail)", function(done) {
             var data = "2\nOK\n";
@@ -1096,14 +1187,17 @@ describe("Scheduler constructor", function() {
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
                 errorSet = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, chunked (fail)", function(done) {
             var data = "4\nOK";
@@ -1120,9 +1214,11 @@ describe("Scheduler constructor", function() {
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
                 errorSet = true;
+                clock.tick(200);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(300);
             });
             setTimeout(function () {
                 res.write(data2);
@@ -1133,6 +1229,7 @@ describe("Scheduler constructor", function() {
                 expect(errorSet).to.be.true;
                 done();
             }, 600);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, no type (fail)", function(done) {
             var data = "2\n{}";
@@ -1149,14 +1246,17 @@ describe("Scheduler constructor", function() {
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
                 errorSet = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, invalid type (fail)", function(done) {
             var data = "2\n{\"type\":\"testing\"}";
@@ -1173,14 +1273,17 @@ describe("Scheduler constructor", function() {
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
                 errorSet = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, closed (fail)", function(done) {
             var data = "2\n{\"type\":\"testing\"}";
@@ -1196,17 +1299,21 @@ describe("Scheduler constructor", function() {
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
                 errorSet = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
             });
             setTimeout(function () {
                 res.emit("close");
+                clock.tick(399);
             }, 200);
             setTimeout(function () {
                 expect(errorSet).to.be.true;
                 done();
             }, 600);
+            clock.tick(100);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type (noop)", function(done) {
             var data = "2\n{\"type\":\"RESCIND\"}";
@@ -1228,15 +1335,18 @@ describe("Scheduler constructor", function() {
             scheduler.on("rescind", function(event) {
                 console.log(JSON.stringify(event));
                 called = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.false;
                 expect(called).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type, preset framework ID (noop)", function(done) {
             var data = "2\n{\"type\":\"RESCIND\"}";
@@ -1258,16 +1368,19 @@ describe("Scheduler constructor", function() {
             scheduler.on("rescind", function(event) {
                 console.log(JSON.stringify(event));
                 called = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.frameworkId = "12413412";
                 scheduler.subscribe();
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.false;
                 expect(called).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type (subscribed)", function(done) {
             var data = "73\n{\"type\":\"SUBSCRIBED\",\"subscribed\":{\"framework_id\":{\"value\":\"122353532\"}}}";
@@ -1289,15 +1402,18 @@ describe("Scheduler constructor", function() {
             scheduler.on("subscribed", function(event) {
                 console.log(JSON.stringify(event));
                 called = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.false;
                 expect(called).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type - HOST and PORT set (subscribed)", function(done) {
             var data = "73\n{\"type\":\"SUBSCRIBED\",\"subscribed\":{\"framework_id\":{\"value\":\"122353532\"}}}";
@@ -1321,15 +1437,18 @@ describe("Scheduler constructor", function() {
             scheduler.on("subscribed", function(event) {
                 console.log(JSON.stringify(event));
                 called = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.false;
                 expect(called).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, chunked, valid type (subscribed)", function(done) {
             var data = "73\n{\"type\"";
@@ -1353,17 +1472,20 @@ describe("Scheduler constructor", function() {
             scheduler.on("subscribed", function(event) {
                 console.log(JSON.stringify(event));
                 called = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
                 res.write(data2);
                 res.write(data3);
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.false;
                 expect(called).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type and timeout (subscribed)", function(done) {
             function SocketStub() {
@@ -1398,22 +1520,27 @@ describe("Scheduler constructor", function() {
             scheduler.on("subscribed", function(event) {
                 console.log(JSON.stringify(event));
                 var socket = new SocketStub();
-                socket.setTimeout = function () {
-                    setTimeout(function () {
-                        socket.emit("timeout");
-                    },100);
+                socket.setTimeout = function (timeout) {
+                    if (timeout) {
+                        setTimeout(function () {
+                            socket.emit("timeout");
+                        },100);
+                    }
                 };
                 req.emit("socket", socket);
                 called = true;
+                clock.tick(1);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(299);
             });
             setTimeout(function () {
                 expect(errorSet).to.be.false;
                 expect(called).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type and timeout with redirect (subscribed)", function(done) {
             function SocketStub() {
@@ -1459,9 +1586,9 @@ describe("Scheduler constructor", function() {
             scheduler.on("subscribed", function(event) {
                 console.log(JSON.stringify(event));
                 var socket = new SocketStub();
-                socket.setTimeout = function () {
+                socket.setTimeout = function (timeout) {
                     var self = this;
-                    if (!timer) {
+                    if (!timer && timeout) {
                         timer = setTimeout(function () {
                             res2.writeHead(307);
                             res2.headers = {"location":"1.2.3.4:5030"};
@@ -1472,15 +1599,18 @@ describe("Scheduler constructor", function() {
                 };
                 req.emit("socket", socket);
                 called = true;
+                clock.tick(200);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(100);
             });
             setTimeout(function () {
                 expect(called).to.be.true;
                 expect(self.request.calledThrice).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type and timeout with redirect and timeout (fail)", function(done) {
             function SocketStub() {
@@ -1529,18 +1659,20 @@ describe("Scheduler constructor", function() {
                 console.log(JSON.stringify(event));
                 var socket = new SocketStub();
                 var socket2 = new SocketStub();
-                socket2.setTimeout = function () {
-                    if (!timer2) {
+                socket2.setTimeout = function (timeout) {
+                    if (!timer2 && timeout) {
                         timer2 = setTimeout(function () {
                             socket2.emit("timeout");
                         },100);
+                        clock.tick(90);
                     }
                 };
                 if (timer) {
                     req2.emit("socket", socket2);
+                    clock.tick(100);
                 }
-                socket.setTimeout = function () {
-                    if (!timer) {
+                socket.setTimeout = function (timeout) {
+                    if (!timer && timeout) {
                         timer = setTimeout(function () {
                             res2.writeHead(307);
                             res2.headers = {"location":"1.2.3.4:5030"};
@@ -1553,8 +1685,10 @@ describe("Scheduler constructor", function() {
                     setTimeout(function () {
                         req.emit("socket", socket);
                     }, 10);
+                    clock.tick(100);
                 }
                 called = true;
+                clock.tick(10);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
@@ -1569,6 +1703,7 @@ describe("Scheduler constructor", function() {
                 process.exit.restore();
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type and timeout with DNS (subscribed)", function(done) {
             function SocketStub() {
@@ -1610,22 +1745,25 @@ describe("Scheduler constructor", function() {
             scheduler.on("subscribed", function(event) {
                 console.log(JSON.stringify(event));
                 var socket = new SocketStub();
-                socket.setTimeout = function () {
+                socket.setTimeout = function (timeout) {
                     var self = this;
-                    if (!timer) {
+                    if (!timer && timeout) {
                         timer = setTimeout(function () {
                             res2.writeHead(200);
                             //res.headers = {"location":"1.2.3.4:5030"};
                             //res2.write(data);
                             self.emit("timeout");
-                        },100);
+                        }, 100);
                     }
                 };
                 req.emit("socket", socket);
                 called = true;
+                clock.tick(100);
+                clock.tick(100);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
+                clock.tick(100);
             });
             setTimeout(function () {
                 expect(called).to.be.true;
@@ -1634,6 +1772,7 @@ describe("Scheduler constructor", function() {
                 expect(self.request.args[1][0].headers).to.not.have.property("mesos-stream-id");
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type (message)", function(done) {
             var data = "2\n{\"type\":\"MESSAGE\",\"message\":{\"agent_id\":{\"value\":\"122353532\"},\"executor_id\":{\"value\":\"fsdfsdsgd\"},\"data\":\"fdsgsdgsdgds\"}}";
@@ -1655,6 +1794,7 @@ describe("Scheduler constructor", function() {
             scheduler.on("message", function(event) {
                 console.log(JSON.stringify(event));
                 called = true;
+                clock.tick(300);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
@@ -1664,6 +1804,7 @@ describe("Scheduler constructor", function() {
                 expect(called).to.be.true;
                 done();
             }, 400);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type (heartbeat)", function(done) {
             var data = "2\n{\"type\":\"HEARTBEAT\"}";
@@ -1685,6 +1826,7 @@ describe("Scheduler constructor", function() {
             scheduler.on("heartbeat", function(event) {
                 console.log(JSON.stringify(event));
                 called = true;
+                clock.tick(100);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
@@ -1693,7 +1835,8 @@ describe("Scheduler constructor", function() {
                 expect(errorSet).to.be.false;
                 expect(called).to.be.true;
                 done();
-            }, 400);
+            }, 200);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type (error)", function(done) {
             var data = "2\n{\"type\":\"ERROR\", \"ERROR\":{\"message\": \"Mesos error\"}}";
@@ -1710,6 +1853,7 @@ describe("Scheduler constructor", function() {
             scheduler.on("error", function(error) {
                 console.log(JSON.stringify(error));
                 errorSet = true;
+                clock.tick(100);
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
@@ -1717,7 +1861,8 @@ describe("Scheduler constructor", function() {
             setTimeout(function () {
                 expect(errorSet).to.be.true;
                 done();
-            }, 400);
+            }, 200);
+            clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type, custom handler (heartbeat)", function(done) {
             var data = "2\n{\"type\":\"HEARTBEAT\"}";
@@ -1738,6 +1883,7 @@ describe("Scheduler constructor", function() {
             });
             scheduler.customEventHandlers["HEARTBEAT"] = function (event) {
                 called = true;
+                clock.tick(100);
             };
             scheduler.on("heartbeat", function(event) {
                 console.log(JSON.stringify(event));
@@ -1749,7 +1895,8 @@ describe("Scheduler constructor", function() {
                 expect(errorSet).to.be.false;
                 expect(called).to.be.true;
                 done();
-            }, 400);
+            }, 200);
+            clock.tick(100);
         });
     });
     describe("Subscribe with ZK", function () {
