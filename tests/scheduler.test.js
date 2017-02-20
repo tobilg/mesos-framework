@@ -1562,7 +1562,7 @@ describe("Scheduler constructor", function() {
             var res2 = new MockRes();
             var res3 = new MockRes();
             var errorSet = false;
-            var called = false;
+            var called = 0;
             var timer = null;
             res.writeHead(200);
             res.write(data);
@@ -1598,18 +1598,22 @@ describe("Scheduler constructor", function() {
                     }
                 };
                 req.emit("socket", socket);
-                called = true;
-                clock.tick(200);
+                called += 1;
+                if (called === 1) {
+                    clock.tick(1000);
+                } else {
+                    clock.tick(200);
+                }
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
                 clock.tick(100);
             });
             setTimeout(function () {
-                expect(called).to.be.true;
+                expect(called).to.equal(2);
                 expect(self.request.calledThrice).to.be.true;
                 done();
-            }, 400);
+            }, 1400);
             clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type and timeout with redirect and timeout (fail)", function(done) {
@@ -1632,7 +1636,7 @@ describe("Scheduler constructor", function() {
             var res2 = new MockRes();
             var res3 = new MockRes();
             var errorSet = false;
-            var called = false;
+            var called = 0;
             var timer = null;
             var timer2 = null;
             res.writeHead(200);
@@ -1687,14 +1691,19 @@ describe("Scheduler constructor", function() {
                     }, 10);
                     clock.tick(100);
                 }
-                called = true;
+                called += 1;
                 clock.tick(10);
+                if (called === 1) {
+                    clock.tick(1000);
+                } else {
+                    clock.tick(200);
+                }
             });
             scheduler.on("ready", function () {
                 scheduler.subscribe();
             });
             setTimeout(function () {
-                expect(called).to.be.true;
+                expect(called).to.equal(2);
                 expect(self.request.calledThrice).to.be.true;
                 expect(self.request.args[0][0].headers).to.not.have.property("mesos-stream-id");
                 expect(self.request.args[1][0].headers).to.not.have.property("mesos-stream-id");
@@ -1702,7 +1711,7 @@ describe("Scheduler constructor", function() {
                 expect(process.exit.calledOnce).to.be.true;
                 process.exit.restore();
                 done();
-            }, 400);
+            }, 1600);
             clock.tick(100);
         });
         it("OK http status - with stream id, valid JSON response, valid type and timeout with DNS (subscribed)", function(done) {
@@ -2073,6 +2082,28 @@ describe("Scheduler constructor", function() {
                 expect(scheduler.options.useZk).to.be.false;
                 done();
             }, 400);
+        });
+        it("Test backoff", function () {
+            var scheduler = new Scheduler({tasks: {
+                    task1:{isSubmitted:true}
+                },useZk: false, logging: {level: "debug"}});
+            expect(scheduler.subscribeBackoffTime).to.equal(0);
+            scheduler.backOff();
+            expect(scheduler.subscribeBackoffTime).to.equal(1000);
+            scheduler.backOff();
+            expect(scheduler.subscribeBackoffTime).to.equal(1500);
+            scheduler.backOff();
+            expect(scheduler.subscribeBackoffTime).to.equal(2250);
+            scheduler.backOff();
+            expect(scheduler.subscribeBackoffTime).to.equal(3375);
+            scheduler.backOff();
+            expect(scheduler.subscribeBackoffTime).to.equal(5063);
+            scheduler.backOff();
+            expect(scheduler.subscribeBackoffTime).to.equal(7595);
+            scheduler.backOff();
+            expect(scheduler.subscribeBackoffTime).to.equal(11393);
+            scheduler.backOff();
+            expect(scheduler.subscribeBackoffTime).to.equal(15000);
         });
     });
 });

@@ -339,6 +339,37 @@ describe("Vault Health Checker", function () {
                 expect(self.healthRequestCreate.callCount).to.be.equal(1);
                 expect(task.runtimeInfo.checkFailCount).to.be.an("undefined");
                 expect(task.runtimeInfo.healthy).to.be.an("undefined");
+                expect(task.runtimeInfo.mehealthy).to.be.an("undefined");
+                done();
+            });
+            healthCheck.checkInstance(task);
+            expect(self.healthRequestCreate.called).to.be.true;
+        });
+        res.write("fdsfdsfsd");
+        res.write("dsfdsfsd");
+        res.end();
+    });
+    it("checkInstance - no prefix body check fail", function (done) {
+        var scheduler = new Scheduler({useZk: false, logging: {level: "debug"}, "frameworkName": "testFramework"});
+        var healthCheck;
+        var self = this;
+        var req = new MockReq({method: "GET"});
+        var res = new MockRes();
+        var task = {"runtimeInfo": {"state": "TASK_RUNNING", "network": {"hostname": "task1", "ports": ["23142"]}}};
+        self.httpRequest = sandbox.stub(http, "request");
+        this.httpRequest.callsArgWith(1, res).returns(req);
+        var check = function () {
+            return false;
+        };
+        scheduler.on("ready", function () {
+            healthCheck = new TaskHealthHelper(scheduler, {"checkBodyFunction": check, url: "/v1/sys/health?standbyok"});
+            self.healthRequestCreate = sandbox.stub(healthCheck, "healthRequestCreate");
+            self.setCheckFailed = sandbox.stub(healthCheck, "setCheckFailed", function () {
+                expect(self.setCheckFailed.called).to.be.true;
+                expect(self.setCheckFailed.callCount).to.be.equal(1);
+                expect(self.healthRequestCreate.callCount).to.be.equal(1);
+                expect(task.runtimeInfo.checkFailCount).to.be.an("undefined");
+                expect(task.runtimeInfo.healthy).to.be.an("undefined");
                 done();
             });
             healthCheck.checkInstance(task);
