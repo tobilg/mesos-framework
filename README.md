@@ -54,6 +54,9 @@ The option properties you can specify to create a `Scheduler` are the following:
 * `restartStates`: An array of [TaskStates](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1310) which should trigger a restart of a task. For example, regularly finished tasks (in state `TASK_FINISHED`) are not restarted by default.
 * `masterConnectionTimeout`: The number of seconds to wait before a connection to the leading Mesos master is considered as timed out (default: `10`).
 * `frameworkFailoverTimeout`: The number of seconds to wait before a framework is considered as `failed` by the leading Mesos master, which will then terminate the existing tasks/executors (default: `604800`).
+* `exponentialBackoffFactor`: The factor in which to increase (multiply) the backoff timer upon re-subscription (default `1.5`).
+* `exponentialBackoffMinimum`: The minimal backoff time for re-subscription in seconds (default: `1`).
+* `exponentialBackoffMaximum`: The maximum backoff time for re-subscription in seconds (default: `15`).
 * `tasks`: An object (map) with the task info (see below). It's possible to create different (prioritized) tasks, e.g. launching different containers with different instance counts. See the [Docker Scheduler example](https://github.com/tobilg/mesos-framework/blob/master/examples/dockerSchedulerBridgeNetworking.js).
 * `handlers`: An object containing custom handler functions for the `Scheduler` events, where the property name is the uppercase `Event` name.
 * `staticPorts`: A boolean to indicate whether to use fixed ports in the framework or not. Default is `false`.
