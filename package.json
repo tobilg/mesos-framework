@@ -1,6 +1,6 @@
 {
   "name": "mesos-framework",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A wrapper around the Mesos HTTP APIs for Schedulers and Executors. Write your Mesos framework in pure JavaScript!",
   "keywords": [
     "mesos",
@@ -21,7 +21,10 @@
     "prepublish": "publish-please guard"
   },
   "author": "TobiLG",
-  "license": "MIT",
+  "license": {
+    "type": "Apache-2.0"
+  , "url": "http://www.apache.org/licenses/LICENSE-2.0"
+  },
   "dependencies": {
     "lodash": "^4.17.4",
     "node-zookeeper-client": "^0.2.2",
