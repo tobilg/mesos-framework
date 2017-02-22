@@ -125,6 +125,81 @@ describe("helpers", function() {
             expect(enumerated.type).to.equal("DOCKER");
             expect(enumerated.docker.network).to.equal("HOST");
         });
+        it("Recursive enumeration of cloned message", function () {
+            var ContainerInfo = new mesos.ContainerInfo(
+                mesos.ContainerInfo.Type.DOCKER, // Type
+                null, // Volumes
+                null, // Hostname
+                new mesos.ContainerInfo.DockerInfo(
+                    "alpine", // Image
+                    mesos.ContainerInfo.DockerInfo.Network.HOST, // Network
+                    null,  // PortMappings
+                    false, // Privileged
+                    [{
+                    "key": "cap-add",
+                    "value": "IPC_LOCK"
+                    }],  // Parameters
+                    true, // forcePullImage
+                    null   // Volume Driver
+                )
+            );
+            console.log(JSON.stringify(ContainerInfo));
+            var ContainerInfoClone = helpers.cloneDeep(ContainerInfo);
+            console.log(JSON.stringify(ContainerInfoClone));
+            var enumerated = helpers.stringifyEnumsRecursive(ContainerInfoClone);
+            console.log(JSON.stringify(enumerated));
+            console.log(JSON.stringify(ContainerInfoClone));
+            expect(enumerated.type).to.equal("DOCKER");
+            expect(enumerated.docker.network).to.equal("HOST");
+            expect(enumerated.type).to.not.equal(ContainerInfoClone.type);
+            expect(enumerated.docker.network).to.not.equal(ContainerInfoClone.docker.network);
+        });
+        it("Recursive enumeration of cloned message in array", function () {
+            var ContainerInfo = new mesos.ContainerInfo(
+                mesos.ContainerInfo.Type.DOCKER, // Type
+                null, // Volumes
+                null, // Hostname
+                new mesos.ContainerInfo.DockerInfo(
+                    "alpine", // Image
+                    mesos.ContainerInfo.DockerInfo.Network.HOST, // Network
+                    null,  // PortMappings
+                    false, // Privileged
+                    [{
+                    "key": "cap-add",
+                    "value": "IPC_LOCK"
+                    }],  // Parameters
+                    true, // forcePullImage
+                    null   // Volume Driver
+                )
+            );
+            var taskInfos = [new mesos.TaskInfo(
+                "fdasdfdsafdsa", // Task name
+                new mesos.TaskID("ffsdfdsfsda32532fdsagd"),   // TaskID
+                new mesos.AgentID("fdsfdsfds"),             // AgentID
+                null,          // Resources
+                null,   // ExecutorInfo
+                null,     // CommandInfo
+                ContainerInfo, // ContainerInfo
+                new mesos.HealthCheck(new mesos.HealthCheck.HTTP(80, "/health", 200)),     // HealthCheck
+                null, // KillPolicy
+                null, // Data
+                null, // Labels
+                null  // DiscoveryInfo
+            )];
+
+            var launchMessage = new mesos.Offer.Operation(
+                mesos.Offer.Operation.Type.LAUNCH,
+                new mesos.Offer.Operation.Launch(taskInfos)
+            );
+            console.log(JSON.stringify(launchMessage));
+            var enumerated = helpers.stringifyEnumsRecursive(launchMessage);
+            console.log(JSON.stringify(enumerated));
+            console.log(JSON.stringify(launchMessage));
+            expect(enumerated.launch.task_infos[0].container.type).to.equal("DOCKER");
+            expect(enumerated.launch.task_infos[0].container.docker.network).to.equal("HOST");
+            expect(enumerated.launch.task_infos[0].type).to.not.equal(ContainerInfo.type);
+            expect(enumerated.launch.task_infos[0].container.docker.network).to.not.equal(ContainerInfo.docker.network);
+        });
     });
     describe("getLogger", function () {
         it("Default logger", function () {

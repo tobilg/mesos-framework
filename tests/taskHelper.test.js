@@ -238,6 +238,192 @@ describe("Load tasks from Zk:", function () {
         expect(schedulerStub.launchedTasks.length).to.equal(2);
         expect(schedulerStub.reconcileTasks.length).to.equal(2);
     });
+    it("Succeed to load tasks with environment and found in pending (should restore)", function (done) {
+        var deleted = false;
+        zkClient.getChildren.restore();
+        sandbox.stub(zkClient, "getChildren", function (path, cb) {
+            cb(null, ["one", "two", "three"], 1);
+        });
+
+        var task1 = {
+            name: "/task1", taskId: "1",
+            "commandInfo": new Mesos.CommandInfo(
+                null, // URI
+                new Mesos.Environment([
+                    new Mesos.Environment.Variable("FOO", "BAR"),
+                    new Mesos.Environment.Variable("HOST", "214214.1244.412421"),
+                    new Mesos.Environment.Variable("PORT0", "3232")
+                ]), // Environment
+                false, // Is shell?
+                null, // Command
+                null, // Arguments
+                null // User
+            ),
+            runtimeInfo: {agentId: "12345", state: "TASK_RUNNING"}};
+        var task2 = {name: "/task2", taskId: "2",
+            "commandInfo": new Mesos.CommandInfo(
+                null, // URI
+                new Mesos.Environment([
+                    new Mesos.Environment.Variable("FOO", "BAR"),
+                    new Mesos.Environment.Variable("HOST", "214214.1244.412421"),
+                    new Mesos.Environment.Variable("PORT0", "3232")
+                ]), // Environment
+                false, // Is shell?
+                null, // Command
+                null, // Arguments
+                null // User
+            ),
+            runtimeInfo: {agentId: "12346", state: "TASK_RUNNING"}};
+        var task3 = {name: "/task3", taskId: "3", runtimeInfo: {agentId: "12446", state: "TASK_FINISHED"}};
+
+        sandbox.stub(zkClient, "getData", function (path, cb) {
+            if (path.includes("one")) {
+                cb(null, JSON.stringify(task1), 1);
+            } else if (path.includes("two")) {
+                cb(null, JSON.stringify(task2), 1);
+            } else {
+                cb(null, JSON.stringify(task3), 1);
+            }
+        });
+
+        sandbox.stub(zkClient, "remove", function (path, cb) {
+            cb(null, null);
+            deleted = true;
+        });
+        var logger = helpers.getLogger(null, null, "info");
+        var schedulerStub = new SchedulerStub();
+
+        schedulerStub.pendingTasks = [task1, task2, task3];
+        schedulerStub.killTasks = [];
+        schedulerStub.launchedTasks = [];
+        schedulerStub.reconcileTasks = [];
+
+        schedulerStub.on("ready", function () {
+            eventFired = true;
+        });
+
+        var taskHelper = new TaskHelper({
+            "zkClient": zkClient,
+            "logger": logger,
+            "pendingTasks": [],
+            "launchedTasks": []
+        });
+        taskHelper.scheduler = schedulerStub;
+
+        taskHelper.loadTasks();
+
+        setTimeout(function () {
+            done();
+        }, 100); //timeout with an error in one second
+
+        expect(eventFired).to.equal(true);
+        expect(deleted).to.be.true;
+
+        // check that tasks were killed
+        expect(schedulerStub.killTasks.length).to.equal(0);
+        expect(schedulerStub.launchedTasks.length).to.equal(2);
+        expect(schedulerStub.reconcileTasks.length).to.equal(2);
+    });
+    it("Succeed to load tasks with partial environment and found in pending (should restore)", function (done) {
+        var deleted = false;
+        zkClient.getChildren.restore();
+        sandbox.stub(zkClient, "getChildren", function (path, cb) {
+            cb(null, ["one", "two", "three"], 1);
+        });
+
+        var task1p = {
+            name: "/task1", taskId: "1",
+            "commandInfo": new Mesos.CommandInfo(
+                null, // URI
+                null, // Environment
+                false, // Is shell?
+                null, // Command
+                null, // Arguments
+                null // User
+            ),
+            runtimeInfo: {agentId: "12345", state: "TASK_RUNNING"}};
+        var task2p = {name: "/task2", taskId: "2",
+            "commandInfo": null,
+            runtimeInfo: {agentId: "12346", state: "TASK_RUNNING"}};
+        var task1 = {
+            name: "/task1", taskId: "1",
+            "commandInfo": new Mesos.CommandInfo(
+                null, // URI
+                new Mesos.Environment([
+                    new Mesos.Environment.Variable("FOO", "BAR"),
+                    new Mesos.Environment.Variable("HOST", "214214.1244.412421"),
+                    new Mesos.Environment.Variable("PORT0", "3232")
+                ]), // Environment
+                false, // Is shell?
+                null, // Command
+                null, // Arguments
+                null // User
+            ),
+            runtimeInfo: {agentId: "12345", state: "TASK_RUNNING"}};
+        var task2 = {name: "/task2", taskId: "2",
+            "commandInfo": new Mesos.CommandInfo(
+                null, // URI
+                new Mesos.Environment([
+                    new Mesos.Environment.Variable("FOO", "BAR"),
+                    new Mesos.Environment.Variable("HOST", "214214.1244.412421"),
+                    new Mesos.Environment.Variable("PORT0", "3232")
+                ]), // Environment
+                false, // Is shell?
+                null, // Command
+                null, // Arguments
+                null // User
+            ),
+            runtimeInfo: {agentId: "12346", state: "TASK_RUNNING"}};
+        var task3 = {name: "/task3", taskId: "3", runtimeInfo: {agentId: "12446", state: "TASK_FINISHED"}};
+
+        sandbox.stub(zkClient, "getData", function (path, cb) {
+            if (path.includes("one")) {
+                cb(null, JSON.stringify(task1), 1);
+            } else if (path.includes("two")) {
+                cb(null, JSON.stringify(task2), 1);
+            } else {
+                cb(null, JSON.stringify(task3), 1);
+            }
+        });
+
+        sandbox.stub(zkClient, "remove", function (path, cb) {
+            cb(null, null);
+            deleted = true;
+        });
+        var logger = helpers.getLogger(null, null, "info");
+        var schedulerStub = new SchedulerStub();
+
+        schedulerStub.pendingTasks = [task1p, task2p, task3];
+        schedulerStub.killTasks = [];
+        schedulerStub.launchedTasks = [];
+        schedulerStub.reconcileTasks = [];
+
+        schedulerStub.on("ready", function () {
+            eventFired = true;
+        });
+
+        var taskHelper = new TaskHelper({
+            "zkClient": zkClient,
+            "logger": logger,
+            "pendingTasks": [],
+            "launchedTasks": []
+        });
+        taskHelper.scheduler = schedulerStub;
+
+        taskHelper.loadTasks();
+
+        setTimeout(function () {
+            done();
+        }, 100); //timeout with an error in one second
+
+        expect(eventFired).to.equal(true);
+        expect(deleted).to.be.true;
+
+        // check that tasks were killed
+        expect(schedulerStub.killTasks.length).to.equal(0);
+        expect(schedulerStub.launchedTasks.length).to.equal(2);
+        expect(schedulerStub.reconcileTasks.length).to.equal(2);
+    });
     it("Succeed to load task list but fail to load task", function (done) {
         zkClient.getChildren.restore();
         sandbox.stub(zkClient, "getChildren", function (path, cb) {
