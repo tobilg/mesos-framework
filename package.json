@@ -1,6 +1,6 @@
 {
   "name": "mesos-framework",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "A wrapper around the Mesos HTTP APIs for Schedulers and Executors. Write your Mesos framework in pure JavaScript!",
   "keywords": [
     "mesos",
