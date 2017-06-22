@@ -98,10 +98,10 @@ describe("helpers", function() {
             null,
             "SUBSCRIBE",
             null);
-            base.type = 13;
+            base.type = 14;
             var enumerated = helpers.stringifyEnums(base);
 
-            expect(enumerated.type).to.equal(13);
+            expect(enumerated.type).to.equal("DECLINE_INVERSE_OFFERS");
         });
         it("Recursive enumeration", function () {
             var ContainerInfo = new mesos.ContainerInfo(
@@ -180,7 +180,7 @@ describe("helpers", function() {
                 null,   // ExecutorInfo
                 null,     // CommandInfo
                 ContainerInfo, // ContainerInfo
-                new mesos.HealthCheck(new mesos.HealthCheck.HTTP(80, "/health", 200)),     // HealthCheck
+                new mesos.HealthCheck(null, null, null, null, null, mesos.HealthCheck.Type.HTTP, null, new mesos.HealthCheck.HTTPCheckInfo("http", 80, "/health", [200])),     // HealthCheck
                 null, // KillPolicy
                 null, // Data
                 null, // Labels

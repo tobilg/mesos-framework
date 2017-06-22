@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Mesos - Documentation</title>
+    <title>Builder - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Mesos</h1>
+    <h1 class="page-title">Builder</h1>
     
 
     
@@ -42,7 +42,7 @@
 <header>
     
         <h2>
-        Mesos
+        Builder
         </h2>
         
     
@@ -56,14 +56,14 @@
 
     
 
-    <h4 class="name" id="Mesos"><span class="type-signature"></span>new Mesos<span class="signature">()</span><span class="type-signature"> &rarr; {object}</span></h4>
+    <h4 class="name" id="Builder"><span class="type-signature"></span>new Builder<span class="signature">(messageType)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>The Mesos protocol buffers helper</p>
+    <p>Represents a variable builder for protobuf to JavaScript instantiations.</p>
 </div>
 
 
@@ -99,133 +99,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mesos.js.html">mesos.js</a>, <a href="mesos.js.html#line17">line 17</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code>object</code></span>
-
-
-    </dd>
-</dl>
-
-
-<div class="param-desc">
-    <p>An object with the Mesos protocol buffer definitions</p>
-</div>
-
-    
-</div>
-
-
-
-</div>
-    
-    </div>
-
-    
-
-    
-
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="build"><span class="type-signature"></span>build<span class="signature">(messageType)</span><span class="type-signature"> &rarr; {ProtoBuf.Message|undefined|ProtoBuf.Message}</span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Convenience method to get a ProtoBuf.Message instance of the specified <code>messageType</code></p>
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mesos.js.html">mesos.js</a>, <a href="mesos.js.html#line46">line 46</a>
+        <a href="builder.js.html">builder.js</a>, <a href="builder.js.html#line14">line 14</a>
     </li></ul></dd>
     
 
@@ -286,7 +160,7 @@
             
 
             <td class="description last">
-                <p>The</p>
+                <p>The message type as string, e.g. <code>mesos.HealthCheck</code>.</p>
                 
             </td>
         </tr>
@@ -308,61 +182,11 @@
 
 
 
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code>ProtoBuf.Message</code></span>
-|
-
-<span class="param-type"><code>undefined</code></span>
-|
-
-<span class="param-type"><code>ProtoBuf.Message</code></span>
-
-
-    </dd>
-</dl>
-
-
-<div class="param-desc">
-    <p>A ProtoBuf.Message instance</p>
-</div>
-
-    
-</div>
-
 
 
 </div>
-        
-            
-<div class="section-method">
-
     
-
-    <h4 class="name" id="getBuilder"><span class="type-signature"></span>getBuilder<span class="signature">()</span><span class="type-signature"> &rarr; {ProtoBuf.Builder|undefined|ProtoBuf.Builder}</span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Get a ProtoBuf.Builder instance</p>
-</div>
-
-
-
-
-
-<dl class="details">
+    </div>
 
     
 
@@ -370,301 +194,12 @@
 
     
 
-    
+     
 
     
 
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mesos.js.html">mesos.js</a>, <a href="mesos.js.html#line37">line 37</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code>ProtoBuf.Builder</code></span>
-|
-
-<span class="param-type"><code>undefined</code></span>
-|
-
-<span class="param-type"><code>ProtoBuf.Builder</code></span>
-
-
-    </dd>
-</dl>
-
-
-<div class="param-desc">
-    <p>A ProtoBuf.Builder instance</p>
-</div>
-
-    
-</div>
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="getMesos"><span class="type-signature"></span>getMesos<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Mesos.html">Mesos</a>}</span></h4>
-
-    
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mesos.js.html">mesos.js</a>, <a href="mesos.js.html#line29">line 29</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code><a href="Mesos.html">Mesos</a></code></span>
-
-
-    </dd>
-</dl>
-
-
-    
-</div>
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="getProtoBuf"><span class="type-signature"></span>getProtoBuf<span class="signature">()</span><span class="type-signature"> &rarr; {function}</span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Get a reference to the protobuf.js module</p>
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mesos.js.html">mesos.js</a>, <a href="mesos.js.html#line54">line 54</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code>function</code></span>
-
-
-    </dd>
-</dl>
-
-
-<div class="param-desc">
-    <p>A reference to the protobuf.js module</p>
-</div>
-
-    
-</div>
-
-
-
-</div>
-        
     
 
     

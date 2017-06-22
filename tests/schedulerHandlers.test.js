@@ -1,14 +1,17 @@
 "use strict";
 
 // Project require
-var handlers = require("../lib/schedulerHandlers");
-var helpers = require("../lib/helpers");
-var TaskHelper = require("../lib/taskHelper");
+var lib = require("requirefrom")("lib");
+var handlers = lib("schedulerHandlers");
+var helpers = lib("helpers");
+var Builder = lib("builder");
+var TaskHelper = lib("taskHelper");
 var winston = require("winston");
 var util = require("util");
 var EventEmitter = require("events").EventEmitter;
 var path = require("path");
-var Mesos = require("../lib/mesos")().getMesos();
+var MesosLib = lib("mesos");
+var Mesos = new MesosLib().getMesos();
 
 // Testing require
 var expect = require("chai").expect;
@@ -156,7 +159,7 @@ describe("Offers handlers tests", function () {
         };
     });
 
-    it("Recive an offer but there are no pending tasks", function (done) {
+    it("Receive an offer but there are no pending tasks", function (done) {
         scheduler.pendingTasks = [];
         var logger = helpers.getLogger(null, null, "debug");
         scheduler.logger = logger;
@@ -170,7 +173,7 @@ describe("Offers handlers tests", function () {
     });
 
 
-    it("Recive an offer while suitable task is pending", function (done) {
+    it("Receive an offer while suitable task is pending", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -192,13 +195,19 @@ describe("Offers handlers tests", function () {
     });
 
 
-    it("Recive an offer while suitable task is pending - no serialNumberedTasks", function (done) {
+    it("Receive an offer while suitable task is pending - no serialNumberedTasks", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
+        var httpHealthCheck = new Builder("mesos.HealthCheck.HTTPCheckInfo").setScheme("http").setPort(80).setPath("/health").setStatuses([200]);
+        var healthCheck = new Builder("mesos.HealthCheck")
+            .setHttp(httpHealthCheck);
+        // .setType(Mesos.HealthCheck.Type.HTTP)
+        task1.healthCheck = healthCheck;
+            //task1.healthCheck = helpers.stringifyEnumsRecursive(new Mesos.HealthCheck(null, null, null, null, null, Mesos.HealthCheck.Type.HTTP, null, new Mesos.HealthCheck.HTTPCheckInfo("http", 80, "/health", [200])));
+        scheduler.logger.info(JSON.stringify(task1));
         scheduler.pendingTasks = [task1];
         scheduler.launchedTasks = [];
-        task1.healthCheck = new Mesos.HealthCheck(new Mesos.HealthCheck.HTTP(0, "/health", 200));
         scheduler.logger = logger;
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": false};
@@ -214,7 +223,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with insufficient ports", function (done) {
+    it("Receive an offer with insufficient ports", function (done) {
 
         task1.resources.ports = 50;
 
@@ -223,7 +232,7 @@ describe("Offers handlers tests", function () {
         scheduler.launchedTasks = [];
         scheduler.logger = logger;
         scheduler.frameworkId = "12124-235325-32425";
-        scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true}
+        scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
         handlers["OFFERS"].call(scheduler, offers);
         setTimeout(function () {
             expect(accept).to.equal(false);
@@ -233,7 +242,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with no ports, with no disk", function (done) {
+    it("Receive an offer with no ports, with no disk", function (done) {
         task1.resources.ports = 0;
         task1.resources.disk = 0;
         task1.resources.staticPorts = undefined;
@@ -261,7 +270,7 @@ describe("Offers handlers tests", function () {
             done();
         }, 100); //timeout with an error in one second
     });
-    it("Recive an offer with static ports of one range", function (done) {
+    it("Receive an offer with static ports of one range", function (done) {
         task1.resources.ports = 2;
         task1.resources.staticPorts = [8081, 8082];
 
@@ -269,7 +278,7 @@ describe("Offers handlers tests", function () {
 
         var logger = helpers.getLogger(null, null, "debug");
         scheduler.pendingTasks = [task1];
-        task1.healthCheck = new Mesos.HealthCheck(new Mesos.HealthCheck.HTTP(1, "/health", 200));
+        task1.healthCheck = new Mesos.HealthCheck(null, null, null, null, null, Mesos.HealthCheck.Type.HTTP, null, new Mesos.HealthCheck.HTTPCheckInfo("http", 80, "/health", [200]));
         scheduler.launchedTasks = [];
         scheduler.logger = logger;
         scheduler.frameworkId = "12124-235325-32425";
@@ -294,7 +303,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with static ports of one range and dynamic ports on the rest", function (done) {
+    it("Receive an offer with static ports of one range and dynamic ports on the rest", function (done) {
         task1.resources.ports = 31;
         task1.resources.staticPorts = [8081, 8082];
 
@@ -317,7 +326,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with static ports of one range and dynamic ports on the rest", function (done) {
+    it("Receive an offer with static ports of one range and dynamic ports on the rest", function (done) {
         task1.resources.ports = 31;
         task1.resources.staticPorts = [8090, 9019];
 
@@ -339,7 +348,7 @@ describe("Offers handlers tests", function () {
             done();
         }, 100); //timeout with an error in one second
     });
-    it("Recive an offer with static ports of one range (first range) and dynamic ports on the rest", function (done) {
+    it("Receive an offer with static ports of one range (first range) and dynamic ports on the rest", function (done) {
         task1.resources.ports = 31;
         task1.resources.staticPorts = [7000, 7001];
 
@@ -362,7 +371,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with " +
+    it("Receive an offer with " +
         "static ports of one range and dynamic ports on the rest - fail", function (done) {
         task1.resources.ports = 42;
         task1.resources.staticPorts = [8090, 9019];
@@ -382,7 +391,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with static ports of two ranges", function (done) {
+    it("Receive an offer with static ports of two ranges", function (done) {
         task1.resources.ports = 2;
         task1.resources.staticPorts = [8081, 9001];
 
@@ -397,7 +406,7 @@ describe("Offers handlers tests", function () {
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
-            expect(scheduler.launchedTasks[0].commandInfo.environment.variables).to.have.lengthOf(4);
+            expect(scheduler.launchedTasks[0].commandInfo.environment.variables).to.have.lengthOf(5);
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].name).to.equal("PORT0");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].value).to.equal("8081");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("PORT1");
@@ -406,7 +415,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with static ports of two ranges and dynamic ports that fill more than one range", function (done) {
+    it("Receive an offer with static ports of two ranges and dynamic ports that fill more than one range", function (done) {
         task1.resources.ports = 31;
         task1.resources.staticPorts = [8081,9001];
 
@@ -430,7 +439,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer unknown range resource", function (done) {
+    it("Receive an offer unknown range resource", function (done) {
         task1.resources.ports = 2;
         task1.resources.staticPorts = [8080,9001];
         task1.commandInfo.environment = [];
@@ -463,7 +472,7 @@ describe("Offers handlers tests", function () {
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
-            expect(scheduler.launchedTasks[0].commandInfo.environment.variables).to.have.lengthOf(3);
+            expect(scheduler.launchedTasks[0].commandInfo.environment.variables).to.have.lengthOf(4);
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[0].name).to.equal("PORT0");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[0].value).to.equal("8080");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].name).to.equal("PORT1");
@@ -473,7 +482,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with no environment - static ports", function (done) {
+    it("Receive an offer with no environment - static ports", function (done) {
         task1.resources.ports = 2;
         task1.resources.staticPorts = [8080,9001];
         task1.commandInfo.environment = [];
@@ -489,7 +498,7 @@ describe("Offers handlers tests", function () {
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
-            expect(scheduler.launchedTasks[0].commandInfo.environment.variables).to.have.lengthOf(3);
+            expect(scheduler.launchedTasks[0].commandInfo.environment.variables).to.have.lengthOf(4);
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[0].name).to.equal("PORT0");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[0].value).to.equal("8080");
             expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].name).to.equal("PORT1");
@@ -499,7 +508,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with no containerInfo - with lables - static ports", function (done) {
+    it("Receive an offer with no containerInfo - with lables - static ports", function (done) {
         task1.resources.ports = 2;
         task1.resources.staticPorts = [8080,9001];
         task1.commandInfo.environment = [];
@@ -516,18 +525,12 @@ describe("Offers handlers tests", function () {
         handlers["OFFERS"].call(scheduler, offers);
         setTimeout(function () {
             expect(accept).to.equal(true);
-            expect(scheduler.launchedTasks.length).to.equal(1);/*
-            expect(scheduler.launchedTasks[0].commandInfo.environment.variables).to.have.lengthOf(3);
-            expect(scheduler.launchedTasks[0].commandInfo.environment.variables[0].name).to.equal("PORT0");
-            expect(scheduler.launchedTasks[0].commandInfo.environment.variables[0].value).to.equal("8080");
-            expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].name).to.equal("PORT1");
-            expect(scheduler.launchedTasks[0].commandInfo.environment.variables[1].value).to.equal("9001");
-            expect(scheduler.launchedTasks[0].commandInfo.environment.variables[2].name).to.equal("HOST");*/
+            expect(scheduler.launchedTasks.length).to.equal(1);
             done();
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with static ports of two ranges, decline", function (done) {
+    it("Receive an offer with static ports of two ranges, decline", function (done) {
 
         task1.resources.ports = 2;
         task1.resources.staticPorts = [8181, 9100];
@@ -548,7 +551,7 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer with static ports of two ranges, decline below", function (done) {
+    it("Receive an offer with static ports of two ranges, decline below", function (done) {
 
         task1.resources.ports = 2;
         task1.resources.staticPorts = [8079, 8999];
@@ -569,9 +572,9 @@ describe("Offers handlers tests", function () {
         }, 100); //timeout with an error in one second
     });
 
-    it("Recive an offer while suitable task with runtimeInfo is pending", function (done) {
+    it("Receive an offer while suitable task with runtimeInfo is pending", function (done) {
 
-        var runtimeInfo = {agentId: "12345"}
+        var runtimeInfo = {agentId: "12345"};
         task1.runtimeInfo = runtimeInfo;
 
         var logger = helpers.getLogger(null, null, "debug");
@@ -581,7 +584,6 @@ describe("Offers handlers tests", function () {
         scheduler.logger = logger;
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
-        //scheduler.staticPorts = [];
 
         handlers["OFFERS"].call(scheduler, offers);
 
@@ -594,7 +596,7 @@ describe("Offers handlers tests", function () {
     });
 
 
-    it("Recive an offer while unsuitable task is pending", function (done) {
+    it("Receive an offer while unsuitable task is pending", function (done) {
 
         task1.resources.mem = 1028;
 
@@ -629,7 +631,7 @@ describe("Update handlers tests", function () {
         // Inherit from EventEmitter
         EventEmitter.call(this);
         return this;
-    };
+    }
 
     util.inherits(SchedulerStub, EventEmitter);
 
@@ -688,11 +690,7 @@ describe("Update handlers tests", function () {
 
     });
 
-
-
-
-
-    it("Recive an update no uuid", function (done) {
+    it("Receive an update no uuid", function (done) {
 
         var update = {
             "status": {
@@ -702,7 +700,6 @@ describe("Update handlers tests", function () {
                 "bytes": "uhdjfhuagdj63d7hadkf"
             }
         };
-
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -723,7 +720,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update with uuid and message", function (done) {
+    it("Receive an update with uuid and message", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -745,7 +742,7 @@ describe("Update handlers tests", function () {
         scheduler.options = {
             "frameworkName": "myfmw",
             "restartStates": ["TASK_FAILED", "TASK_KILLED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"]
-        }
+        };
 
         handlers["UPDATE"].call(scheduler, update);
         setTimeout(function () {
@@ -755,7 +752,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update for launched task to be killed - no restart", function (done) {
+    it("Receive an update for launched task to be killed - no restart", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -773,9 +770,6 @@ describe("Update handlers tests", function () {
 
         var taskHelper = sinon.createStubInstance(TaskHelper);
         scheduler.taskHelper = taskHelper;
-
-        var runtimeInfo = {agentId: "12345"}
-
         scheduler.pendingTasks = [];
         scheduler.launchedTasks = [task1];
         scheduler.logger = logger;
@@ -795,7 +789,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update for launched task to be finished - no restart", function (done) {
+    it("Receive an update for launched task to be finished - no restart", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -813,9 +807,6 @@ describe("Update handlers tests", function () {
 
         var taskHelper = sinon.createStubInstance(TaskHelper);
         scheduler.taskHelper = taskHelper;
-
-        var runtimeInfo = {agentId: "12345"}
-
         scheduler.pendingTasks = [];
         scheduler.launchedTasks = [task1];
         scheduler.logger = logger;
@@ -835,7 +826,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update for launched task to be killed - restart", function (done) {
+    it("Receive an update for launched task to be killed - restart", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -845,9 +836,7 @@ describe("Update handlers tests", function () {
                 "state": "TASK_KILLED",
                 "source": "SOURCE_EXECUTOR",
                 "bytes": "uhdjfhuagdj63d7hadkf",
-                "uuid": "jhadf73jhakdlfha723adf"/*,
-                "executor_id": {"value": "12344-my-executor"},
-                "agent_id": {"value": "12344-my-agent"}*/
+                "uuid": "jhadf73jhakdlfha723adf"
             }
         };
 
@@ -858,7 +847,7 @@ describe("Update handlers tests", function () {
         scheduler.options = {
             "frameworkName": "myfmw",
             "restartStates": ["TASK_FAILED", "TASK_KILLED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"]
-        }
+        };
 
         handlers["UPDATE"].call(scheduler, update);
         setTimeout(function () {
@@ -869,7 +858,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update for launched task to be killed - restart and delete from zk - no environment", function (done) {
+    it("Receive an update for launched task to be killed - restart and delete from zk - no environment", function (done) {
 
         var deleted = false;
 
@@ -881,9 +870,7 @@ describe("Update handlers tests", function () {
                 "state": "TASK_KILLED",
                 "source": "SOURCE_EXECUTOR",
                 "bytes": "uhdjfhuagdj63d7hadkf",
-                "uuid": "jhadf73jhakdlfha723adf"/*,
-                "executor_id": {"value": "12344-my-executor"},
-                "agent_id": {"value": "12344-my-agent"}*/
+                "uuid": "jhadf73jhakdlfha723adf"
             }
         };
 
@@ -913,7 +900,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update for launched task to be killed - restarting and delete from zk - restartStates", function (done) {
+    it("Receive an update for launched task to be killed - restarting and delete from zk - restartStates", function (done) {
 
         var deleted = false;
 
@@ -925,9 +912,7 @@ describe("Update handlers tests", function () {
                 "state": "TASK_KILLED",
                 "source": "SOURCE_EXECUTOR",
                 "bytes": "uhdjfhuagdj63d7hadkf",
-                "uuid": "jhadf73jhakdlfha723adf"/*,
-                "executor_id": {"value": "12344-my-executor"},
-                "agent_id": {"value": "12344-my-agent"}*/
+                "uuid": "jhadf73jhakdlfha723adf"
             }
         };
 
@@ -957,7 +942,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update for launched task to be killed - restarting without zk", function (done) {
+    it("Receive an update for launched task to be killed - restarting without zk", function (done) {
 
         var deleted = false;
 
@@ -969,9 +954,7 @@ describe("Update handlers tests", function () {
                 "state": "TASK_KILLED",
                 "source": "SOURCE_EXECUTOR",
                 "bytes": "uhdjfhuagdj63d7hadkf",
-                "uuid": "jhadf73jhakdlfha723adf"/*,
-                "executor_id": {"value": "12344-my-executor"},
-                "agent_id": {"value": "12344-my-agent"}*/
+                "uuid": "jhadf73jhakdlfha723adf"
             }
         };
 
@@ -996,7 +979,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update for launched task is failed - no restart", function (done) {
+    it("Receive an update for launched task is failed - no restart", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -1029,7 +1012,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update for launched task is running", function (done) {
+    it("Receive an update for launched task is running", function (done) {
 
         var saved = false;
 
@@ -1073,7 +1056,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update for launched task is running - different info available", function (done) {
+    it("Receive an update for launched task is running - different info available", function (done) {
 
         var saved = false;
 
@@ -1086,7 +1069,6 @@ describe("Update handlers tests", function () {
                 "source": "SOURCE_EXECUTOR",
                 "bytes": "uhdjfhuagdj63d7hadkf",
                 "uuid": "jhadf73jhakdlfha723adf",
-                //"executor_id": {"value": "12344-my-executor"},
                 "agent_id": {"value": "12344-my-agent"}
             }
         };
@@ -1119,7 +1101,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update for launched task is running - no runtimeInfo available", function (done) {
+    it("Receive an update for launched task is running - no runtimeInfo available", function (done) {
 
         var saved = false;
 
@@ -1163,7 +1145,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update after reconciliation - no delete", function (done) {
+    it("Receive an update after reconciliation - no delete", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -1199,7 +1181,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update after reconciliation - (no kill unknown tasks) cleanup from zookeeper", function (done) {
+    it("Receive an update after reconciliation - (no kill unknown tasks) cleanup from zookeeper", function (done) {
 
         var deleted = false;
 
@@ -1244,7 +1226,7 @@ describe("Update handlers tests", function () {
 
     });
 
-    it("Recive an update after reconciliation - delete", function (done) {
+    it("Receive an update after reconciliation - delete", function (done) {
 
         var logger = helpers.getLogger(null, null, "debug");
 
