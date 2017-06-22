@@ -3,7 +3,7 @@
 [![Package version](https://img.shields.io/npm/v/mesos-framework.svg)](https://www.npmjs.com/package/mesos-framework) [![Package downloads](https://img.shields.io/npm/dt/mesos-framework.svg)](https://www.npmjs.com/package/mesos-framework) [![Package license](https://img.shields.io/npm/l/mesos-framework.svg)](https://www.npmjs.com/package/mesos-framework) [![Build Status](https://travis-ci.org/tobilg/mesos-framework.svg?branch=master)](https://travis-ci.org/tobilg/mesos-framework)
 
 This project provides a high-level wrapper around the Mesos HTTP APIs for [schedulers](http://mesos.apache.org/documentation/latest/scheduler-http-api/) and [executors](http://mesos.apache.org/documentation/latest/executor-http-api/).
-It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos versions are those >= 0.28.2.
+It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos version is `1.2.0`.
 
 ## Installation
 
@@ -37,11 +37,11 @@ Basically this is the mechanism to create custom framework logic. Please have a 
 
 #### API docs
 
-The API docs can be accessed via [this link](https://htmlpreview.github.io/?https://raw.githubusercontent.com/tobilg/mesos-framework/master/docs/index.html).
+The API docs can be accessed via [API docs](http://tobilg.github.io/mesos-framework/) hosted on GitHub pages.
 
 ### Scheduler
 
-The `Scheduler` is the "heart" of a Mesos framework. It is very well possible to create a Mesos framework only by implementing the `Scheduler` with the standard [CommandInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397) and [ContainerInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744) objects.
+The `Scheduler` is the "heart" of a Mesos framework. It is very well possible to create a Mesos framework only by implementing the `Scheduler` with the standard [CommandInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L397) and [ContainerInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L1744) objects.
 
 The option properties you can specify to create a `Scheduler` are the following:
 
@@ -51,7 +51,7 @@ The option properties you can specify to create a `Scheduler` are the following:
 * `zkUrl`: The ZooKeeper connection url. Default is `master.mesos:2181`.
 * `zkPrefix`: The prefix of the ZooKeeper node where the data for this framework shall be stored. Default is `/dcos-service-`.
 * `frameworkName`: The desired framework name (will choose a standard name if not specified). Default is `mesos-framework.` concatented with a unique UUID.
-* `restartStates`: An array of [TaskStates](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1310) which should trigger a restart of a task. For example, regularly finished tasks (in state `TASK_FINISHED`) are not restarted by default.
+* `restartStates`: An array of [TaskState](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L1671) objects which should trigger a restart of a task. For example, regularly finished tasks (in state `TASK_FINISHED`) are not restarted by default.
 * `masterConnectionTimeout`: The number of seconds to wait before a connection to the leading Mesos master is considered as timed out (default: `10`).
 * `frameworkFailoverTimeout`: The number of seconds to wait before a framework is considered as `failed` by the leading Mesos master, which will then terminate the existing tasks/executors (default: `604800`).
 * `exponentialBackoffFactor`: The factor in which to increase (multiply) the backoff timer upon re-subscription (default `1.5`).
@@ -67,13 +67,13 @@ A `tasks` sub-object can contain objects with task information:
 * `instances`: The number of instances (tasks) you want to launch (will be 1 if you don't specify this property).
 * `priority`: The priority of which the different tasks shall be launched (lower is better). If none is specified, tasks will be launched based on the task naming.
 * `allowScaling`: A boolean value which indicates whether this task permits scaling operations (default: `false`).
-* `commandInfo`: A [Mesos.CommandInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397) definition (**mandatory**).
-* `containerInfo`: A [Mesos.ContainerInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1744) definition.
-* `executorInfo`: A [Mesos.ExecutorInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460) definition.
-* `resources`: The object of [Mesos.Resource](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L641) types, such as `cpu`, `mem`, `ports` and `disk` (**mandatory**) with an optional fixedPorts number array (included in the general port count).
+* `commandInfo`: A [Mesos.CommandInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L580) definition (**mandatory**).
+* `containerInfo`: A [Mesos.ContainerInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L2360) definition.
+* `executorInfo`: A [Mesos.ExecutorInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L642) definition.
+* `resources`: The object of [Mesos.Resource](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L876) types, such as `cpu`, `mem`, `ports` and `disk` (**mandatory**) with an optional fixedPorts number array (included in the general port count).
 * `portMappings`: The array of portMapping objects, each containing a numeric `port` value (for container ports), and a `protocol` string (either `tcp` or `udp`). 
-* `healthChecks`: A [Mesos.HealthCheck](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L302) definition.
-* `labels`: A [Mesos.Labels](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1845) definition.
+* `healthChecks`: A [Mesos.HealthCheck](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L441) definition.
+* `labels`: A [Mesos.Labels](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L2475) definition.
 
 #### High availability
 
@@ -94,7 +94,9 @@ The following events from the leading Mesos master are exposed:
 
 * `subscribed`: The first event sent by the master when the scheduler sends a `SUBSCRIBE` request on the persistent connection (i.e. the framework was started). Emits an object containing the `frameworkId` and the `mesosStreamId`, this may be emitted multiple times in the lifetime of a framework, as reconnections emit it as well. 
 * `offers`: Sent by the master whenever there are new resources that can be offered to the framework. Emits the base object from the Master for this event.
+* `inverse_offers`: Sent by the master whenever there are resources requested back from the scheduler. Emits the base object from the Master for this event.
 * `rescind`: Sent by the master when a particular offer is no longer valid. Emits the base object from the Master for this event.
+* `rescind_inverse_offer`: Sent by the master when a particular inverse offer is no longer valid (e.g., the agent corresponding to the offer has been removed) and hence needs to be rescinded. Emits the base object from the Master for this event.
 * `update`: Sent by the master whenever there is a status update that is generated by the executor, agent or master. Emits the base object from the Master for this event.
 * `message`: A custom message generated by the executor that is forwarded to the scheduler by the master. Emits an object containing the `agentId`, the `executorId` and the ASCII-encoded `data`. 
 * `heartbeat`: This event is periodically sent by the master to inform the scheduler that a connection is alive. Emits the timestamp of the last heartbeat event.
@@ -116,6 +118,9 @@ The following events from the Scheduler calls are exposed:
 * `sent_reconcile`: Is emitted when the scheduler has sent a `RECONCILE` request to the Master to query the status of non-terminal tasks.
 * `sent_message`: Is emitted when the scheduler has sent a `MESSAGE` request to the Master to send arbitrary binary data to the executor.
 * `sent_request`: Is emitted when the scheduler has sent a `REQUEST` request to the Master to request new resources.
+* `sent_supress`: Is emitted when the scheduler has sent a `SUPPRESS` request to the Master to suppress new resource offers.
+* `sent_accept_inverse_offers`: Is emitted when the scheduler has sent a `ACCEPT_INVERSE_OFFERS` request to the Master to accept inverse offers.
+* `sent_decline_inverse_offers`: Is emitted when the scheduler has sent a `DECLINE_INVERSE_OFFERS` request to the Master to decline inverse offers.
 * `updated_task`: Is emitted when a task was updated. Contains an object with `taskId`, `executorId` and `state`.  
 * `removed_task`: Is emitted when a task was removed. Contains the `taskId`.
 * `task_launched`: Is emitted when a task moves to the running state, to handle initialization. Contains the task structure.
@@ -214,9 +219,9 @@ You should consider writing your own executors if your framework has special req
 How can the custom executors be used? Taken from the [Mesos framework development guide](http://mesos.apache.org/documentation/latest/app-framework-development-guide/):
 
 > One way to distribute your framework executor is to let the Mesos fetcher download it on-demand when your scheduler launches tasks on that slave.
-> [ExecutorInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460) is a Protocol Buffer Message class, and it contains a field of type [CommandInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397).
-> [CommandInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L397) allows schedulers to specify, among other things, a number of resources as URIs.
-> These resources are fetched to a sandbox directory on the slave before attempting to execute the [ExecutorInfo](https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L460) command.
+> [ExecutorInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L642) is a Protocol Buffer Message class, and it contains a field of type [CommandInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L397).
+> [CommandInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L580) allows schedulers to specify, among other things, a number of resources as URIs.
+> These resources are fetched to a sandbox directory on the slave before attempting to execute the [ExecutorInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L642) command.
 > Several URI schemes are supported, including HTTP, FTP, HDFS, and S3.
 
 > Alternatively, you can pass the `frameworks_home` configuration option (defaults to: `MESOS_HOME/frameworks`) to your mesos-slave daemons
