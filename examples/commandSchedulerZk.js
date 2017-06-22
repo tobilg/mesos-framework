@@ -1,7 +1,9 @@
 "use strict";
 
-var Scheduler = require("../index").Scheduler;
-var Mesos = require("../index").Mesos.getMesos();
+var lib = require("requirefrom")("lib");
+
+var Scheduler = lib("scheduler");
+var Builder = lib("builder");
 
 var scheduler = new Scheduler({
     "masterUrl": "172.17.11.101", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
@@ -17,14 +19,7 @@ var scheduler = new Scheduler({
         "sleepProcesses": {
             "priority": 1,
             "instances": 1,
-            "commandInfo": new Mesos.CommandInfo(
-                null, // URI
-                null, // Environment
-                true, // Is shell?
-                "sleep 10;", // Command
-                null, // Arguments
-                null // User
-            ),
+            "commandInfo": new Builder("mesos.CommandInfo").setValue("env && sleep 100").setShell(true),
             "resources": {
                 "cpus": 0.2,
                 "mem": 128,
