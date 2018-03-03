@@ -3,7 +3,7 @@
 [![Package version](https://img.shields.io/npm/v/mesos-framework.svg)](https://www.npmjs.com/package/mesos-framework) [![Package downloads](https://img.shields.io/npm/dt/mesos-framework.svg)](https://www.npmjs.com/package/mesos-framework) [![Package license](https://img.shields.io/npm/l/mesos-framework.svg)](https://www.npmjs.com/package/mesos-framework) [![Build Status](https://travis-ci.org/tobilg/mesos-framework.svg?branch=master)](https://travis-ci.org/tobilg/mesos-framework)
 
 This project provides a high-level wrapper around the Mesos HTTP APIs for [schedulers](http://mesos.apache.org/documentation/latest/scheduler-http-api/) and [executors](http://mesos.apache.org/documentation/latest/executor-http-api/).
-It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos version is `1.2.0`.
+It can be used to write Mesos frameworks in pure JavaScript. The currently supported Mesos version is `1.5.0`.
 
 ## Installation
 
@@ -131,30 +131,23 @@ Also, you can have a look at the `examples` folder to see examples for command-b
 
 ```javascript
 "use strict";
-
+  
 var Scheduler = require("mesos-framework").Scheduler;
 var Mesos = require("mesos-framework").Mesos.getMesos();
-
+  
 var scheduler = new Scheduler({
-    "masterUrl": "172.17.10.101", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
+    "masterUrl": "172.17.11.102", // If Mesos DNS is used this would be "leader.mesos", otherwise use the actual IP address of the leading master
     "port": 5050,
     "frameworkName": "My first Command framework",
     "logging": {
-        "level": "debug" // Set log Level to debug (default is info)
+        "level": "debug"
     },
-    "restartStates": ["TASK_FAILED", "TASK_KILLED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"], // Overwrite the restartStates (by default, TASK_FINISHED tasks are NOT restarted!)
+    "restartStates": ["TASK_FAILED", "TASK_KILLED", "TASK_LOST", "TASK_ERROR", "TASK_FINISHED"],
     "tasks": {
         "sleepProcesses": {
             "priority": 1,
             "instances": 3,
-            "commandInfo": new Mesos.CommandInfo(
-                null, // URI
-                null, // Environment
-                true, // Is shell?
-                "sleep 10;", // Command
-                null, // Arguments
-                null // User
-            ),
+            "commandInfo": new Builder("mesos.CommandInfo").setValue("env && sleep 100").setShell(true),
             "resources": {
                 "cpus": 0.2,
                 "mem": 128,
@@ -170,16 +163,16 @@ var scheduler = new Scheduler({
         }
     }
 });
-
+  
 // Start the main logic once the framework scheduler has received the "SUBSCRIBED" event from the leading Mesos master
 scheduler.on("subscribed", function (obj) {
-
+  
     // Display the Mesos-Stream-Id
     scheduler.logger.info("Mesos Stream Id is " + obj.mesosStreamId);
-
+  
     // Display the framework id
     scheduler.logger.info("Framework Id is " + obj.frameworkId);
-
+  
     // Trigger shutdown after one minute
     setTimeout(function() {
         // Send "TEARDOWN" request
@@ -187,25 +180,25 @@ scheduler.on("subscribed", function (obj) {
         // Shutdown process
         process.exit(0);
     }, 60000);
-
+  
 });
-
+  
 // Capture "offers" events
 scheduler.on("offers", function (offers) {
     scheduler.logger.info("Got offers: " + JSON.stringify(offers));
 });
-
+  
 // Capture "heartbeat" events
 scheduler.on("heartbeat", function (heartbeatTimestamp) {
     scheduler.logger.info("Heartbeat on " + heartbeatTimestamp);
 });
-
+  
 // Capture "error" events
 scheduler.on("error", function (error) {
     scheduler.logger.info("ERROR: " + JSON.stringify(error));
     scheduler.logger.info(error.stack);
 });
-
+  
 scheduler.on("ready", function () {
     // Start framework scheduler
     scheduler.subscribe();
@@ -250,12 +243,14 @@ The following events from the Executor calls are exposed:
 
 ### Mesos
 
+#### Creating objects ("natively" via protobufjs)
+
 The module also exposes the Mesos protocol buffer object, which is loaded via [protobuf.js](https://github.com/dcodeIO/ProtoBuf.js/). It can be used to create the objects which can be then passed to the scheduler/executor methods.
 
 **Example:**
 ```javascript
 var Mesos = require("mesos-framework").Mesos.getMesos();
-
+  
 var TaskID = new Mesos.TaskID("my-task-id");
 ```
 
@@ -264,13 +259,27 @@ You can also instantiate Mesos protocol buffer objects from plain JSON. Be sure 
 **Example:**
 ```javascript
 var Builder = require("mesos-framework").Mesos.getBuilder();
-
+  
 var taskId = {
     "value": "my-task-id"
 };
 
 var TaskID = new (Builder.build("mesos.TaskID"))(taskId);
 ```
+
+#### Creating objects (via builder pattern)
+
+You can also create Mesos objects via the builder pattern like this:
+
+**Example:**
+```javascript
+var Builder = require("mesos-framework").Builder;
+  
+var commandInfo = new Builder("mesos.CommandInfo")
+                    .setValue("env && sleep 100")
+                    .setShell(true);
+```
+
 ### taskHealthHelper
 
 This module allows for testing of task health (or any metric available via HTTP, for example cluster state, leader, etc...) and emit a scheduler event so the issue will be handled in code.  
