@@ -2,6 +2,7 @@
 
 var Scheduler = require("../index").Scheduler;
 var Mesos = require("../index").Mesos.getMesos();
+var Builder = require("../index").Builder;
 
 var ContainerInfo = new Mesos.ContainerInfo(
     Mesos.ContainerInfo.Type.DOCKER, // Type
@@ -38,7 +39,7 @@ var scheduler = new Scheduler({
             "commandInfo": new Mesos.CommandInfo( // Strangely, this is needed, even when specifying ContainerInfo...
                 null, // URI
                 new Mesos.Environment([
-                    new Mesos.Environment.Variable("FOO", "BAR")
+                    new Builder("mesos.Environment.Variable").setName("FOO").setValue("BAR")
                 ]), // Environment
                 false, // Is shell?
                 null, // Command
