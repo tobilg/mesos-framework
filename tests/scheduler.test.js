@@ -1,13 +1,17 @@
-// Project require
-var Scheduler = require("../").Scheduler;
-var helpers = require("../lib/helpers");
-var TaskHelper = require("../lib/taskHelper");
+"use strict";
+
+// Global
 var http = require("http");
 var util = require("util");
 var EventEmitter = require("events").EventEmitter;
-var winston = require("winston");
-var mesos = (require("../lib/mesos"))().getMesos();
-var schedulerHandlers = require("../lib/schedulerHandlers");
+
+// Project require
+var lib = require("requirefrom")("lib");
+var Scheduler = require("../index").Scheduler;
+var helpers = lib("helpers");
+var TaskHelper = lib("taskHelper");
+var mesos = lib("mesos")().getMesos();
+var Builder = lib("builder");
 
 // Lib require for stubs
 var zookeeper = require("node-zookeeper-client");
@@ -687,32 +691,31 @@ describe("Scheduler constructor", function() {
             var sent = false;
             var toLaunch = [];
             var demandedResources = [
-                        helpers.stringifyEnumsRecursive(new mesos.Resource("cpus", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(1))),
-                        helpers.stringifyEnumsRecursive(new mesos.Resource("mem", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(128)))
-                    ];
+                helpers.fixEnums(new mesos.Resource(null, "cpus", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(1))),
+                helpers.fixEnums(new mesos.Resource(null, "mem", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(128)))
+            ];
             scheduler.frameworkId = "123445547452563";
             toLaunch.push(
-                        new mesos.TaskInfo(
-                            "312312", // Task name
-                            new mesos.TaskID("23242"),   // TaskID
-                            {value:"321312"},             // AgentID
-                            demandedResources,          // Resources
-                            null,   // ExecutorInfo
-                            null,     // CommandInfo
-                            null, // ContainerInfo
-                            null,     // HealthCheck
-                            null, // KillPolicy
-                            null, // Data
-                            null, // Labels
-                            null  // DiscoveryInfo
-                        )
-                    );
-            var Operations = helpers.stringifyEnumsRecursive(
-                        new mesos.Offer.Operation(
-                            mesos.Offer.Operation.Type.LAUNCH,
-                            new mesos.Offer.Operation.Launch(toLaunch)
-                        )
-                    );
+                new mesos.TaskInfo(
+                    "312312", // Task name
+                    new mesos.TaskID("23242"),   // TaskID
+                    {value:"321312"},             // AgentID
+                    demandedResources,          // Resources
+                    null,   // ExecutorInfo
+                    null,     // CommandInfo
+                    null, // ContainerInfo
+                    null,     // HealthCheck
+                    null, // KillPolicy
+                    null, // Data
+                    null, // Labels
+                    null  // DiscoveryInfo
+                )
+            );
+
+            var Operations = new Builder("mesos.Offer.Operation")
+                .setType(mesos.Offer.Operation.Type.LAUNCH)
+                .setLaunch(new mesos.Offer.Operation.Launch(toLaunch));
+
             scheduler.on("ready", function() {
                 scheduler.accept([{value:"12312312"}], Operations, null);
             });
@@ -738,32 +741,31 @@ describe("Scheduler constructor", function() {
             var sent = false;
             var toLaunch = [];
             var demandedResources = [
-                        helpers.stringifyEnumsRecursive(new mesos.Resource("cpus", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(1))),
-                        helpers.stringifyEnumsRecursive(new mesos.Resource("mem", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(128)))
-                    ];
+                helpers.fixEnums(new mesos.Resource(null, "cpus", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(1))),
+                helpers.fixEnums(new mesos.Resource(null, "mem", mesos.Value.Type.SCALAR, new mesos.Value.Scalar(128)))
+            ];
             scheduler.frameworkId = "123445547452563";
             toLaunch.push(
-                        new mesos.TaskInfo(
-                            "312312", // Task name
-                            new mesos.TaskID("23242"),   // TaskID
-                            {value:"321312"},             // AgentID
-                            demandedResources,          // Resources
-                            null,   // ExecutorInfo
-                            null,     // CommandInfo
-                            null, // ContainerInfo
-                            null,     // HealthCheck
-                            null, // KillPolicy
-                            null, // Data
-                            null, // Labels
-                            null  // DiscoveryInfo
-                        )
-                    );
-            var Operations = helpers.stringifyEnumsRecursive(
-                        new mesos.Offer.Operation(
-                            mesos.Offer.Operation.Type.LAUNCH,
-                            new mesos.Offer.Operation.Launch(toLaunch)
-                        )
-                    );
+                new mesos.TaskInfo(
+                    "312312", // Task name
+                    new mesos.TaskID("23242"),   // TaskID
+                    {value:"321312"},             // AgentID
+                    demandedResources,          // Resources
+                    null,   // ExecutorInfo
+                    null,     // CommandInfo
+                    null, // ContainerInfo
+                    null,     // HealthCheck
+                    null, // KillPolicy
+                    null, // Data
+                    null, // Labels
+                    null  // DiscoveryInfo
+                )
+            );
+
+            var Operations = new Builder("mesos.Offer.Operation")
+                .setType(mesos.Offer.Operation.Type.LAUNCH)
+                .setLaunch(new mesos.Offer.Operation.Launch(toLaunch));
+
             scheduler.on("ready", function() {
                 scheduler.accept([{value:"12312312"}], Operations, null);
             });

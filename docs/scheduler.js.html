@@ -590,7 +590,7 @@ Scheduler.prototype.subscribe = function () {
     self.logger.info("SUBSCRIBE: " + JSON.stringify(Subscribe));
 
     // Set the Call object
-    var Call = helpers.stringifyEnumsRecursive(
+    var Call = helpers.fixEnums(
         new mesos.scheduler.Call(
             self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : null,
             "SUBSCRIBE",
@@ -624,7 +624,7 @@ Scheduler.prototype.accept = function (offers, operations, filters) {
     self.logger.info("ACCEPT: " + JSON.stringify(Accept));
 
     // Set the Call object
-    var Call = helpers.stringifyEnumsRecursive(new mesos.scheduler.Call(new mesos.FrameworkID(self.frameworkId), "ACCEPT", null, Accept));
+    var Call = helpers.fixEnums(new mesos.scheduler.Call(new mesos.FrameworkID(self.frameworkId), "ACCEPT", null, Accept));
 
     helpers.doRequest.call(self, Call, function (error, response) {
         if (error) {
@@ -649,7 +649,7 @@ Scheduler.prototype.decline = function (offers, filters) {
     var Decline = new mesos.scheduler.Call.Decline(offers, filters);
 
     // Set the Call object
-    var Call = helpers.stringifyEnumsRecursive(new mesos.scheduler.Call(new mesos.FrameworkID(self.frameworkId), "DECLINE", null, null, Decline));
+    var Call = helpers.fixEnums(new mesos.scheduler.Call(new mesos.FrameworkID(self.frameworkId), "DECLINE", null, null, Decline));
 
     helpers.doRequest.call(self, Call, function (error, response) {
         if (error) {

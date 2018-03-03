@@ -1,14 +1,16 @@
 "use strict";
 
-// Project require
-var Scheduler = require("../").Scheduler;
-var helpers = require("../lib/helpers");
-var TaskHelper = require("../lib/taskHelper");
-var winston = require("winston");
+// Global
 var util = require("util");
 var EventEmitter = require("events").EventEmitter;
-var path = require("path");
-var Mesos = require("../lib/mesos")().getMesos();
+
+// Project require
+var lib = require("requirefrom")("lib");
+var Scheduler = require("../index").Scheduler;
+var helpers = lib("helpers");
+var TaskHelper = lib("taskHelper");
+var Builder = lib("builder");
+var Mesos = lib("mesos")().getMesos();
 
 // Lib require for stubs
 var zookeeper = require("node-zookeeper-client");
@@ -37,7 +39,7 @@ describe("Load tasks from Zk:", function () {
         // Inherit from EventEmitter
         EventEmitter.call(this);
         return this;
-    };
+    }
 
     util.inherits(SchedulerStub, EventEmitter);
 
@@ -250,9 +252,9 @@ describe("Load tasks from Zk:", function () {
             "commandInfo": new Mesos.CommandInfo(
                 null, // URI
                 new Mesos.Environment([
-                    new Mesos.Environment.Variable("FOO", "BAR"),
-                    new Mesos.Environment.Variable("HOST", "214214.1244.412421"),
-                    new Mesos.Environment.Variable("PORT0", "3232")
+                    new Builder("mesos.Environment.Variable").setName("FOO").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("HOST").setValue("214214.1244.412421"),
+                    new Builder("mesos.Environment.Variable").setName("PORT0").setValue("3232")
                 ]), // Environment
                 false, // Is shell?
                 null, // Command
@@ -264,9 +266,9 @@ describe("Load tasks from Zk:", function () {
             "commandInfo": new Mesos.CommandInfo(
                 null, // URI
                 new Mesos.Environment([
-                    new Mesos.Environment.Variable("FOO", "BAR"),
-                    new Mesos.Environment.Variable("HOST", "214214.1244.412421"),
-                    new Mesos.Environment.Variable("PORT0", "3232")
+                    new Builder("mesos.Environment.Variable").setName("FOO").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("HOST").setValue("214214.1244.412421"),
+                    new Builder("mesos.Environment.Variable").setName("PORT0").setValue("3232")
                 ]), // Environment
                 false, // Is shell?
                 null, // Command
@@ -350,9 +352,9 @@ describe("Load tasks from Zk:", function () {
             "commandInfo": new Mesos.CommandInfo(
                 null, // URI
                 new Mesos.Environment([
-                    new Mesos.Environment.Variable("FOO", "BAR"),
-                    new Mesos.Environment.Variable("HOST", "214214.1244.412421"),
-                    new Mesos.Environment.Variable("PORT0", "3232")
+                    new Builder("mesos.Environment.Variable").setName("FOO").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("HOST").setValue("214214.1244.412421"),
+                    new Builder("mesos.Environment.Variable").setName("PORT0").setValue("3232")
                 ]), // Environment
                 false, // Is shell?
                 null, // Command
@@ -364,9 +366,9 @@ describe("Load tasks from Zk:", function () {
             "commandInfo": new Mesos.CommandInfo(
                 null, // URI
                 new Mesos.Environment([
-                    new Mesos.Environment.Variable("FOO", "BAR"),
-                    new Mesos.Environment.Variable("HOST", "214214.1244.412421"),
-                    new Mesos.Environment.Variable("PORT0", "3232")
+                    new Builder("mesos.Environment.Variable").setName("FOO").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("HOST").setValue("214214.1244.412421"),
+                    new Builder("mesos.Environment.Variable").setName("PORT0").setValue("3232")
                 ]), // Environment
                 false, // Is shell?
                 null, // Command

@@ -1,5 +1,9 @@
-var helpers = require("../lib/helpers");
-var mesos = require("../lib/mesos")().getMesos();
+"use strict";
+
+var lib = require("requirefrom")("lib");
+var helpers = lib("helpers");
+var mesos = lib("mesos")().getMesos();
+var Builder = lib("builder");
 
 var winston = require("winston");
 var http = require("http");
@@ -121,7 +125,7 @@ describe("helpers", function() {
                     null   // Volume Driver
                 )
             );
-            var enumerated = helpers.stringifyEnumsRecursive(ContainerInfo);
+            var enumerated = helpers.fixEnums(ContainerInfo);
             expect(enumerated.type).to.equal("DOCKER");
             expect(enumerated.docker.network).to.equal("HOST");
         });
@@ -146,7 +150,7 @@ describe("helpers", function() {
             console.log(JSON.stringify(ContainerInfo));
             var ContainerInfoClone = helpers.cloneDeep(ContainerInfo);
             console.log(JSON.stringify(ContainerInfoClone));
-            var enumerated = helpers.stringifyEnumsRecursive(ContainerInfoClone);
+            var enumerated = helpers.fixEnums(ContainerInfoClone);
             console.log(JSON.stringify(enumerated));
             console.log(JSON.stringify(ContainerInfoClone));
             expect(enumerated.type).to.equal("DOCKER");
@@ -180,19 +184,19 @@ describe("helpers", function() {
                 null,   // ExecutorInfo
                 null,     // CommandInfo
                 ContainerInfo, // ContainerInfo
-                new mesos.HealthCheck(null, null, null, null, null, mesos.HealthCheck.Type.HTTP, null, new mesos.HealthCheck.HTTPCheckInfo("http", 80, "/health", [200])),     // HealthCheck
+                new mesos.HealthCheck(null, null, null, null, null, mesos.HealthCheck.Type.HTTP, null, new mesos.HealthCheck.HTTPCheckInfo(mesos.NetworkInfo.Protocol.IPv4, "http", 80, "/health", [200])),     // HealthCheck
                 null, // KillPolicy
                 null, // Data
                 null, // Labels
                 null  // DiscoveryInfo
             )];
 
-            var launchMessage = new mesos.Offer.Operation(
-                mesos.Offer.Operation.Type.LAUNCH,
-                new mesos.Offer.Operation.Launch(taskInfos)
-            );
+            var launchMessage = new Builder("mesos.Offer.Operation")
+                .setType(mesos.Offer.Operation.Type.LAUNCH)
+                .setLaunch(new mesos.Offer.Operation.Launch(taskInfos));
+
             console.log(JSON.stringify(launchMessage));
-            var enumerated = helpers.stringifyEnumsRecursive(launchMessage);
+            var enumerated = helpers.fixEnums(launchMessage);
             console.log(JSON.stringify(enumerated));
             console.log(JSON.stringify(launchMessage));
             expect(enumerated.launch.task_infos[0].container.type).to.equal("DOCKER");
