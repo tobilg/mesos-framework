@@ -1,5 +1,5 @@
 script:
-  - "npm run test-ci"
+  - "npm run test"
 
 language: node_js
 
