@@ -1,23 +1,22 @@
 "use strict";
 
+// Global
+var util = require("util");
+var EventEmitter = require("events").EventEmitter;
+
 // Project require
 var lib = require("requirefrom")("lib");
 var handlers = lib("schedulerHandlers");
 var helpers = lib("helpers");
 var Builder = lib("builder");
 var TaskHelper = lib("taskHelper");
-var winston = require("winston");
-var util = require("util");
-var EventEmitter = require("events").EventEmitter;
-var path = require("path");
-var MesosLib = lib("mesos");
-var Mesos = new MesosLib().getMesos();
+var Mesos = lib("mesos")().getMesos();
 
 // Testing require
 var expect = require("chai").expect;
 var sinon = require("sinon");
 
-describe("Offers handlers tests", function () {
+describe("Offers handlers test", function () {
 
     var accept = true;
 
@@ -28,17 +27,6 @@ describe("Offers handlers tests", function () {
     }
 
     var scheduler = new SchedulerStub();
-
-    var Url = {
-        "scheme": "http",
-        "address": {
-            "hostname": "bla.mesos",
-            "ip": "127.0.0.1",
-            "port": "2121"
-        },
-        "path": "/bla",
-        "fragment": ""
-    };
 
     var offers;
 
@@ -65,15 +53,14 @@ describe("Offers handlers tests", function () {
     var task1;
 
     beforeEach(function () {
+
         task1 = {
             "name": "My Task-121",
             "task_id": {"value": "12220-3440-12532-my-task"},
             "containerInfo": ContainerInfo,
             "commandInfo": new Mesos.CommandInfo(
                 null, // URI
-                new Mesos.Environment([
-                    new Mesos.Environment.Variable("FOO", "BAR")
-                ]), // Environment
+                new Mesos.Environment([new Builder("mesos.Environment.Variable").setName("FOO").setValue("BAR")]), // Environment
                 false, // Is shell?
                 null, // Command
                 null, // Arguments
@@ -89,60 +76,36 @@ describe("Offers handlers tests", function () {
                 "disk": 10
             }
         };
-        offers = {
-            "type": "OFFERS",
-            "offers": [
-                {
-                    "id": {"value": "12214-23523-O235235"},
-                    "framework_id": {"value": "12124-235325-32425"},
-                    "agent_id": {"value": "12325-23523-S23523"},
-                    "hostname": "agent.host",
-                    "url": Url,
-                    "resources": [
-                        {
-                            "name": "cpus",
-                            "type": "SCALAR",
-                            "scalar": {"value": 1.1},
-                            "role": "*"
-                        },
-                        {
-                            "name": "mem",
-                            "role": "*",
-                            "type": "SCALAR",
-                            "scalar": {"value": 256}
-                        },
-                        {
-                            "name": "disk",
-                            "type": "SCALAR",
-                            "scalar": {
-                                "value": 10000
-                            }
-                        },
-                        {
-                            "name": "ports",
-                            "role": "*",
-                            "type": "RANGES",
-                            "ranges": {
-                                "range": [
-                                    {
-                                        "begin": 7000,
-                                        "end": 7009
-                                    },
-                                    {
-                                        "begin": 8080,
-                                        "end": 8090
-                                    },
-                                    {
-                                        "begin": 9000,
-                                        "end": 9019
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            ]
-        };
+        offers = helpers.fixEnums(new Builder("mesos.scheduler.Event.Offers")
+            .setOffers(new Builder("mesos.Offer")
+                .setId(new Mesos.OfferID("12214-23523-O235235"))
+                .setFrameworkId(new Mesos.FrameworkID("12124-235325-32425"))
+                .setAgentId(new Mesos.AgentID("12325-23523-S23523"))
+                .setHostname("agent.host")
+                .setUrl(new Builder("mesos.URL")
+                    .setScheme("http")
+                    .setAddress(new Builder("mesos.Address")
+                        .setHostname("bla.mesos")
+                        .setIp("127.0.0.1")
+                        .setPort(2121)
+                    ).setPath("/bla")
+                )
+                .setResources([
+                    new Builder("mesos.Resource").setName("cpus").setType(Mesos.Value.Type.SCALAR).setScalar(new Mesos.Value.Scalar(1.1)),
+                    new Builder("mesos.Resource").setName("mem").setType(Mesos.Value.Type.SCALAR).setScalar(new Mesos.Value.Scalar(256)),
+                    new Builder("mesos.Resource").setName("disk").setType(Mesos.Value.Type.SCALAR).setScalar(new Mesos.Value.Scalar(10000)),
+                    new Builder("mesos.Resource").setName("ports").setType(Mesos.Value.Type.RANGES).setRanges(
+                        new Builder("mesos.Value.Ranges")
+                            .setRange([
+                                new Mesos.Value.Range(7000, 7009),
+                                new Mesos.Value.Range(8080, 8090),
+                                new Mesos.Value.Range(9000, 9019)
+                            ])
+                    )
+                ])
+            )
+        );
+
     });
 
     util.inherits(SchedulerStub, EventEmitter);
@@ -199,12 +162,7 @@ describe("Offers handlers tests", function () {
 
         var logger = helpers.getLogger(null, null, "debug");
 
-        var httpHealthCheck = new Builder("mesos.HealthCheck.HTTPCheckInfo").setScheme("http").setPort(80).setPath("/health").setStatuses([200]);
-        var healthCheck = new Builder("mesos.HealthCheck")
-            .setHttp(httpHealthCheck);
-        // .setType(Mesos.HealthCheck.Type.HTTP)
-        task1.healthCheck = healthCheck;
-            //task1.healthCheck = helpers.stringifyEnumsRecursive(new Mesos.HealthCheck(null, null, null, null, null, Mesos.HealthCheck.Type.HTTP, null, new Mesos.HealthCheck.HTTPCheckInfo("http", 80, "/health", [200])));
+        task1.healthCheck = new Builder("mesos.HealthCheck").setHttp(new Builder("mesos.HealthCheck.HTTPCheckInfo").setScheme("http").setPort(80).setPath("/health").setStatuses([200]));
         scheduler.logger.info(JSON.stringify(task1));
         scheduler.pendingTasks = [task1];
         scheduler.launchedTasks = [];
@@ -233,7 +191,9 @@ describe("Offers handlers tests", function () {
         scheduler.logger = logger;
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(false);
             expect(scheduler.launchedTasks.length).to.equal(0);
@@ -262,7 +222,9 @@ describe("Offers handlers tests", function () {
             saved = true;
         };
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(saved).to.be.true;
@@ -278,7 +240,7 @@ describe("Offers handlers tests", function () {
 
         var logger = helpers.getLogger(null, null, "debug");
         scheduler.pendingTasks = [task1];
-        task1.healthCheck = new Mesos.HealthCheck(null, null, null, null, null, Mesos.HealthCheck.Type.HTTP, null, new Mesos.HealthCheck.HTTPCheckInfo("http", 80, "/health", [200]));
+        task1.healthCheck = new Builder("mesos.HealthCheck").setHttp(new Builder("mesos.HealthCheck.HTTPCheckInfo").setScheme("http").setPort(80).setPath("/health").setStatuses([200]));
         scheduler.launchedTasks = [];
         scheduler.logger = logger;
         scheduler.frameworkId = "12124-235325-32425";
@@ -290,7 +252,9 @@ describe("Offers handlers tests", function () {
             saved = true;
         };
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(saved).to.be.true;
@@ -314,7 +278,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
@@ -337,7 +303,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
@@ -359,7 +327,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
@@ -383,7 +353,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(false);
             expect(scheduler.launchedTasks.length).to.equal(0);
@@ -402,7 +374,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
@@ -426,7 +400,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
@@ -444,22 +420,23 @@ describe("Offers handlers tests", function () {
         task1.resources.staticPorts = [8080,9001];
         task1.commandInfo.environment = [];
         offers.offers[0].resources[4] = {
-                            "name": "portsa",
-                            "role": "*",
-                            "type": "RANGES",
-                            "ranges": {
-                                "range": [
-                                    {
-                                        "begin": 8080,
-                                        "end": 8090
-                                    },
-                                    {
-                                        "begin": 9000,
-                                        "end": 9019
-                                    }
-                                ]
-                            }
-                        };
+            "provider_id": { value: null },
+            "name": "portsa",
+            "role": "*",
+            "type": "RANGES",
+            "ranges": {
+                "range": [
+                    {
+                        "begin": 8080,
+                        "end": 8090
+                    },
+                    {
+                        "begin": 9000,
+                        "end": 9019
+                    }
+                ]
+            }
+        };
 
         var logger = helpers.getLogger(null, null, "debug");
         scheduler.pendingTasks = [task1];
@@ -468,7 +445,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
@@ -494,7 +473,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
@@ -522,7 +503,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": true};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(true);
             expect(scheduler.launchedTasks.length).to.equal(1);
@@ -542,7 +525,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": false};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(false);
             expect(scheduler.launchedTasks.length).to.equal(0);
@@ -563,7 +548,9 @@ describe("Offers handlers tests", function () {
         scheduler.frameworkId = "12124-235325-32425";
         scheduler.options = {"frameworkName": "myfmw", "serialNumberedTasks": false};
         scheduler.options.staticPorts = true;
+
         handlers["OFFERS"].call(scheduler, offers);
+
         setTimeout(function () {
             expect(accept).to.equal(false);
             expect(scheduler.launchedTasks.length).to.equal(0);
@@ -574,8 +561,7 @@ describe("Offers handlers tests", function () {
 
     it("Receive an offer while suitable task with runtimeInfo is pending", function (done) {
 
-        var runtimeInfo = {agentId: "12345"};
-        task1.runtimeInfo = runtimeInfo;
+        task1.runtimeInfo = {agentId: "12345"};
 
         var logger = helpers.getLogger(null, null, "debug");
 
@@ -619,7 +605,7 @@ describe("Offers handlers tests", function () {
 });
 
 
-describe("Update handlers tests", function () {
+describe("Update handlers test", function () {
 
     var acknowleged;
     var killed;
@@ -638,7 +624,7 @@ describe("Update handlers tests", function () {
     beforeEach(function () {
         acknowleged = false;
         killed = false;
-        runtimeInfo = {agentId: "12345", executorId: "5457"}
+        runtimeInfo = {agentId: "12345", executorId: "5457"};
         task1 = {
             "name": "my-task",
             "taskId": "12344-my-task",
@@ -646,14 +632,14 @@ describe("Update handlers tests", function () {
             "commandInfo": new Mesos.CommandInfo(
                 null, // URI
                 new Mesos.Environment([
-                    new Mesos.Environment.Variable("FOO", "BAR"),
-                    new Mesos.Environment.Variable("PORT5053252", "BAR"),
-                    new Mesos.Environment.Variable("PORT5", "BAR"),
-                    new Mesos.Environment.Variable("PORT5HAFDSA", "BAR"),
-                    new Mesos.Environment.Variable("1PORT3", "BAR"),
-                    new Mesos.Environment.Variable("0HOST", "BAR"),
-                    new Mesos.Environment.Variable("HOST1", "BAR"),
-                    new Mesos.Environment.Variable("HOST", "BAR") // 3 Variables need to be removed when restarting a task, 5 should be left
+                    new Builder("mesos.Environment.Variable").setName("FOO1").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("FOO2").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("FOO3").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("FOO4").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("FOO5").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("FOO6").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("FOO7").setValue("BAR"),
+                    new Builder("mesos.Environment.Variable").setName("FOO8").setValue("BAR") // 3 Variables need to be removed when restarting a task, 5 should be left
                 ]), // Environment
                 false, // Is shell?
                 null, // Command
@@ -713,6 +699,7 @@ describe("Update handlers tests", function () {
         };
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(acknowleged).to.equal(false);
             done();
@@ -745,6 +732,7 @@ describe("Update handlers tests", function () {
         };
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(acknowleged).to.equal(true);
             done();
@@ -768,8 +756,7 @@ describe("Update handlers tests", function () {
             }
         };
 
-        var taskHelper = sinon.createStubInstance(TaskHelper);
-        scheduler.taskHelper = taskHelper;
+        scheduler.taskHelper = sinon.createStubInstance(TaskHelper);
         scheduler.pendingTasks = [];
         scheduler.launchedTasks = [task1];
         scheduler.logger = logger;
@@ -782,6 +769,7 @@ describe("Update handlers tests", function () {
         scheduler.options.useZk = false;
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(scheduler.launchedTasks.length).to.equal(0);
             done();
@@ -805,8 +793,7 @@ describe("Update handlers tests", function () {
             }
         };
 
-        var taskHelper = sinon.createStubInstance(TaskHelper);
-        scheduler.taskHelper = taskHelper;
+        scheduler.taskHelper = sinon.createStubInstance(TaskHelper);
         scheduler.pendingTasks = [];
         scheduler.launchedTasks = [task1];
         scheduler.logger = logger;
@@ -819,6 +806,7 @@ describe("Update handlers tests", function () {
         scheduler.options.useZk = true;
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(scheduler.launchedTasks.length).to.equal(0);
             done();
@@ -850,9 +838,10 @@ describe("Update handlers tests", function () {
         };
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(scheduler.pendingTasks.length).to.equal(1);
-            expect(scheduler.pendingTasks[0].commandInfo.environment.variables).to.have.lengthOf(5);
+            expect(scheduler.pendingTasks[0].commandInfo.environment.variables).to.have.lengthOf(8);
             done();
         }, 100); //timeout with an error in one second
 
@@ -891,6 +880,7 @@ describe("Update handlers tests", function () {
         };
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(scheduler.pendingTasks.length).to.equal(1);
             expect(deleted).to.be.true;
@@ -934,6 +924,7 @@ describe("Update handlers tests", function () {
         task1.runtimeInfo.restarting = true;
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(scheduler.pendingTasks.length).to.equal(0);
             expect(deleted).to.be.true;
@@ -971,6 +962,7 @@ describe("Update handlers tests", function () {
         task1.runtimeInfo.restarting = true;
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(scheduler.pendingTasks.length).to.equal(0);
             expect(deleted).to.be.false;
@@ -1005,6 +997,7 @@ describe("Update handlers tests", function () {
         };
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(scheduler.launchedTasks[0].runtimeInfo.state).to.equal("TASK_FAILED");
             done();
@@ -1047,6 +1040,7 @@ describe("Update handlers tests", function () {
         };
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(saved).to.be.true;
             expect(scheduler.launchedTasks[0].runtimeInfo.state).to.equal("TASK_RUNNING");
@@ -1092,6 +1086,7 @@ describe("Update handlers tests", function () {
         };
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(saved).to.be.true;
             expect(scheduler.launchedTasks[0].runtimeInfo.state).to.equal("TASK_RUNNING");
@@ -1136,6 +1131,7 @@ describe("Update handlers tests", function () {
         };
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(saved).to.be.true;
             expect(scheduler.launchedTasks[0].runtimeInfo.state).to.equal("TASK_RUNNING");
@@ -1174,6 +1170,7 @@ describe("Update handlers tests", function () {
         scheduler.options.killUnknownTasks = false;
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(killed).to.equal(false);
             done();
@@ -1218,6 +1215,7 @@ describe("Update handlers tests", function () {
         scheduler.options.killUnknownTasks = false;
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(killed).to.equal(false);
             expect(deleted).to.be.true;
@@ -1255,6 +1253,7 @@ describe("Update handlers tests", function () {
         scheduler.options.killUnknownTasks = true;
 
         handlers["UPDATE"].call(scheduler, update);
+
         setTimeout(function () {
             expect(killed).to.equal(true);
             done();

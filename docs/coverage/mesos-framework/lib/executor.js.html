@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for mesos-framework/lib/executor.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">All files</a> / <a href="index.html">mesos-framework/lib</a> executor.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">12.37% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>12/97</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/45</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/13</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">12.37% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>12/97</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">"use strict";
+&nbsp;
+var http = require("http");
+var EventEmitter = require('events').EventEmitter;
+var util = require('util');
+var uuid = require('uuid');
+&nbsp;
+var helpers = require("./helpers");
+var executorHandlers = require("./executorHandlers");
+var mesos = require("./mesos")().getMesos();
+&nbsp;
+/**
+ * Represents a Mesos framework executor.
+ * @constructor
+ * @param {object} options - The option map object.
+ */
+function <span class="fstat-no" title="function not covered" >Executor </span>(options) {
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (!(this instanceof Executor)) {</span>
+<span class="cstat-no" title="statement not covered" >        return new Executor(options);</span>
+    }
+&nbsp;
+    // Inherit from EventEmitter
+<span class="cstat-no" title="statement not covered" >    EventEmitter.call(this);</span>
+&nbsp;
+    var self = <span class="cstat-no" title="statement not covered" >this;</span>
+<span class="cstat-no" title="statement not covered" >    self.options = {};</span>
+&nbsp;
+    // Optional env variables
+    var envMap = <span class="cstat-no" title="statement not covered" >{</span>
+        "MESOS_CHECKPOINT": "checkpointEnabled",
+        "MESOS_EXECUTOR_SHUTDOWN_GRACE_PERIOD": "shutdownGracePeriod",
+        "MESOS_RECOVERY_TIMEOUT": "recoveryTimeout",
+        "MESOS_SUBSCRIPTION_BACKOFF_MAX": "subscriptionBackoffMax"
+    };
+&nbsp;
+    // Check for frameworkId
+<span class="cstat-no" title="statement not covered" >    if (process.env.MESOS_FRAMEWORK_ID) {</span>
+<span class="cstat-no" title="statement not covered" >        self.frameworkId = new mesos.FrameworkID(process.env.MESOS_FRAMEWORK_ID);</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >        console.error("No MESOS_FRAMEWORK_ID environment parameter found! Exiting...");</span>
+<span class="cstat-no" title="statement not covered" >        process.exit(1);</span>
+    }
+&nbsp;
+    // Check fo rexecutorId
+<span class="cstat-no" title="statement not covered" >    if (process.env.MESOS_EXECUTOR_ID) {</span>
+<span class="cstat-no" title="statement not covered" >        self.executorId = new mesos.ExecutorID(process.env.MESOS_EXECUTOR_ID);</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >        console.error("No MESOS_EXECUTOR_ID environment parameter found! Exiting...");</span>
+<span class="cstat-no" title="statement not covered" >        process.exit(2);</span>
+    }
+&nbsp;
+    // Check for working directory
+<span class="cstat-no" title="statement not covered" >    if (process.env.MESOS_DIRECTORY) {</span>
+<span class="cstat-no" title="statement not covered" >        self.workingDirectory = process.env.MESOS_DIRECTORY;</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >        console.error("No MESOS_DIRECTORY environment parameter found! Exiting...");</span>
+<span class="cstat-no" title="statement not covered" >        process.exit(3);</span>
+    }
+&nbsp;
+    // Check for agent endpoint
+<span class="cstat-no" title="statement not covered" >    if (process.env.MESOS_AGENT_ENDPOINT) {</span>
+        var endpointArray = <span class="cstat-no" title="statement not covered" >process.env.MESOS_AGENT_ENDPOINT.split(":");</span>
+<span class="cstat-no" title="statement not covered" >        if (endpointArray.length === 2) {</span>
+<span class="cstat-no" title="statement not covered" >            self.options.agentUrl = endpointArray[0];</span>
+<span class="cstat-no" title="statement not covered" >            self.options.port = parseInt(endpointArray[1]);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            console.error("MESOS_AGENT_ENDPOINT didn't contain a ip:port combination! Exiting...");</span>
+<span class="cstat-no" title="statement not covered" >            process.exit(4);</span>
+        }
+    } else {
+<span class="cstat-no" title="statement not covered" >        console.log("No MESOS_AGENT_ENDPOINT environment parameter found! Using default values...");</span>
+<span class="cstat-no" title="statement not covered" >        self.options.agentUrl = options.agentUrl || "127.0.0.1";</span>
+<span class="cstat-no" title="statement not covered" >        self.options.port = parseInt(options.port) || 5051;</span>
+    }
+&nbsp;
+    // Check for other env variables and inline them
+<span class="cstat-no" title="statement not covered" >    Object.getOwnPropertyNames(envMap).forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (envVariable) {</span>
+<span class="cstat-no" title="statement not covered" >        if (process.env[envVariable]) {</span>
+<span class="cstat-no" title="statement not covered" >            self[envMap[envVariable]] = process.env[envVariable];</span>
+        }
+    });
+&nbsp;
+    // Template for issuing Mesos Scheduler HTTP API requests
+<span class="cstat-no" title="statement not covered" >    self.requestTemplate = {</span>
+        host: self.options.agentUrl,
+        port: self.options.port,
+        path: "/api/v1/executor",
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+&nbsp;
+    // Customer event handlers will be registered here
+<span class="cstat-no" title="statement not covered" >    self.customEventHandlers = {};</span>
+&nbsp;
+    // List of allowed event handler function names and their argument length
+    var allowedEventHandlers = <span class="cstat-no" title="statement not covered" >{</span>
+        "SUBSCRIBED": 1,
+        "LAUNCH": 1,
+        "KILL": 1,
+        "ACKNOWLEDGED": 1,
+        "MESSAGE": 1,
+        "ERROR": 1,
+        "SHUTDOWN": 1
+    };
+&nbsp;
+    // Add custom event handlers if present
+<span class="cstat-no" title="statement not covered" >    if (options.handlers &amp;&amp; Object.getOwnPropertyNames(options.handlers).length &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >        Object.getOwnPropertyNames(options.handlers).forEach(<span class="fstat-no" title="function not covered" >fu</span>nction (handlerName) {</span>
+            // Check if name is allowed, is a function and the length of the function arguments fit to the ones defined in allowedEventHandlers
+<span class="cstat-no" title="statement not covered" >            if (Object.getOwnPropertyNames(allowedEventHandlers).indexOf(handlerName.toUpperCase()) &gt; -1 &amp;&amp; helpers.isFunction(options.handlers[handlerName]) &amp;&amp; options.handlers[handlerName].length === allowedEventHandlers[handlerName]) {</span>
+<span class="cstat-no" title="statement not covered" >                self.customEventHandlers[handlerName.toUpperCase()] = options.handlers[handlerName];</span>
+            }
+        });
+    }
+&nbsp;
+}
+&nbsp;
+// Inhertit from EventEmitter
+util.inherits(Executor, EventEmitter);
+&nbsp;
+/**
+ * Subscribes the framework executor to the according Mesos agent.
+ */
+Executor.prototype.subscribe = <span class="fstat-no" title="function not covered" >fu</span>nction () {
+&nbsp;
+    var self = <span class="cstat-no" title="statement not covered" >this;</span>
+&nbsp;
+    /**
+     * The handler funciton for the incoming Mesos agent events for this executor.
+     * @param {object} eventData - The data object for an incoming event. Contains the event details (type etc.).
+     */
+    function <span class="fstat-no" title="function not covered" >handleEvent </span>(eventData) {
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        try {</span>
+&nbsp;
+            var event = <span class="cstat-no" title="statement not covered" >JSON.parse(eventData);</span>
+&nbsp;
+            // Determine event handler, use custom one if it exists
+<span class="cstat-no" title="statement not covered" >            if (self.customEventHandlers[event.type]) {</span>
+                // Call custom handler
+<span class="cstat-no" title="statement not covered" >                self.customEventHandlers[event.type].call(self, event[event.type.toLocaleLowerCase()]);</span>
+            } else {
+                // Call default handler
+<span class="cstat-no" title="statement not covered" >                schedulerHandlers[event.type].call(self, event[event.type.toLocaleLowerCase()]);</span>
+            }
+&nbsp;
+            // Emit original objects
+<span class="cstat-no" title="statement not covered" >            self.emit(event.type.toLocaleLowerCase(), event[event.type.toLocaleLowerCase()]);</span>
+&nbsp;
+        } catch (error) {
+<span class="cstat-no" title="statement not covered" >            self.emit("error", { message: "Couldn't parse as JSON: " + eventData, stack: (error.stack || "") });</span>
+        }
+&nbsp;
+    }
+&nbsp;
+    var req = <span class="cstat-no" title="statement not covered" >http.request(self.requestTemplate, <span class="fstat-no" title="function not covered" >fu</span>nction (res) {</span>
+&nbsp;
+        // Set encoding to UTF8
+<span class="cstat-no" title="statement not covered" >        res.setEncoding('utf8');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (res.statusCode === 200) {</span>
+<span class="cstat-no" title="statement not covered" >            self.emit("sent_subscribe", { mesosStreamId: self.mesosStreamId });</span>
+&nbsp;
+        }
+&nbsp;
+        // Local cache for chunked JSON messages
+        var cache = <span class="cstat-no" title="statement not covered" >"";</span>
+&nbsp;
+        // Watch for data/chunks
+<span class="cstat-no" title="statement not covered" >        res.on('data', <span class="fstat-no" title="function not covered" >fu</span>nction (chunk) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            console.log("BODY: " + chunk);</span>
+&nbsp;
+            var expectedLength = <span class="cstat-no" title="statement not covered" >0;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            if (chunk.indexOf("\n") &gt; -1) {</span>
+                var temp = <span class="cstat-no" title="statement not covered" >chunk.split("\n");</span>
+<span class="cstat-no" title="statement not covered" >                if (temp.length === 2) {</span>
+<span class="cstat-no" title="statement not covered" >                    expectedLength = parseInt(temp[0]);</span>
+<span class="cstat-no" title="statement not covered" >                    if (temp[1].length &lt; expectedLength) {</span>
+                        // Add to cache
+<span class="cstat-no" title="statement not covered" >                        cache += temp[1];</span>
+                    } else {
+                        // Empty cache
+<span class="cstat-no" title="statement not covered" >                        cache = "";</span>
+                        // Handle event
+<span class="cstat-no" title="statement not covered" >                        handleEvent(temp[1]);</span>
+                    }
+                } else {
+<span class="cstat-no" title="statement not covered" >                    self.emit("error", { message: "Other linebreak count found than expected! Actual count: " + temp.length });</span>
+                }
+            } else {
+<span class="cstat-no" title="statement not covered" >                if (cache.length &gt; 0) {</span>
+                    // Concatenate cached partial data with this chunk, replace the erroneous parts
+                    var eventData = <span class="cstat-no" title="statement not covered" >cache + chunk;</span>
+                    // Handle event
+<span class="cstat-no" title="statement not covered" >                    handleEvent(eventData);</span>
+                    // Empty cache
+<span class="cstat-no" title="statement not covered" >                    cache = "";</span>
+                }
+            }
+        });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        res.on('end', <span class="fstat-no" title="function not covered" >fu</span>nction () {</span>
+<span class="cstat-no" title="statement not covered" >            self.emit("error", { message: "Long-running connection was closed!" });</span>
+        });
+&nbsp;
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    req.on('error', <span class="fstat-no" title="function not covered" >fu</span>nction (e) {</span>
+<span class="cstat-no" title="statement not covered" >        self.emit("error", { message: "There was a problem with the request: " + e.message});</span>
+    });
+&nbsp;
+    // write data to request body
+<span class="cstat-no" title="statement not covered" >    req.write(JSON.stringify({</span>
+        "type": "SUBSCRIBE",
+        "framework_id": self.frameworkId,
+        "executor_id": self.executorId
+    }));
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    req.end();</span>
+&nbsp;
+};
+&nbsp;
+/**
+ *  Communicate the state of managed tasks. It is crucial that a terminal update (e.g., TASK_FINISHED, TASK_KILLED or TASK_FAILED) is sent to the agent as soon as the task terminates, in order to allow Mesos to release the resources allocated to the task.
+ *  The scheduler must explicitly respond to this call through an ACKNOWLEDGE message (see ACKNOWLEDGED in the Events section below for the semantics). The executor must maintain a list of unacknowledged updates. If for some reason, the executor is disconnected from the agent, these updates must be sent as part of SUBSCRIBE request in the unacknowledged_updates field.
+ *  @param {Object} taskStatus The {@link https://github.com/apache/mesos/blob/c6e9ce16850f69fda719d4e32be3f2a2e1d80387/include/mesos/v1/mesos.proto#L1330|TaskStatus} object containing the update details.
+ */
+Executor.prototype.update = <span class="fstat-no" title="function not covered" >fu</span>nction (taskStatus) {
+&nbsp;
+    var self = <span class="cstat-no" title="statement not covered" >this;</span>
+&nbsp;
+    var payload = <span class="cstat-no" title="statement not covered" >{</span>
+        "type": "UPDATE",
+        "framework_id": self.frameworkId,
+        "executor_id": self.executorId,
+        "update": {
+            "status": taskStatus
+        }
+    };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    helpers.doRequest.call(self, payload, <span class="fstat-no" title="function not covered" >fu</span>nction (error, response) {</span>
+<span class="cstat-no" title="statement not covered" >        if (error) {</span>
+<span class="cstat-no" title="statement not covered" >            self.emit("error", error.message);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            self.emit("sent_update");</span>
+        }
+    });
+    
+};
+&nbsp;
+/**
+ * Send arbitrary data to the scheduler. Note that Mesos neither interprets this data nor makes any guarantees about the delivery of this message to the executor.
+ * @param {string} data The string which's raw bytes will be encoded in Base64.
+ */
+Executor.prototype.message = <span class="fstat-no" title="function not covered" >fu</span>nction (data) {
+&nbsp;
+    var self = <span class="cstat-no" title="statement not covered" >this;</span>
+&nbsp;
+    var payload = <span class="cstat-no" title="statement not covered" >{</span>
+        "type": "MESSAGE",
+        "framework_id": self.frameworkId,
+        "executor_id": self.executorId,
+        "message": {
+            "data": new Buffer(data).toString('base64')
+        }
+    };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    helpers.doRequest.call(self, payload, <span class="fstat-no" title="function not covered" >fu</span>nction (error, response) {</span>
+<span class="cstat-no" title="statement not covered" >        if (error) {</span>
+<span class="cstat-no" title="statement not covered" >            self.emit("error", error.message);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            self.emit("sent_message");</span>
+        }
+    });
+&nbsp;
+};
+&nbsp;
+module.exports = Executor;
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Sun Mar 04 2018 17:22:16 GMT+0100 (CET)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

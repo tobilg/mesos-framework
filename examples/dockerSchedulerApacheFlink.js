@@ -2,6 +2,7 @@
 
 var Scheduler = require("../index").Scheduler;
 var Mesos = require("../index").Mesos.getMesos();
+var Builder = require("../index").Builder;
 
 var ContainerInfo = new Mesos.ContainerInfo(
     Mesos.ContainerInfo.Type.DOCKER, // Type
@@ -33,12 +34,12 @@ var scheduler = new Scheduler({
             "instances": 3,
             "executorInfo": null, // Can take a Mesos.ExecutorInfo object
             "containerInfo": ContainerInfo, // Mesos.ContainerInfo object
-            "commandInfo": new Mesos.CommandInfo( // Strangely, this is needed, even when specifying ContainerInfo...
+            "commandInfo": new Mesos.CommandInfo(
                 null, // URI
                 new Mesos.Environment([
-                    new Mesos.Environment.Variable("flink_recovery_mode", "zookeeper"),
-                    new Mesos.Environment.Variable("flink_recovery_zookeeper_quorum", "172.17.10.101:2181"),
-                    new Mesos.Environment.Variable("flink_recovery_zookeeper_storageDir", "/data/zk")
+                    new Builder("mesos.Environment.Variable").setName("flink_recovery_mode").setValue("zookeeper"),
+                    new Builder("mesos.Environment.Variable").setName("flink_recovery_zookeeper_quorum").setValue("172.17.10.101:2181"),
+                    new Builder("mesos.Environment.Variable").setName("flink_recovery_zookeeper_storageDir").setValue("/data/zk")
                 ]), // Environment
                 false, // Is shell?
                 null, // Command
@@ -63,14 +64,14 @@ var scheduler = new Scheduler({
             "commandInfo": new Mesos.CommandInfo( // Strangely, this is needed, even when specifying ContainerInfo...
                 null, // URI
                 new Mesos.Environment([
-                    new Mesos.Environment.Variable("flink_recovery_mode", "zookeeper"),
-                    new Mesos.Environment.Variable("flink_recovery_zookeeper_quorum", "172.17.10.101:2181"),
-                    new Mesos.Environment.Variable("flink_recovery_zookeeper_storageDir", "/data/zk"),
-                    new Mesos.Environment.Variable("flink_taskmanager_tmp_dirs", "/data/tasks"),
-                    new Mesos.Environment.Variable("flink_blob_storage_directory", "/data/blobs"),
-                    new Mesos.Environment.Variable("flink_state_backend", "filesystem"),
-                    new Mesos.Environment.Variable("flink_taskmanager_numberOfTaskSlots", "1"),
-                    new Mesos.Environment.Variable("flink_taskmanager_heap_mb", "1536")
+                    new Builder("mesos.Environment.Variable").setName("flink_recovery_mode").setValue("zookeeper"),
+                    new Builder("mesos.Environment.Variable").setName("flink_recovery_zookeeper_quorum").setValue("172.17.10.101:2181"),
+                    new Builder("mesos.Environment.Variable").setName("flink_recovery_zookeeper_storageDir").setValue("/data/zk"),
+                    new Builder("mesos.Environment.Variable").setName("flink_taskmanager_tmp_dirs").setValue("/data/tasks"),
+                    new Builder("mesos.Environment.Variable").setName("flink_blob_storage_directory").setValue("/data/blobs"),
+                    new Builder("mesos.Environment.Variable").setName("flink_state_backend").setValue("filesystem"),
+                    new Builder("mesos.Environment.Variable").setName("flink_taskmanager_numberOfTaskSlots").setValue("1"),
+                    new Builder("mesos.Environment.Variable").setName("flink_taskmanager_heap_mb").setValue("1536")
                 ]), // Environment
                 false, // Is shell?
                 null, // Command

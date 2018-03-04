@@ -9,7 +9,7 @@ node: true
 "use strict";
 const fs = require("fs");
 
-var Scheduler = require("../").Scheduler;
+var Scheduler = require("../index").Scheduler;
 var http = require("http");
 
 var TaskHealthHelper = require("../lib/taskHealthHelper");

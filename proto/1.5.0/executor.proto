@@ -14,9 +14,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+syntax = "proto2";
+
+//import "mesos/v1/mesos.proto";
+
 package mesos.executor;
 
-option java_package = "org.apache.mesos.v1.executor";
+option java_package = "org.apache.mesos.executor";
 option java_outer_classname = "Protos";
 
 

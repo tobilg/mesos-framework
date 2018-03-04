@@ -1,0 +1,3386 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for mesos-framework/lib/scheduler.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">All files</a> / <a href="index.html">mesos-framework/lib</a> scheduler.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">90.77% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>364/401</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">85.28% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>197/231</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">84.62% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>55/65</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">90.77% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>364/401</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546
+547
+548
+549
+550
+551
+552
+553
+554
+555
+556
+557
+558
+559
+560
+561
+562
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582
+583
+584
+585
+586
+587
+588
+589
+590
+591
+592
+593
+594
+595
+596
+597
+598
+599
+600
+601
+602
+603
+604
+605
+606
+607
+608
+609
+610
+611
+612
+613
+614
+615
+616
+617
+618
+619
+620
+621
+622
+623
+624
+625
+626
+627
+628
+629
+630
+631
+632
+633
+634
+635
+636
+637
+638
+639
+640
+641
+642
+643
+644
+645
+646
+647
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+679
+680
+681
+682
+683
+684
+685
+686
+687
+688
+689
+690
+691
+692
+693
+694
+695
+696
+697
+698
+699
+700
+701
+702
+703
+704
+705
+706
+707
+708
+709
+710
+711
+712
+713
+714
+715
+716
+717
+718
+719
+720
+721
+722
+723
+724
+725
+726
+727
+728
+729
+730
+731
+732
+733
+734
+735
+736
+737
+738
+739
+740
+741
+742
+743
+744
+745
+746
+747
+748
+749
+750
+751
+752
+753
+754
+755
+756
+757
+758
+759
+760
+761
+762
+763
+764
+765
+766
+767
+768
+769
+770
+771
+772
+773
+774
+775
+776
+777
+778
+779
+780
+781
+782
+783
+784
+785
+786
+787
+788
+789
+790
+791
+792
+793
+794
+795
+796
+797
+798
+799
+800
+801
+802
+803
+804
+805
+806
+807
+808
+809
+810
+811
+812
+813
+814
+815
+816
+817
+818
+819
+820
+821
+822
+823
+824
+825
+826
+827
+828
+829
+830
+831
+832
+833
+834
+835
+836
+837
+838
+839
+840
+841
+842
+843
+844
+845
+846
+847
+848
+849
+850
+851
+852
+853
+854
+855
+856
+857
+858
+859
+860
+861
+862
+863
+864
+865
+866
+867
+868
+869
+870
+871
+872
+873
+874
+875
+876
+877
+878
+879
+880
+881
+882
+883
+884
+885
+886
+887
+888
+889
+890
+891
+892
+893
+894
+895
+896
+897
+898
+899
+900
+901
+902
+903
+904
+905
+906
+907
+908
+909
+910
+911
+912
+913
+914
+915
+916
+917
+918
+919
+920
+921
+922
+923
+924
+925
+926
+927
+928
+929
+930
+931
+932
+933
+934
+935
+936
+937
+938
+939
+940
+941
+942
+943
+944
+945
+946
+947
+948
+949
+950
+951
+952
+953
+954
+955
+956
+957
+958
+959
+960
+961
+962
+963
+964
+965
+966
+967
+968
+969
+970
+971
+972
+973
+974
+975
+976
+977
+978
+979
+980
+981
+982
+983
+984
+985
+986
+987
+988
+989
+990
+991
+992
+993
+994
+995
+996
+997
+998
+999
+1000
+1001
+1002
+1003
+1004
+1005
+1006
+1007
+1008
+1009
+1010
+1011
+1012
+1013
+1014
+1015
+1016
+1017
+1018
+1019
+1020
+1021
+1022
+1023
+1024
+1025
+1026
+1027
+1028
+1029
+1030
+1031
+1032
+1033
+1034
+1035
+1036
+1037
+1038
+1039
+1040
+1041
+1042
+1043
+1044
+1045
+1046
+1047
+1048
+1049
+1050
+1051
+1052
+1053
+1054
+1055
+1056
+1057
+1058
+1059
+1060
+1061
+1062
+1063
+1064
+1065
+1066
+1067
+1068
+1069
+1070
+1071
+1072
+1073
+1074
+1075
+1076
+1077
+1078
+1079
+1080
+1081
+1082
+1083
+1084
+1085
+1086
+1087
+1088
+1089
+1090
+1091
+1092
+1093
+1094
+1095
+1096
+1097
+1098
+1099
+1100
+1101
+1102
+1103
+1104
+1105
+1106
+1107
+1108</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">112x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">70x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">77x</span>
+<span class="cline-any cline-yes">75x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">104x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">70x</span>
+<span class="cline-any cline-yes">70x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">75x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">75x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-yes">70x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">89x</span>
+<span class="cline-any cline-yes">89x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">25x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">22x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">39x</span>
+<span class="cline-any cline-yes">34x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">30x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">25x</span>
+<span class="cline-any cline-yes">25x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">41x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">31x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">31x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">"use strict";
+&nbsp;
+var http = require("http");
+var EventEmitter = require("events").EventEmitter;
+var util = require("util");
+var uuid = require("uuid");
+&nbsp;
+var helpers = require("./helpers");
+var schedulerHandlers = require("./schedulerHandlers");
+var mesos = require("./mesos")().getMesos();
+var Builder = require("./builder");
+var TaskHelper = require("./taskHelper");
+&nbsp;
+var zookeeper = require("node-zookeeper-client");
+&nbsp;
+/**
+ * Represents a Mesos framework scheduler.
+ * @constructor
+ * @param {object} options - The option map object.
+ */
+function Scheduler (options) {
+&nbsp;
+    if (!(this instanceof Scheduler)) {
+        return new Scheduler(options);
+    }
+&nbsp;
+    // Inherit from EventEmitter
+    EventEmitter.call(this);
+&nbsp;
+    var self = this;
+&nbsp;
+    self.options = {};
+    self.options.frameworkName = (options.frameworkName ? options.frameworkName.replace(/ /g, "-") : "mesos-framework." + uuid.v4());
+    self.options.user = options.user || "root";
+    self.options.role = options.role || "*";
+    self.options.restartStates = options.restartStates || ["TASK_FAILED", "TASK_LOST", "TASK_ERROR"]; // Task in TASK_FINISHED will NOT be restarted by default!
+    self.options.frameworkFailoverTimeout = options.frameworkFailoverTimeout || 604800; // One week
+    self.options.masterConnectionTimeout = options.masterConnectionTimeout * 1000 || 10000; // Ten seconds
+    self.options.exponentialBackoffFactor = options.exponentialBackoffFactor || 1.5;
+    self.options.exponentialBackoffMinimum = options.exponentialBackoffMinimum * 1000 || 1000; // One second
+    self.options.exponentialBackoffMaximum = options.exponentialBackoffMaximum * 1000 || 15000; // 15 seconds
+    self.options.killUnknownTasks = options.killUnknownTasks || false;
+    self.options.serialNumberedTasks = (options.serialNumberedTasks !== false);
+&nbsp;
+    // ZooKeeper
+    self.options.useZk = options.useZk || false;
+    self.options.zkUrl = options.zkUrl || "master.mesos:2181";
+    self.options.zkPrefix = options.zkPrefix || "/dcos-service-";
+&nbsp;
+    // Logging
+    self.logger = helpers.getLogger((options.logging &amp;&amp; options.logging.path ? options.logging.path : null), (options.logging &amp;&amp; options.logging.fileName ? options.logging.fileName : null), (options.logging &amp;&amp; options.logging.level ? options.logging.level : null));
+&nbsp;
+    self.subscribeBackoffTime = 0;
+&nbsp;
+    // Port allocation
+    self.options.staticPorts = options.staticPorts || false;
+&nbsp;
+    if (self.options.staticPorts){
+        self.logger.info("Scheduler configured with fixed ports");
+    }
+&nbsp;
+    // Master discovery
+    self.options.masterUrl = options.masterUrl || "127.0.0.1";
+    self.options.port = parseInt(options.port) || 5050;
+&nbsp;
+    // "Globals"
+    self.frameworkId = null;
+    self.mesosStreamId = null;
+    self.lastHeartbeat = null;
+    self.zkClient = null;
+&nbsp;
+    // Tasks
+    self.tasks = [];
+&nbsp;
+    // Add tasks if there are any
+    if (options.hasOwnProperty("tasks")) {
+        self.tasks = helpers.sortTasksByPriority(options.tasks);
+    }
+&nbsp;
+    self.logger.debug(JSON.stringify(self.tasks));
+&nbsp;
+    self.pendingTasks = [];
+    self.launchedTasks = [];
+    self.reconcileTasks = [];
+    self.killTasks = [];
+&nbsp;
+    // Add to pending tasks if not yet submitted
+    self.tasks.forEach(function (task) {
+        if (!task.isSubmitted) {
+            self.pendingTasks.push(task);
+        }
+    });
+&nbsp;
+    // Runtime info
+    self.runtimeInfo = {};
+&nbsp;
+    // Template for issuing Mesos Scheduler HTTP API requests
+    self.requestTemplate = {};
+&nbsp;
+    self.generateRequestTemplate = function () {
+        self.requestTemplate = {
+            host: self.options.masterUrl,
+            port: self.options.port,
+            path: "/api/v1/scheduler",
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+    };
+&nbsp;
+    // Fill the requestTemplate
+    self.generateRequestTemplate();
+&nbsp;
+    // Customer event handlers will be registered here
+    self.customEventHandlers = {};
+&nbsp;
+    // List of allowed event handler function names and their argument length
+    var allowedEventHandlers = {
+        "SUBSCRIBED": 1,
+        "OFFERS": 1,
+        "INVERSE_OFFERS": 1,
+        "RESCIND":1,
+        "RESCIND_INVERSE_OFFER": 1,
+        "UPDATE": 1,
+        "MESSAGE": 1,
+        "FAILURE": 1,
+        "ERROR": 1,
+        "HEARTBEAT": 1
+    };
+&nbsp;
+    // Add custom event handlers if present
+    if (options.handlers &amp;&amp; Object.getOwnPropertyNames(options.handlers).length &gt; 0) {
+        Object.getOwnPropertyNames(options.handlers).forEach(function (handlerName) {
+            var ucHandlerName = handlerName.toUpperCase();
+            // Check if name is allowed, is a function and the length of the function arguments fit to the ones defined in allowedEventHandlers
+            if (Object.getOwnPropertyNames(allowedEventHandlers).indexOf(ucHandlerName) &gt; -1 &amp;&amp; helpers.isFunction(options.handlers[handlerName]) &amp;&amp; options.handlers[handlerName].length === allowedEventHandlers[ucHandlerName]) {
+                self.customEventHandlers[ucHandlerName] = options.handlers[handlerName];
+            }
+        });
+    }
+&nbsp;
+    // Fill runtimeInfo from given Tasks
+    if (options.tasks &amp;&amp; Object.getOwnPropertyNames(options.tasks).length &gt; 0) {
+        var tempPriority = 1;
+        Object.getOwnPropertyNames(options.tasks).forEach(function (task) {
+            // Populate runtimeInfo for each task
+            self.runtimeInfo[task] = {
+                "desiredInstances": options.tasks[task].instances || 1,
+                "requestedInstances": 0,
+                "runningInstances": {},
+                "priority": options.tasks[task].priority || tempPriority
+            };
+            // Increase priority
+            tempPriority++;
+        });
+    }
+&nbsp;
+    if (options.hasOwnProperty("tasks")) {
+        self.logger.debug(JSON.stringify(helpers.sortTasksByPriority(options.tasks)));
+    }
+&nbsp;
+    // Store the long-running request
+    self.httpRequest = {};
+&nbsp;
+    // Handling of ZooKeeper-related stuff
+    if (self.options.useZk) {
+&nbsp;
+        self.logger.debug("Using ZooKeeper for persistency. Connection is " + self.options.zkUrl);
+&nbsp;
+        // Set default path for the service
+        self.zkServicePath = self.options.zkPrefix + self.options.frameworkName;
+&nbsp;
+        // Create ZK client (getting from options is only to be used for unit test!)
+        self.zkClient = options.zkClient || <span class="branch-1 cbranch-no" title="branch not covered" >zookeeper.createClient(self.options.zkUrl);</span>
+&nbsp;
+        // Instantiate TaskHelper (getting from options is only to be used for unit test!)
+        self.taskHelper = options.taskHelper || new TaskHelper(self);
+&nbsp;
+        // For unit test
+        if (options.taskHelper) {
+            self.taskHelper.scheduler = self;
+        }
+&nbsp;
+        // Set path for the framework id
+        var zkPath = self.zkServicePath + "/framework-id";
+&nbsp;
+        self.zkClient.on("error", function (error) {
+            self.logger.error(error);
+        });
+&nbsp;
+        // Once connected, check if path exists
+        self.zkClient.once("connected", function () {
+&nbsp;
+            self.logger.debug("Connected to ZooKeeper on " + self.options.zkUrl);
+&nbsp;
+            // Check if path with framework id exists
+            self.zkClient.getData(zkPath, null, function (error, data, stat) {
+&nbsp;
+                self.logger.debug("error before if:" + JSON.stringify(error));
+                if (error) {
+&nbsp;
+                    self.logger.debug("error:" + JSON.stringify(error));
+                    // Check if node doesn't exist yet
+                    if (error.getCode() === zookeeper.Exception.NO_NODE) {
+&nbsp;
+                        self.logger.debug("Node " + zkPath + " doesn't exist yet. Will be created on framework launch");
+&nbsp;
+                        // Add event handler for the SUBSCRIBE event, to set the framework id to ZooKeeper
+                        self.once("subscribed", function (obj) {
+&nbsp;
+                            self.logger.debug("Got subscribed event");
+&nbsp;
+                            self.logger.debug("now creating path " + zkPath);
+&nbsp;
+                            // Seperating path creation from data save due to various client bugs.
+                            self.zkClient.mkdirp(zkPath, function (error, stat) {
+&nbsp;
+                                if (error) {
+                                    self.logger.error("Got error when creating a ZK node for the framework ID: " + error.stack);
+                                    self.options.useZk = false;
+                                    self.zkClient.close();
+                                } else {
+                                    self.zkClient.setData(zkPath, new Buffer(self.frameworkId), function (error, stat) {
+                                        if (error) {
+                                            self.logger.error("Got error when saving the framework ID on ZK: " + error.stack);
+                                            self.options.useZk = false;
+                                            self.zkClient.close();
+                                        } else {
+                                            self.logger.debug("Successfully set framework ID")
+                                        }
+                                    });
+                                }
+&nbsp;
+                            });
+&nbsp;
+                        });
+&nbsp;
+                        // We're ready to subscribe
+                        // Timeout to let init finish
+                        setTimeout(function() {
+                            self.emit("ready");
+                        }, 100);
+&nbsp;
+                    } else {
+                        // Other error
+                        self.logger.error(error.stack);
+                    }
+&nbsp;
+                } else if (data) {
+                    self.logger.debug("Got framework ID from ZooKeeper:" + data.toString());
+                    // Set framework id to existing one from ZooKeeper
+                    self.frameworkId = data.toString();
+                    // Load tasks from ZooKeeper
+                    self.taskHelper.loadTasks();
+                    // "ready" event is emitted after successfully loading the tasks!
+                }
+&nbsp;
+            });
+&nbsp;
+        });
+&nbsp;
+        // Connect to ZooKeeper
+        self.zkClient.connect();
+&nbsp;
+    } else {
+        // Timeout to let init finish
+        setTimeout(function() {
+            self.emit("ready");
+        }, 100);
+    }
+&nbsp;
+}
+&nbsp;
+// Inhertit from EventEmitter
+util.inherits(Scheduler, EventEmitter);
+&nbsp;
+/**
+ * Subscribes the scheduler with the master to receive events. A scheduler must send other calls only after it has received the SUBCRIBED event.
+ */
+Scheduler.prototype.subscribe = function () {
+&nbsp;
+    var self = this;
+&nbsp;
+    /**
+     * The handler funciton for the incoming Mesos master events for this framework.
+     * @param {object} eventData - The data object for an incoming event. Contains the event details (type etc.).
+     */
+    function handleEvent (eventData) {
+&nbsp;
+        try {
+&nbsp;
+            var event = JSON.parse(eventData);
+&nbsp;
+            // Determine event handler, use custom one if it exists
+            if (self.customEventHandlers[event.type]) {
+                // Call custom handler
+                self.customEventHandlers[event.type].call(self, event[event.type.toLocaleLowerCase()]);
+            } else {
+                // Call default handler
+                schedulerHandlers[event.type].call(self, event[event.type.toLocaleLowerCase()]);
+            }
+&nbsp;
+            // Emit events per type
+            if (event.type === "SUBSCRIBED") {
+                // Set frameworkId
+                self.frameworkId = event[event.type.toLocaleLowerCase()].framework_id.value;
+                // TODO: Check!
+                self.sync();
+                self.subscribeBackoffTime = 0;
+                // Emit with usable object details
+                self.emit("subscribed", { frameworkId: event[event.type.toLocaleLowerCase()].framework_id.value, mesosStreamId: self.mesosStreamId });
+            } else if (event.type === "HEARTBEAT") {
+                // Set lastHeartbeat timestamp
+                self.lastHeartbeat = new Date().getTime();
+                // Emit with current timestamp
+                self.emit(event.type.toLocaleLowerCase(), self.lastHeartbeat);
+            } else if (event.type === "MESSAGE") {
+                // Emit with usable message object (parsed to ascii)
+                self.emit("message", { agentId: event[event.type.toLocaleLowerCase()].agent_id, executorId: event[event.type.toLocaleLowerCase()].executor_id, data: new Buffer(event[event.type.toLocaleLowerCase()].data, "base64").toString("ascii") });
+            } else if (event.type === "ERROR") {
+                // Emit an actual error object to identify errors from mesos master
+                self.emit("error", new Error("Error received from Mesos master: " + event[event.type.toLocaleLowerCase()].message));
+            } else {
+                // Emit original objects for all other types
+                self.emit(event.type.toLocaleLowerCase(), event[event.type.toLocaleLowerCase()]);
+            }
+&nbsp;
+        } catch (error) {
+            self.emit("error", { message: "Couldn't parse as JSON: " + eventData, stack: (error.stack || <span class="branch-1 cbranch-no" title="branch not covered" >"")</span> });
+        }
+&nbsp;
+    }
+&nbsp;
+    function handleRedirect(location) {
+&nbsp;
+        // Redirection to another Master received
+        self.logger.info("SUBSCRIBE: Redirect Location: " + location);
+&nbsp;
+        // Derive the leader info
+        var leaderInfo = location.replace(/\/\//g, "").split(":");
+&nbsp;
+        // Check for scheme and move window accordingly
+        var schemeIndex = leaderInfo.length &gt; 2 ? 0 : -1;
+&nbsp;
+        // Set new leading master info
+        self.options.masterUrl = leaderInfo[schemeIndex + 1];
+&nbsp;
+        // If the port part contains slashes -&gt; URLs, then fiix it by just getting the port
+        if (leaderInfo[schemeIndex + 2].indexOf("\/") &gt; -1) {
+            var temp = leaderInfo[schemeIndex + 2].split("/");
+            self.options.port = temp[0];
+        } else {
+            self.options.port = leaderInfo[schemeIndex + 2];
+        }
+&nbsp;
+        self.logger.info("SUBSCRIBE: Leader info: " + self.options.masterUrl + ":" + self.options.port);
+&nbsp;
+        // Fill the requestTemplate
+        self.generateRequestTemplate();
+&nbsp;
+    }
+&nbsp;
+    var handledTimeout = false;
+&nbsp;
+    self.httpRequest = http.request(self.requestTemplate, function (res) {
+&nbsp;
+        self.logger.info("SUBSCRIBE: Response status: " + res.statusCode);
+&nbsp;
+        if (res.statusCode === 307 &amp;&amp; res.headers["location"]) {
+&nbsp;
+            // Handle redirect information
+            handleRedirect(res.headers["location"]);
+&nbsp;
+            // Try to re-register
+            self.subscribe();
+&nbsp;
+        } else if (res.statusCode === 200) {
+            if (!res.headers["mesos-stream-id"]) {
+                self.emit("error", { message: "Mesos-Stream-Id header field was not found!"})
+            } else {
+&nbsp;
+                // Set mesosStreamId
+                self.mesosStreamId = res.headers["mesos-stream-id"];
+&nbsp;
+                // Set encoding to UTF8
+                res.setEncoding('utf8');
+&nbsp;
+                // Emit sent_subscribe event
+                self.emit("sent_subscribe", { mesosStreamId: self.mesosStreamId });
+&nbsp;
+                // Local cache for chunked JSON messages
+                var cache = "";
+                var expectedLength = 0;
+&nbsp;
+                // Watch for data/chunks
+                res.on('data', function (chunk) {
+&nbsp;
+                    if (chunk instanceof Buffer) {
+                        chunk = chunk.toString();
+                    }
+&nbsp;
+                    if (chunk.indexOf("\n") &gt; -1) {
+                        var temp = chunk.split("\n");
+                        if (temp.length === 2) {
+                            expectedLength = parseInt(temp[0]);
+                            if (temp[1].length &lt; expectedLength) {
+                                // Add to cache
+                                cache += temp[1];
+                            } else {
+                                // Empty cache
+                                cache = "";
+                                expectedLength = 0;
+                                // Handle event
+                                handleEvent(temp[1]);
+                            }
+                        } else {
+                            self.emit("error", { message: "Other linebreak count found than expected! Actual count: " + temp.length });
+                        }
+                    } else {
+                        if (cache.length &gt; 0 &amp;&amp; (cache.length + chunk.length) &gt;= expectedLength) {
+                            // Concatenate cached partial data with this chunk and handle only when done
+                            var eventData = cache + chunk;
+                            // Handle event
+                            handleEvent(eventData);
+                            // Empty cache
+                            cache = "";
+                            expectedLength = 0;
+                        } else if (cache.length &gt; 0 &amp;&amp; (cache.length + chunk.length) &lt; expectedLength) {
+                            // Concatenate cached data with current chunk, for cases in which the stream buffer is smaller than the data.
+                            cache += chunk;
+                        }
+                    }
+                });
+&nbsp;
+                res.on('end', function () {
+                    self.emit("error", { message: "Long-running connection was closed!" });
+                    self.logger.info("Long-running connection was closed!");
+                    <span class="missing-if-branch" title="else path not taken" >E</span>if (!handledTimeout) {
+                        self.backOff();
+                        // Re-subscribe
+                        // We need to remove the stream id from the headers before re-subscribing!
+                        self.mesosStreamId = undefined;
+                        delete self.requestTemplate.headers["mesos-stream-id"];
+                        delete self.requestTemplate.headers["Mesos-Stream-Id"];
+                        self.subscribe();
+                    }
+                });
+&nbsp;
+                res.on('finish', function () {
+                    self.logger.info("FINISH!");
+                });
+&nbsp;
+                res.on('close', function () {
+                    self.logger.info("CLOSE!");
+                });
+&nbsp;
+            }
+&nbsp;
+        } else {
+            res.on("data",function (chunk) {
+                if (chunk.length &gt; 0) {
+                    self.emit("error", {message: "Error registering with mesos: " + chunk.toString() + " , code: " + res.statusCode.toString()});
+                } else {
+                    self.emit("error", {message: "Error registering with mesos - empty response, code: " + res.statusCode.toString()});
+                }
+            });
+        }
+&nbsp;
+    });
+&nbsp;
+    self.httpRequest.on('error', function (e) {
+        self.emit("error", { message: "There was a problem with the request: " + (e.message ? e.message : <span class="branch-1 cbranch-no" title="branch not covered" >JSON.stringify(e))</span> });
+    });
+&nbsp;
+    // Register a timeout for triggering of re-registrations of the scheduler
+    self.httpRequest.on('socket', function (socket) {
+        var httpRequest = self.httpRequest;
+        socket.setTimeout(self.options.masterConnectionTimeout);
+        socket.on('timeout', function() {
+            self.logger.error("Received a timeout on the long-running Master connection! Will try to re-register the framework scheduler!");
+            handledTimeout = true;
+            socket.destroy();
+            // Make sure the timeout is not re-emitted.
+            socket.setTimeout(0);
+            <span class="missing-if-branch" title="if path not taken" >I</span>if (httpRequest !== self.httpRequest) {
+<span class="cstat-no" title="statement not covered" >                self.logger.info("Already reconnected, not attempting again.");</span>
+<span class="cstat-no" title="statement not covered" >                return;</span>
+            }
+&nbsp;
+            // Backing off before resubscribe
+            self.backOff();
+&nbsp;
+            // If we're using Mesos DNS, we can directy re-register, because Mesos DNS will discover the current leader automatically
+            if (self.options.masterUrl === "leader.mesos") {
+                // We need to remove the stream id from the headers before re-subscribing!
+                self.mesosStreamId = undefined;
+                delete self.requestTemplate.headers["mesos-stream-id"];
+                delete self.requestTemplate.headers["Mesos-Stream-Id"];
+                self.logger.info("Using Mesos DNS, will re-register to 'leader.mesos'!");
+                // Subscribe
+                self.subscribe();
+            } else {
+                self.logger.info("Not using Mesos DNS, try to get new leader through redirection!");
+                // If not, it's more difficult. When a IP address is passed for the Master, and the Master is unavailable,
+                // we cannot use the Master detection via location headers, as outlined at http://mesos.apache.org/documentation/latest/scheduler-http-api/ (chapter "Master detection"),
+                // because the request will not be successful. So, first we'll try the redirect method (in case of a leader change), if that is not possible, we have to shut down our framework
+                // unless there is a better way in the future.
+                var redirectRequest = http.request(self.requestTemplate, function (res) {
+                    // Check if we received a redirect
+                    <span class="missing-if-branch" title="else path not taken" >E</span>if (res.statusCode === 307 &amp;&amp; res.headers["location"]) {
+                        self.logger.info("Received redirection information. Will attempt to re-register the framework scheduler!");
+                        // Handle redirect information
+                        handleRedirect(res.headers["location"]);
+                        // Subscribe
+                        self.subscribe();
+                    }
+                });
+                // Set timeout for redirect request. When it's triggered, we know that the last leading master is down and that we cannot get the current leader information from it.
+                // So, we have to shutdown the framework scheduler, because we're out of options.
+                redirectRequest.on('socket', function (socket) {
+                    socket.setTimeout(self.options.masterConnectionTimeout);
+                    socket.on('timeout', function() {
+                        self.logger.error("Couldn't receive a response for the redirect request from the last leading master!");
+                        self.logger.error("There's no way to recover, the framework scheduler will halt now!");
+                        process.exit(1);
+                    });
+                });
+            }
+&nbsp;
+        });
+    });
+&nbsp;
+    // Set the Subscribe object
+    var Subscribe = new Builder("mesos.scheduler.Call.Subscribe")
+        .setFrameworkInfo(new Builder("mesos.FrameworkInfo")
+            .setUser(self.options.user)
+            .setRole(self.options.role)
+            .setName(self.options.frameworkName)
+            .setId(self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : null)
+            .setFailoverTimeout(self.options.frameworkFailoverTimeout)
+            .setHostname(process.env.HOST ? process.env.HOST : null)
+            .setWebuiUrl(process.env.HOST &amp;&amp; process.env.PORT0 ? "http://" + process.env.HOST + ":" + process.env.PORT0 : null)
+        );
+&nbsp;
+    self.logger.info("SUBSCRIBE: " + JSON.stringify(Subscribe));
+&nbsp;
+    // Set the Call object
+    var Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+        .setFrameworkId(self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : null)
+        .setType(mesos.scheduler.Call.Type.SUBSCRIBE)
+        .setSubscribe(Subscribe)
+    );
+&nbsp;
+    setTimeout(function () {
+        // Write data to request body
+        self.httpRequest.write(JSON.stringify(Call));
+&nbsp;
+        // End request
+        self.httpRequest.end();
+    }, self.subscribeBackoffTime);
+&nbsp;
+};
+&nbsp;
+/**
+ * Accept incoming offers to actually start the framework scheduler.
+ * @param {array} offersIds - The array of {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L49|OfferID}s which should be accepted.
+ * @param {array} operations - The array of {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L1452|Operation} objects.
+ * @param {object} filters - The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L1911|Filters} object.
+ */
+Scheduler.prototype.accept = function (offersIds, operations, filters) {
+&nbsp;
+    var self = this;
+&nbsp;
+    // Set the Accept object
+    var Accept = new Builder("mesos.scheduler.Call.Accept")
+            .setOfferIds(offersIds)
+            .setOperations(operations)
+            .setFilters(filters);
+&nbsp;
+    self.logger.info("ACCEPT: " + JSON.stringify(Accept));
+&nbsp;
+    // Set the Call object
+    var Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+        .setFrameworkId(new mesos.FrameworkID(self.frameworkId))
+        .setType(mesos.scheduler.Call.Type.ACCEPT)
+        .setAccept(Accept)
+    );
+&nbsp;
+    self.logger.debug("Assembled ACCEPT call: " + JSON.stringify(Call));
+&nbsp;
+    helpers.doRequest.call(self, Call, function (error, response) {
+        if (error) {
+            self.emit("error", error.message);
+        } else {
+            self.emit("sent_accept");
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Decline incoming offers because they are not needed by the framework scheduler currently.
+ * @param {array} offersIds - The array of {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L49|OfferID}s which should be declined.
+ * @param {object} filters - The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L1911|Filters} object.
+ */
+Scheduler.prototype.decline = function (offersIds, filters) {
+&nbsp;
+    var self = this;
+&nbsp;
+    // Set the Decline object
+    var Decline = new Builder("mesos.scheduler.Call.Decline")
+        .setOfferIds(offersIds)
+        .setFilters(filters);
+&nbsp;
+    // Set the Call object
+    var Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+        .setFrameworkId(new mesos.FrameworkID(self.frameworkId))
+        .setType(mesos.scheduler.Call.Type.DECLINE)
+        .setDecline(Decline)
+    );
+&nbsp;
+    self.logger.debug("Assembled DECLINE call: " + JSON.stringify(Call));
+&nbsp;
+    helpers.doRequest.call(self, Call, function (error, response) {
+        if (error) {
+            self.emit("error", error.message);
+        } else {
+            self.emit("sent_decline");
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Tear down the framework scheduler. When Mesos receives this request it will shut down all executors (and consequently kill tasks).
+ * It then removes the framework and closes all open connections from this scheduler to the Master.
+ */
+Scheduler.prototype.teardown = function () {
+&nbsp;
+    var self = this;
+&nbsp;
+    var Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+        .setFrameworkId(self.frameworkId ? <span class="branch-0 cbranch-no" title="branch not covered" >new mesos.FrameworkID(self.frameworkId) </span>: null)
+        .setType(mesos.scheduler.Call.Type.TEARDOWN)
+    );
+&nbsp;
+    self.logger.debug("Assembled TEARDOWN call: " + JSON.stringify(Call));
+    
+    helpers.doRequest.call(self, Call, function (error, response) {
+        if (error) {
+            self.emit("error", error.message);
+        } else {
+            self.emit("sent_teardown");
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Remove any/all filters that it has previously set via ACCEPT or DECLINE calls.
+ */
+Scheduler.prototype.revive = function () {
+&nbsp;
+    var self = this;
+&nbsp;
+    var Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+        .setFrameworkId(self.frameworkId ? <span class="branch-0 cbranch-no" title="branch not covered" >new mesos.FrameworkID(self.frameworkId) </span>: null)
+        .setType(mesos.scheduler.Call.Type.REVIVE)
+    );
+&nbsp;
+    self.logger.debug("Assembled REVIVE call: " + JSON.stringify(Call));
+&nbsp;
+    helpers.doRequest.call(self, Call, function (error, response) {
+        if (error) {
+            self.emit("error", error.message);
+        } else {
+            self.emit("sent_revive");
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ *  Kill a specific task. If the scheduler has a custom executor, the kill is forwarded to the executor; it is up to the executor to kill the task and send a TASK_KILLED (or TASK_FAILED) update.
+ *  Mesos releases the resources for a task once it receives a terminal update for the task. If the task is unknown to the master, a TASK_LOST will be generated.
+ * @param {Object} taskId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L71|TaskID} to kill.
+ * @param {Object} agentId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L59|AgentID} the task is running on.
+ */
+Scheduler.prototype.kill = function (taskId, agentId) {
+&nbsp;
+    var self = this;
+&nbsp;
+    var Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+        .setFrameworkId(self.frameworkId ? <span class="branch-0 cbranch-no" title="branch not covered" >new mesos.FrameworkID(self.frameworkId) </span>: null)
+        .setType(mesos.scheduler.Call.Type.KILL)
+        .setKill(new Builder("mesos.scheduler.Call.Kill")
+            .setTaskId(new Builder("mesos.TaskID").setValue(taskId))
+            .setAgentId(new Builder("mesos.AgentID").setValue(agentId))
+        )
+    );
+&nbsp;
+    self.logger.debug("Assembled KILL call: " + JSON.stringify(Call));
+&nbsp;
+    self.logger.debug("Killing task ID: " + taskId);
+&nbsp;
+    if (self.options.useZk)
+        self.taskHelper.deleteTask(taskId);
+&nbsp;
+    helpers.doRequest.call(self, Call, function (error, response) {
+        if (error) {
+            self.emit("error", error.message);
+        } else {
+            self.emit("sent_kill");
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * shutdown a specific custom executor (NOTE: This is a new call that was not present in the old API). When an executor gets a shutdown event, it is expected to kill all its tasks (and send TASK_KILLED updates) and terminate.
+ * If an executor doesn’t terminate within a certain timeout (configurable via “–executor_shutdown_grace_period” agent flag), the agent will forcefully destroy the container (executor and its tasks) and transitions its active tasks to TASK_LOST.
+ * @param {string} agentId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L59|AgentID} the task is running on.
+ * @param {string} executorId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L81|ExecutorID} whcih runs the task.
+ */
+Scheduler.prototype.shutdown = function (agentId, executorId) {
+&nbsp;
+    var self = this;
+&nbsp;
+    var Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+        .setFrameworkId(self.frameworkId ? <span class="branch-0 cbranch-no" title="branch not covered" >new mesos.FrameworkID(self.frameworkId) </span>: null)
+        .setType(mesos.scheduler.Call.Type.SHUTDOWN)
+        .setShutdown(new Builder("mesos.scheduler.Call.Shutdown")
+            .setExecutorId(new Builder("mesos.ExecutorID").setValue(executorId))
+            .setAgentId(new Builder("mesos.AgentID").setValue(agentId))
+        )
+    );
+&nbsp;
+    self.logger.debug("Assembled SHUTDOWN call: " + JSON.stringify(Call));
+&nbsp;
+    helpers.doRequest.call(self, Call, function (error, response) {
+        if (error) {
+            self.emit("error", error.message);
+        } else {
+            self.emit("sent_shutdown");
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Acknowledge a status update.
+ * @param {object} update The status update to acknowledge.
+ */
+Scheduler.prototype.acknowledge = function (update) {
+&nbsp;
+    var self = this;
+&nbsp;
+    if (!update.status.uuid) {
+        self.logger.debug("An update without UUID received, acknowledge skipped. Update: " + JSON.stringify(update));
+        return;
+    }
+&nbsp;
+    var Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+        .setFrameworkId(self.frameworkId ? <span class="branch-0 cbranch-no" title="branch not covered" >new mesos.FrameworkID(self.frameworkId) </span>: null)
+        .setType(mesos.scheduler.Call.Type.ACKNOWLEDGE)
+        .setAcknowledge(new Builder("mesos.scheduler.Call.Acknowledge")
+            .setTaskId(new Builder("mesos.TaskID").setValue(update.status.task_id))
+            .setAgentId(new Builder("mesos.AgentID").setValue(update.status.agent_id))
+            .setUuid(update.status.uuid)
+        )
+    );
+&nbsp;
+    self.logger.debug("Assembled ACKNOWLEDGE call: " + JSON.stringify(Call));
+&nbsp;
+    helpers.doRequest.call(self, Call, function (error, response) {
+        if (error) {
+            self.emit("error", error.message);
+        } else {
+            self.emit("sent_acknowledge");
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * query the status of non-terminal tasks. This causes the master to send back UPDATE events for each task in the list. Tasks that are no longer known to Mesos will result in TASK_LOST updates.
+ * If the list of tasks is empty, master will send UPDATE events for all currently known tasks of the framework.
+ * @param {string} taskId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L71|TaskID} to kill.
+ * @param {string} agentId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L59|AgentID} the task is running on.
+ */
+Scheduler.prototype.reconcile = function (taskId, agentId) {
+&nbsp;
+    var self = this;
+&nbsp;
+    var Call = null;
+&nbsp;
+    if (taskId &amp;&amp; agentId) {
+        Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+            .setFrameworkId(self.frameworkId ? <span class="branch-0 cbranch-no" title="branch not covered" >new mesos.FrameworkID(self.frameworkId) </span>: null)
+            .setType(mesos.scheduler.Call.Type.RECONCILE)
+            .setReconcile(new Builder("mesos.scheduler.Call.Reconcile")
+                .setTasks(new Builder("mesos.scheduler.Call.Reconcile.Task")
+                    .setTaskId(new Builder("mesos.TaskID").setValue(taskId))
+                    .setAgentId(new Builder("mesos.AgentID").setValue(agentId)
+                    )
+                )
+            )
+        );
+        self.logger.debug("Reconciling task ID: " + taskId);
+    } else {
+        Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+            .setFrameworkId(self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : null)
+            .setType(mesos.scheduler.Call.Type.RECONCILE)
+            .setReconcile(new Builder("mesos.scheduler.Call.Reconcile")
+                .setTasks([])
+            )
+        );
+        self.logger.debug("Reconciling all tasks ");
+    }
+&nbsp;
+    self.logger.debug("Assembled RECONCILE call: " + JSON.stringify(Call));
+&nbsp;
+    helpers.doRequest.call(self, Call, function (error, response) {
+        if (error) {
+            self.emit("error", error.message);
+        } else {
+            self.emit("sent_reconcile");
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Send arbitrary data to the executor. Note that Mesos neither interprets this data nor makes any guarantees about the delivery of this message to the executor.
+ * @param {string} agentId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L59|AgentID} the task is running on.
+ * @param {string} executorId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L81|ExecutorID} which runs the task.
+ * @param {string} data The string which's raw bytes will be encoded in Base64.
+ */
+Scheduler.prototype.message = function (agentId, executorId, data) {
+&nbsp;
+    var self = this;
+&nbsp;
+    var Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+        .setFrameworkId(self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : <span class="branch-1 cbranch-no" title="branch not covered" >null)</span>
+        .setType(mesos.scheduler.Call.Type.MESSAGE)
+        .setMessage(new Builder("mesos.scheduler.Call.Message")
+            .setExecutorId(new Builder("mesos.ExecutorID").setValue(executorId))
+            .setAgentId(new Builder("mesos.AgentID").setValue(agentId))
+            .setData(new Buffer(data).toString("base64"))
+        )
+    );
+&nbsp;
+    self.logger.debug("Assembled MESSAGE call: " + JSON.stringify(Call));
+&nbsp;
+    helpers.doRequest.call(self, Call, function (error, response) {
+        if (error) {
+            self.emit("error", error.message);
+        } else {
+            self.emit("sent_message");
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Request resources from the master/allocator. The built-in hierarchical allocator simply ignores this request but other allocators (modules) can interpret this in a customizable fashion.
+ * @param {array} requests The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L1410|Request} objects which should be sent to the server.
+ */
+Scheduler.prototype.request = function (requests) {
+&nbsp;
+    var self = this;
+&nbsp;
+    var Call = helpers.fixEnums(new Builder("mesos.scheduler.Call")
+        .setFrameworkId(self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : <span class="branch-1 cbranch-no" title="branch not covered" >null)</span>
+        .setType(mesos.scheduler.Call.Type.REQUEST)
+        .setRequest(new Builder("mesos.scheduler.Call.Request")
+            .setRequests(requests)
+        )
+    );
+&nbsp;
+    self.logger.debug("Assembled REQUEST call: " + JSON.stringify(Call));
+&nbsp;
+    helpers.doRequest.call(self, Call, function (error, response) {
+        if (error) {
+            self.emit("error", error.message);
+        } else {
+            self.emit("sent_request");
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Suppress offers for the specified roles. If `roles` is empty, the `SUPPRESS` call will suppress offers for all of the roles the framework is currently subscribed to.
+ * @param {array} roles The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L2696|Role} objects which should be sent to the server.
+ */
+Scheduler.prototype.suppress = <span class="fstat-no" title="function not covered" >fu</span>nction (roles) {
+&nbsp;
+    var self = <span class="cstat-no" title="statement not covered" >this;</span>
+&nbsp;
+    var Call = <span class="cstat-no" title="statement not covered" >helpers.fixEnums(new Builder("mesos.scheduler.Call")</span>
+        .setFrameworkId(self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : null)
+        .setType(mesos.scheduler.Call.Type.SUPPRESS)
+        .setSuppress(new Builder("mesos.scheduler.Call.Suppress")
+            .setRoles(roles)
+        )
+    );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.logger.debug("Assembled SUPPRESS call: " + JSON.stringify(Call));</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    helpers.doRequest.call(self, Call, <span class="fstat-no" title="function not covered" >fu</span>nction (error, response) {</span>
+<span class="cstat-no" title="statement not covered" >        if (error) {</span>
+<span class="cstat-no" title="statement not covered" >            self.emit("error", error.message);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            self.emit("sent_suppress");</span>
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Accepts an inverse offer. Inverse offers should only be accepted if the resources in the offer can be safely evacuated before the provided unavailability.
+ * @param {array} inverseOffersIds The {@Link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L49|OfferID} array which should be sent to the server.
+ * @param {object} filters The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L1911|Filters} object which should be sent to the server.
+ */
+Scheduler.prototype.acceptInverseOffers = <span class="fstat-no" title="function not covered" >fu</span>nction (inverseOffersIds, filters) {
+&nbsp;
+    var self = <span class="cstat-no" title="statement not covered" >this;</span>
+&nbsp;
+    var Call = <span class="cstat-no" title="statement not covered" >helpers.fixEnums(new Builder("mesos.scheduler.Call")</span>
+        .setFrameworkId(self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : null)
+        .setType(mesos.scheduler.Call.Type.ACCEPT_INVERSE_OFFERS)
+        .setAcceptInverseOffers(new Builder("mesos.scheduler.Call.AcceptInverseOffers")
+            .setInverseOfferIds(inverseOffersIds)
+            .setFilter(filters)
+        )
+    );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.logger.debug("Assembled ACCEPT_INVERSE_OFFERS call: " + JSON.stringify(Call));</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    helpers.doRequest.call(self, Call, <span class="fstat-no" title="function not covered" >fu</span>nction (error, response) {</span>
+<span class="cstat-no" title="statement not covered" >        if (error) {</span>
+<span class="cstat-no" title="statement not covered" >            self.emit("error", error.message);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            self.emit("sent_accept_inverse_offers");</span>
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Declines an inverse offer. Inverse offers should be declined if the resources in the offer might not be safely evacuated before the provided unavailability.
+ * @param {array} inverseOffersIds The {@Link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L49|OfferID} array which should be sent to the server.
+ * @param {object} filters The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L1911|Filters} object which should be sent to the server.
+ */
+Scheduler.prototype.declineInverseOffers = <span class="fstat-no" title="function not covered" >fu</span>nction (inverseOffersIds, filters) {
+&nbsp;
+    var self = <span class="cstat-no" title="statement not covered" >this;</span>
+&nbsp;
+    var Call = <span class="cstat-no" title="statement not covered" >helpers.fixEnums(new Builder("mesos.scheduler.Call")</span>
+        .setFrameworkId(self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : null)
+        .setType(mesos.scheduler.Call.Type.DECLINE_INVERSE_OFFERS)
+        .setDeclineInverseOffers(new Builder("mesos.scheduler.Call.DeclineInverseOffers")
+            .setInverseOfferIds(inverseOffersIds)
+            .setFilter(filters)
+        )
+    );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.logger.debug("Assembled DECLINE_INVERSE_OFFERS call: " + JSON.stringify(Call));</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    helpers.doRequest.call(self, Call, <span class="fstat-no" title="function not covered" >fu</span>nction (error, response) {</span>
+<span class="cstat-no" title="statement not covered" >        if (error) {</span>
+<span class="cstat-no" title="statement not covered" >            self.emit("error", error.message);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            self.emit("sent_decline_inverse_offers");</span>
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Acknowledges the receipt of an operation status update. Schedulers are responsible for explicitly acknowledging the receipt of updates which have the 'UpdateOperationStatus.status().uuid()' field set. Such status updates are retried by the agent or resource provider until they are acknowledged by the scheduler.
+ * @param {string} agentId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L59|AgentID} the task is running on.
+ * @param {string} resourceProviderId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L102|ResourceProviderId}
+ * @param {string} operationId The {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/mesos.proto#L111|OperationID}
+ * @param {string} uuid The uuid of the Operation
+ */
+Scheduler.prototype.acknowledgeOperationStatus = <span class="fstat-no" title="function not covered" >fu</span>nction (agentId, resourceProviderId, operationId, uuid) {
+&nbsp;
+    var self = <span class="cstat-no" title="statement not covered" >this;</span>
+&nbsp;
+    var Call = <span class="cstat-no" title="statement not covered" >helpers.fixEnums(new Builder("mesos.scheduler.Call")</span>
+        .setFrameworkId(self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : null)
+        .setType(mesos.scheduler.Call.Type.ACKNOWLEDGE_OPERATION_STATUS)
+        .setAcknowledgeOperationStatus(new Builder("mesos.scheduler.Call.AcknowledgeOperationStatus")
+            .setAgentId(new Builder("mesos.AgentID").setValue(agentId))
+            .setResourceProviderId(new Builder("mesos.ResourceProviderId").setValue(resourceProviderId))
+            .setOperationId(new Builder("mesos.ResourceProviderId").setValue(operationId))
+            .setUuid(uuid)
+        )
+    );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.logger.debug("Assembled ACKNOWLEDGE_OPERATION_STATUS call: " + JSON.stringify(Call));</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    helpers.doRequest.call(self, Call, <span class="fstat-no" title="function not covered" >fu</span>nction (error, response) {</span>
+<span class="cstat-no" title="statement not covered" >        if (error) {</span>
+<span class="cstat-no" title="statement not covered" >            self.emit("error", error.message);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            self.emit("sent_acknowledge_operation_status");</span>
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Allows the scheduler to query the status of operations. This causes the master to send back the latest status for each operation in 'operations', if possible. If 'operations' is empty, then the master will send the latest status for each operation currently known.
+ * @param {array} operations An array of {@link https://github.com/apache/mesos/blob/1.5.x/include/mesos/v1/scheduler/scheduler.proto#L420|Operation} objects to query.
+ */
+Scheduler.prototype.reconcileOperations = <span class="fstat-no" title="function not covered" >fu</span>nction (operations) {
+&nbsp;
+    var self = <span class="cstat-no" title="statement not covered" >this;</span>
+&nbsp;
+    var Call = <span class="cstat-no" title="statement not covered" >helpers.fixEnums(new Builder("mesos.scheduler.Call")</span>
+        .setFrameworkId(self.frameworkId ? new mesos.FrameworkID(self.frameworkId) : null)
+        .setType(mesos.scheduler.Call.Type.RECONCILE_OPERATIONS)
+        .setReconcileOperations(new Builder("mesos.scheduler.Call.ReconcileOperations")
+            .setOperations(operations)
+        )
+    );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.logger.debug("Assembled RECONCILE_OPERATIONS call: " + JSON.stringify(Call));</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    helpers.doRequest.call(self, Call, <span class="fstat-no" title="function not covered" >fu</span>nction (error, response) {</span>
+<span class="cstat-no" title="statement not covered" >        if (error) {</span>
+<span class="cstat-no" title="statement not covered" >            self.emit("error", error.message);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            self.emit("sent_reconcile_operations");</span>
+        }
+    });
+&nbsp;
+};
+&nbsp;
+/**
+ * Get the running tasks of this framework scheduler.
+ * @returns {Array} The running task array.
+ */
+Scheduler.prototype.getRunningTasks = function () {
+&nbsp;
+    var self = this;
+    var runningTasks = [];
+&nbsp;
+    Object.getOwnPropertyNames(self.runtimeInfo).forEach(function (taskType) {
+        Object.getOwnPropertyNames(self.runtimeInfo[taskType].runningInstances).forEach(function (task) {
+            runningTasks.push(task);
+        });
+    });
+&nbsp;
+    return runningTasks;
+&nbsp;
+};
+&nbsp;
+/**
+ * Synchronize the tasks of this scheduler.
+ */
+Scheduler.prototype.sync = function () {
+    var self = this;
+    for (var i = 0; i &lt; self.reconcileTasks.length; i++) {
+        if (self.reconcileTasks[i].runtimeInfo.agentId) {
+            self.reconcile(self.reconcileTasks[i].taskId, self.reconcileTasks[i].runtimeInfo.agentId);
+        } else {
+            if (self.options.useZk)
+                self.taskHelper.deleteTask(self.reconcileTasks[i].taskId);
+        }
+    }
+    self.reconcileTasks = [];
+    self.launchedTasks.forEach(function (task) {
+        if (task.runtimeInfo.agentId) {
+            self.reconcile(task.taskId, task.runtimeInfo.agentId);
+        }
+    });
+    for (var i = 0; i &lt; self.killTasks.length; i++) {
+        self.kill(self.killTasks[i].taskId, self.killTasks[i].runtimeInfo.agentId);
+    }
+    self.killTasks = [];
+    if (self.options.useZk) {
+        self.reconcile();
+    }
+};
+&nbsp;
+/**
+ * Calculate the backOff time (for reconnection trials)
+ */
+Scheduler.prototype.backOff = function () {
+    var self = this;
+    self.subscribeBackoffTime *= self.options.exponentialBackoffFactor;
+    self.subscribeBackoffTime = Math.round(self.subscribeBackoffTime);
+    if (self.subscribeBackoffTime === 0) {
+        self.subscribeBackoffTime = self.options.exponentialBackoffMinimum;
+    }
+    if (self.subscribeBackoffTime &gt; self.options.exponentialBackoffMaximum) {
+        self.subscribeBackoffTime = self.options.exponentialBackoffMaximum;
+    }
+    self.logger.debug("Backoff time: " + self.subscribeBackoffTime);
+};
+&nbsp;
+module.exports = Scheduler;
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Sun Mar 04 2018 17:22:16 GMT+0100 (CET)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
