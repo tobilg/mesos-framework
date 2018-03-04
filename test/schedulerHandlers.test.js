@@ -16,7 +16,7 @@ var Mesos = lib("mesos")().getMesos();
 var expect = require("chai").expect;
 var sinon = require("sinon");
 
-describe("Offers handlers tests", function () {
+describe("Offers handlers test", function () {
 
     var accept = true;
 
@@ -605,7 +605,7 @@ describe("Offers handlers tests", function () {
 });
 
 
-describe("Update handlers tests", function () {
+describe("Update handlers test", function () {
 
     var acknowleged;
     var killed;

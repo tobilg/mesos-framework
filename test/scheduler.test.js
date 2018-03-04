@@ -89,7 +89,7 @@ describe("Scheduler constructor", function() {
             sandbox = sinon.sandbox.create();
             sandbox.stub(helpers, "sortTasksByPriority", function(tasks) {
                 return [{name:"task1", isSubmitted:true},
-                    {name:"task2", isSubmitted:true,instances:3}];
+                    {name:"task2", isSubmitted:true, instances:3}];
             });
         });
         after(function (done) {
@@ -113,14 +113,8 @@ describe("Scheduler constructor", function() {
         var taskHelper = new TaskHelper({"zkClient": zkClient, "logger": logger, "pendingTasks":[], "launchedTasks":[], scheduler:{}});
         beforeEach(function () {
             sandbox = sinon.sandbox.create();
-
             clock = sinon.useFakeTimers();
-            //sandbox.stub(zookeeper, "createClient" );
-            /*sandbox.stub(zookeeper, "on", function(event, cb) {
-                if (event == "connected") {
-                    cb();
-                }
-            });*/
+
             sandbox.stub(zkClient, "connect", function() {
                 this.emit("connected");
             });
@@ -897,7 +891,13 @@ describe("Scheduler constructor", function() {
             scheduler.frameworkId = "123445547452563";
 
             scheduler.on("ready", function() {
-                scheduler.request(["12312312","fasfafas", "sdfasfasfgasgloewy2398y423r5fqwncas"]);
+                //scheduler.request(["12312312","fasfafas", "sdfasfasfgasgloewy2398y423r5fqwncas"]);
+                scheduler.request(new Builder("mesos.Request")
+                    .setAgentId(new Builder("mesos.AgentID").setValue("12312312"))
+                    .setResources([
+                        new Builder("mesos.Resource").setName("cpus").setType(mesos.Value.Type.SCALAR).setScalar(new mesos.Value.Scalar(1.1))
+                    ])
+                );
             });
             scheduler.on("sent_request", function() {
                 sent = true;
@@ -923,7 +923,12 @@ describe("Scheduler constructor", function() {
             scheduler.frameworkId = "123445547452563";
 
             scheduler.on("ready", function() {
-                scheduler.request(["12312312","fasfafas", "sdfasfasfgasgloewy2398y423r5fqwncas"]);
+                scheduler.request(new Builder("mesos.Request")
+                    .setAgentId(new Builder("mesos.AgentID").setValue("12312312"))
+                    .setResources([
+                        new Builder("mesos.Resource").setName("cpus").setType(mesos.Value.Type.SCALAR).setScalar(new mesos.Value.Scalar(1.1))
+                    ])
+                );
             });
             scheduler.on("sent_request", function() {
                 sent = true;
