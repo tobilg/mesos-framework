@@ -10,6 +10,16 @@ It can be used to write Mesos frameworks in pure JavaScript. The currently suppo
 You can use `mesos-framework` in your own projects by running
 
     npm i mesos-framework --save
+    
+## Local test environment
+
+`docker-compose` can be used for setting up a local test environment. Just run 
+
+```bash
+$ docker-compose up -d
+```
+
+in the base directory of this project.
 
 ## Documentation
 
@@ -39,6 +49,10 @@ Basically this is the mechanism to create custom framework logic. Please have a 
 
 The API docs can be accessed via [API docs](http://tobilg.github.io/mesos-framework/) hosted on GitHub pages.
 
+#### Coverage reports
+
+The [Coverage Reports](http://tobilg.github.io/mesos-framework/coverage/) are hosted on GitHub pages as well.
+
 ### Scheduler
 
 The `Scheduler` is the "heart" of a Mesos framework. It is very well possible to create a Mesos framework only by implementing the `Scheduler` with the standard [CommandInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L397) and [ContainerInfo](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L1744) objects.
@@ -50,6 +64,8 @@ The option properties you can specify to create a `Scheduler` are the following:
 * `useZk`: Should be set to `true` if you want to use ZooKeeper to persist the task information. Default is `false`.
 * `zkUrl`: The ZooKeeper connection url. Default is `master.mesos:2181`.
 * `zkPrefix`: The prefix of the ZooKeeper node where the data for this framework shall be stored. Default is `/dcos-service-`.
+* `user`: The system user name to use (must exist on the agents!). Default is `root`.
+* `role`: The Mesos role to use when subscribing to the master. Default is `*`.
 * `frameworkName`: The desired framework name (will choose a standard name if not specified). Default is `mesos-framework.` concatented with a unique UUID.
 * `restartStates`: An array of [TaskState](https://github.com/apache/mesos/blob/1.2.x/include/mesos/v1/mesos.proto#L1671) objects which should trigger a restart of a task. For example, regularly finished tasks (in state `TASK_FINISHED`) are not restarted by default.
 * `masterConnectionTimeout`: The number of seconds to wait before a connection to the leading Mesos master is considered as timed out (default: `10`).
@@ -107,20 +123,22 @@ The following events from the leading Mesos master are exposed:
 The following events from the Scheduler calls are exposed:
 
 * `ready`: Is emitted when the scheduler is instantiated and ready to subscribe to the Mesos master. Every `scheduler.subscribe()` call should be wrapped by an event handle reacting to this event. See the examples.
-* `sent_subscribe`: Is emitted when the scheduler has sent the `SUBSCRIBE` request.
-* `sent_accept`: Is emitted when the scheduler has sent an `ACCEPT` request to accept an offer from the Master.
-* `sent_decline`: Is emitted when the scheduler has sent a `DECLINE` request to decline an offer from the Master.
-* `sent_teardown`: Is emitted when the scheduler has sent the `TEARDOWN` request to stop the framework to the Master.
-* `sent_revive`: Is emitted when the scheduler has sent a `REVIVE` request to the Master to remove any/all filters that it has previously set via `ACCEPT` or `DECLINE` calls.
-* `sent_kill`: Is emitted when the scheduler has sent a `KILL` request to the Master to kill a specific task.
-* `sent_acknowledge`: Is emitted when the scheduler has sent an `ACKNOWLEDGE` request to the Master to acknowledge a status update.
-* `sent_shutdown`: Is emitted when the scheduler has sent a `SHUTDOWN` request to the Master to shutdown a specific custom executor.
-* `sent_reconcile`: Is emitted when the scheduler has sent a `RECONCILE` request to the Master to query the status of non-terminal tasks.
-* `sent_message`: Is emitted when the scheduler has sent a `MESSAGE` request to the Master to send arbitrary binary data to the executor.
-* `sent_request`: Is emitted when the scheduler has sent a `REQUEST` request to the Master to request new resources.
-* `sent_supress`: Is emitted when the scheduler has sent a `SUPPRESS` request to the Master to suppress new resource offers.
-* `sent_accept_inverse_offers`: Is emitted when the scheduler has sent a `ACCEPT_INVERSE_OFFERS` request to the Master to accept inverse offers.
-* `sent_decline_inverse_offers`: Is emitted when the scheduler has sent a `DECLINE_INVERSE_OFFERS` request to the Master to decline inverse offers.
+* `sent_subscribe`: Is emitted when the scheduler has sent the `SUBSCRIBE` call.
+* `sent_accept`: Is emitted when the scheduler has sent an `ACCEPT` call to accept an offer from the Master.
+* `sent_decline`: Is emitted when the scheduler has sent a `DECLINE` call to decline an offer from the Master.
+* `sent_teardown`: Is emitted when the scheduler has sent the `TEARDOWN` call to stop the framework to the Master.
+* `sent_revive`: Is emitted when the scheduler has sent a `REVIVE` call to the Master to remove any/all filters that it has previously set via `ACCEPT` or `DECLINE` calls.
+* `sent_kill`: Is emitted when the scheduler has sent a `KILL` call to the Master to kill a specific task.
+* `sent_acknowledge`: Is emitted when the scheduler has sent an `ACKNOWLEDGE` call to the Master to acknowledge a status update.
+* `sent_shutdown`: Is emitted when the scheduler has sent a `SHUTDOWN` call to the Master to shutdown a specific custom executor.
+* `sent_reconcile`: Is emitted when the scheduler has sent a `RECONCILE` call to the Master to query the status of non-terminal tasks.
+* `sent_message`: Is emitted when the scheduler has sent a `MESSAGE` call to the Master to send arbitrary binary data to the executor.
+* `sent_request`: Is emitted when the scheduler has sent a `REQUEST` call to the Master to call new resources.
+* `sent_supress`: Is emitted when the scheduler has sent a `SUPPRESS` call to the Master to suppress new resource offers.
+* `sent_accept_inverse_offers`: Is emitted when the scheduler has sent a `ACCEPT_INVERSE_OFFERS` call to the Master to accept inverse offers.
+* `sent_decline_inverse_offers`: Is emitted when the scheduler has sent a `DECLINE_INVERSE_OFFERS` call to the Master to decline inverse offers.
+* `sent_acknowledge_operation_status`: Is emitted when the scheduler has sent the `ACKNOWLEDGE_OPERATION_STATUS` call.
+* `sent_reconcile_operations`: Is emitted when the scheduler has sent the `RECONCILE_OPERATIONS` call.
 * `updated_task`: Is emitted when a task was updated. Contains an object with `taskId`, `executorId` and `state`.  
 * `removed_task`: Is emitted when a task was removed. Contains the `taskId`.
 * `task_launched`: Is emitted when a task moves to the running state, to handle initialization. Contains the task structure.
@@ -263,7 +281,7 @@ var Builder = require("mesos-framework").Mesos.getBuilder();
 var taskId = {
     "value": "my-task-id"
 };
-
+  
 var TaskID = new (Builder.build("mesos.TaskID"))(taskId);
 ```
 
