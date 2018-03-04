@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for mesos-framework/lib/taskHelper.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">All files</a> / <a href="index.html">mesos-framework/lib</a> taskHelper.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>84/84</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>48/48</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>11/11</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>84/84</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">"use strict";
+&nbsp;
+var lib = require("requirefrom")("lib");
+var Mesos = require("./mesos")().getMesos();
+var Builder = lib("builder");
+&nbsp;
+/**
+ * Represents a TaskHelper object
+ * @constructor
+ * @param {object} scheduler - The scheduler object.
+ */
+function TaskHelper(scheduler) {
+    if (!(this instanceof TaskHelper)) {
+        return new TaskHelper(scheduler);
+    }
+    var self = this;
+    self.zkClient = scheduler.zkClient;
+    self.scheduler = scheduler;
+    self.logger = scheduler.logger;
+    self.zkServicePath = self.scheduler.zkServicePath;
+}
+&nbsp;
+/**
+ * Load the task nodes belonging to the framework from ZooKeeper.
+ */
+TaskHelper.prototype.loadTasks = function() {
+    var self = this;
+    self.zkClient.getChildren(self.zkServicePath + "/tasks", function (error, children, stat) {
+        if (error) {
+            self.logger.error("Could not load task information.");
+            // We're ready to subscribe
+            self.scheduler.emit("ready");
+        } else if (children &amp;&amp; children.length) {
+            var childStates = {};
+            children.forEach(function (child) {
+                self.zkClient.getData(self.zkServicePath + "/tasks/" + child, function (error, data, stat) {
+                    if (error || !data) {
+                        self.logger.error("Could not load task information for " + child);
+                        if (!error) {
+                            self.deleteTask(child);
+                        }
+                        childStates[child] = {'loaded': false};
+                        self.logger.debug("childStates length " + Object.keys(childStates).length.toString() + " children.length " + children.length.toString());
+                        if (Object.keys(childStates).length === children.length) {
+                            // We're ready to subscribe
+                            self.scheduler.emit("ready");
+                        }
+                        return;
+                    }
+                    var pending = self.scheduler.pendingTasks;
+                    self.scheduler.pendingTasks = [];
+                    var task = JSON.parse(data.toString());
+                    self.logger.debug("Loading task: " + JSON.stringify(task));
+                    var found = false;
+                    var i = 0;
+                    var pendingTask;
+                    function addVars(variable) {
+                        // Check if variable name is either HOST or PORT# -&gt; Set by this framework when starting a task - copy it to the loaded task
+                        if (variable.name.match(/^HOST$/) !== null || variable.name.match(/^PORT[0-9]+/) !== null) {
+                            // Add all matching (non-user-defined) environment variables
+                            pendingTask.commandInfo.environment.variables.push(variable);
+                        }
+                    }
+                    for (i = 0; i &lt; pending.length; i += 1) {
+                        pendingTask = pending[i];
+                        self.logger.debug("Pending task: \"" + JSON.stringify(pendingTask) + "\"");
+                        if (pendingTask.name === task.name) {
+                            if (task.runtimeInfo &amp;&amp; task.runtimeInfo.agentId &amp;&amp; (task.runtimeInfo.state === "TASK_RUNNING" || task.runtimeInfo.state === "TASK_STAGING")) {
+                                pendingTask.runtimeInfo = task.runtimeInfo;
+                                pendingTask.taskId = task.taskId;
+                                if (task.commandInfo &amp;&amp; task.commandInfo.environment &amp;&amp; task.commandInfo.environment.variables &amp;&amp; task.commandInfo.environment.variables.length &gt; 0) {
+                                    if (!pendingTask.commandInfo) {
+                                        pendingTask.commandInfo = new Builder("mesos.CommandInfo")
+                                            .setEnvironment(new Mesos.Environment([]))
+                                            .setShell(false);
+                                    }
+                                    if (!pendingTask.commandInfo.environment) {
+                                        pendingTask.commandInfo.environment = new Mesos.Environment([]);
+                                    }
+                                    // Iterate over all environment variables
+                                    task.commandInfo.environment.variables.forEach(addVars);
+                                }
+                                self.scheduler.launchedTasks.push(pendingTask);
+                                pending.splice(i, 1);
+                                self.scheduler.reconcileTasks.push(pendingTask);
+                            } else {
+                                self.deleteTask(task.taskId);
+                            }
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        self.logger.info("Setting task ID " + task.taskId + " to be killed");
+                        self.scheduler.killTasks.push(task);
+                    }
+                    self.scheduler.pendingTasks = pending;
+                    childStates[child] = {'loaded': true};
+                    self.logger.debug("childStates length " + Object.keys(childStates).length.toString() + " children.length " + children.length.toString());
+                    if (Object.keys(childStates).length === children.length) {
+                        // We're ready to subscribe
+                        self.scheduler.emit("ready");
+                    }
+                });
+            });
+        } else {
+            // We're ready to subscribe - no tasks
+            self.scheduler.emit("ready");
+        }
+    });
+};
+&nbsp;
+/**
+ * Save task nodes from ZooKeeper.
+ * @param {object} task - The task object which should be persisted to ZooKeeper.
+ */
+TaskHelper.prototype.saveTask = function (task) {
+    var self = this;
+    var data = new Buffer(JSON.stringify(task));
+    // Seperating path creation from data save due to various client bugs.
+    self.zkClient.mkdirp(self.zkServicePath+"/tasks/" + task.taskId, function (error, stat){
+        if (error) {
+            self.logger.error("Got error when creating task node in ZK " + task.name + " ID " + task.taskId + " data: " + error);
+            return;
+        }
+        self.zkClient.setData(self.zkServicePath+"/tasks/" + task.taskId, data, function (error, stat) {
+            if (error) {
+                self.logger.error("Got error when saving task " + task.name + " ID " + task.taskId + " data: " + error);
+                return;
+            }
+            self.logger.debug("Saved task " + task.name + " ID " + task.taskId);
+        });
+    });
+};
+&nbsp;
+/**
+ * Delete task nodes from ZooKeeper.
+ * @param {string} taskId - The id of the task which should be deleted from ZooKeeper.
+ */
+TaskHelper.prototype.deleteTask = function (taskId) {
+    var self = this;
+    self.zkClient.remove(self.zkServicePath + "/tasks/" + taskId, function (error) {
+        if (error) {
+            self.logger.error("Error deleting task ID " + taskId + " from zookeeper");
+        } else {
+            self.logger.debug("Deleted task " + taskId + " from zookeeper");
+        }
+    });
+};
+&nbsp;
+module.exports = TaskHelper;
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Sun Mar 04 2018 17:15:47 GMT+0100 (CET)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

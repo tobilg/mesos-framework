@@ -1,0 +1,1823 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for mesos-framework/lib/schedulerHandlers.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">All files</a> / <a href="index.html">mesos-framework/lib</a> schedulerHandlers.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">98.83% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>254/257</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">93.05% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>174/187</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">86.36% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>19/22</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">98.83% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>254/257</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546
+547
+548
+549
+550
+551
+552
+553
+554
+555
+556
+557
+558
+559
+560
+561
+562
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582
+583
+584
+585
+586
+587</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">22x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">77x</span>
+<span class="cline-any cline-yes">57x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">57x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">57x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">779x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">158x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">158x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">178x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">176x</span>
+<span class="cline-any cline-yes">176x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">"use strict";
+var uuid = require('uuid');
+&nbsp;
+var lib = require("requirefrom")("lib");
+var Mesos = lib("mesos");
+var Builder = lib("builder");
+var helpers = lib("helpers");
+var mesos = new Mesos().getMesos();
+&nbsp;
+function searchPortsInRanges(task, offerResources, usableRanges, neededStaticPorts, neededPorts) {
+&nbsp;
+    var tempPortRanges = [];
+    var usedPorts = [];
+&nbsp;
+    var begin = 0;
+    var stop = false;
+    var range;
+    var newBegin;
+    var newEnd;
+    var i;
+    var index;
+    var port;
+    while (neededStaticPorts &gt; 0 &amp;&amp; !stop &amp;&amp; offerResources.portRanges &amp;&amp; offerResources.portRanges.length &gt; 0) {
+        range = offerResources.portRanges.splice(0, 1)[0]; // Get first remaining range
+&nbsp;
+        if (range.begin &lt;= task.resources.staticPorts[begin] &amp;&amp; range.end &gt;= task.resources.staticPorts[task.resources.staticPorts.length - 1]) {
+            usableRanges.push(new mesos.Value.Range(range.begin, task.resources.staticPorts[task.resources.staticPorts.length - 1]));
+            newBegin = range.begin;
+            newEnd = range.end;
+            i = begin;
+            while (i &lt; task.resources.staticPorts.length) {
+                port = task.resources.staticPorts[i];
+&nbsp;
+                if (newBegin &lt; port) {
+                    // Re-add range below port
+                    tempPortRanges.push(new mesos.Value.Range(newBegin, port - 1));
+                }
+                newBegin = port + 1;
+                if (newEnd === port) {
+                    newEnd -= 1;
+                }
+                i += 1;
+            }
+            if (newBegin &lt;= newEnd) {
+                tempPortRanges.push(new mesos.Value.Range(newBegin, newEnd));
+            }
+            neededStaticPorts = 0;
+        } else if (range.begin &lt;= task.resources.staticPorts[begin] &amp;&amp; range.end &gt;= task.resources.staticPorts[begin]) {
+            usableRanges.push(range);
+            // Count the number of ports that are not served.
+&nbsp;
+            for (i = begin; i &lt; task.resources.staticPorts.length; i++) {
+                if (task.resources.staticPorts[i] &gt; range.end) {
+                    break;
+                }
+            }
+&nbsp;
+            neededStaticPorts -= i - begin;
+            newBegin = range.begin;
+            newEnd = range.end;
+            index = begin;
+            while (index &lt; i) {
+                port = task.resources.staticPorts[index];
+&nbsp;
+                if (newBegin &lt; port) {
+                    // Re-add range below port
+                    tempPortRanges.push(new mesos.Value.Range(newBegin, port - 1));
+                }
+                <span class="missing-if-branch" title="else path not taken" >E</span>if (newBegin &lt;= port) {
+                    newBegin = port + 1;
+                }
+                if (newEnd === port) {
+                    newEnd -= 1;
+                }
+                index += 1;
+            }
+            if (newBegin &lt;= newEnd) {
+                tempPortRanges.push(new mesos.Value.Range(newBegin, newEnd));
+            }
+            begin = i;
+        } else {
+            tempPortRanges.push(range);
+        }
+    }
+&nbsp;
+    if (neededStaticPorts === 0) {
+        neededPorts -= task.resources.staticPorts.length;
+        usedPorts = task.resources.staticPorts;
+        offerResources.portRanges = offerResources.portRanges.concat(tempPortRanges);
+    }
+    return {usedPorts: usedPorts, neededPorts: neededPorts, neededStaticPorts: neededStaticPorts};
+}
+&nbsp;
+module.exports = {
+    "SUBSCRIBED": function (subscribed) {
+        this.logger.debug("SUBSCRIBED: " + JSON.stringify(subscribed));
+    },
+    "OFFERS": function (Offers) {
+&nbsp;
+        var self = this;
+&nbsp;
+        self.logger.debug("OFFERS: " + JSON.stringify(Offers));
+&nbsp;
+        // Iterate over all Offers
+        Offers.offers.forEach(function (offer) {
+&nbsp;
+            var toLaunch = [];
+            var declinedNoPending = false;
+            var offerResources = {
+                cpus: 0,
+                mem: 0,
+                disk: 0,
+                ports: [],
+                portRanges: []
+            };
+&nbsp;
+            // Decline Offer directly if there are no pending tasks
+            if (self.pendingTasks.length === 0) {
+&nbsp;
+                self.logger.debug("DECLINE: Declining Offer " + offer.id.value);
+&nbsp;
+                // Decline offer
+                self.decline([offer.id], null);
+                // To prevent double decline
+                declinedNoPending = true;
+&nbsp;
+            }
+&nbsp;
+            // Iterate over the Resources of the Offer and fill the offerResources object
+            // (will be used to match against the requested task resources)
+            offer.resources.forEach(function (resource) {
+                if (resource.type === "SCALAR" &amp;&amp; ["cpus", "mem", "disk"].indexOf(resource.name) &gt; -1) {
+                    offerResources[resource.name] += resource.scalar.value;
+                } else if (resource.type === "RANGES" &amp;&amp; resource.name === "ports") {
+                    resource.ranges.range.forEach(function (range) {
+                        // Add to ranges
+                        offerResources.portRanges.push(range);
+                        // Populate port list
+                        for (var p = range.begin; p &lt;= range.end; p++) {
+                            // Add port to port array
+                            offerResources.ports.push(p);
+                        }
+                    });
+                }
+            });
+&nbsp;
+            // Now, iterate over all tasks that still need to be run
+            self.pendingTasks.forEach(function (task) {
+&nbsp;
+                self.logger.debug("pendingTask: " + JSON.stringify(task));
+&nbsp;
+                // Match the task resources to the offer resources
+                self.logger.debug("CPUs in offer:" + offerResources.cpus.toString() + " Memory in offer: " + offerResources.mem.toString() + " Port num in offer: " + offerResources.ports.length.toString());
+                if (task.resources.cpus &lt;= offerResources.cpus &amp;&amp; task.resources.mem &lt;= offerResources.mem &amp;&amp; task.resources.disk &lt;= offerResources.disk &amp;&amp; (task.resources.ports &lt;= offerResources.ports.length || (self.options.staticPorts &amp;&amp; task.resources.staticPorts &amp;&amp; task.resources.staticPorts.length &lt;= offerResources.ports.length))) {
+                    self.logger.debug("Offer " + offer.id.value + " has resources left");
+&nbsp;
+                    // Environment variables
+                    var envVars = [];
+&nbsp;
+                    var demandedResources = [
+                        helpers.fixEnums(new Builder("mesos.Resource").setName("cpus").setType(mesos.Value.Type.SCALAR).setScalar(new mesos.Value.Scalar(task.resources.cpus))),
+                        helpers.fixEnums(new Builder("mesos.Resource").setName("mem").setType(mesos.Value.Type.SCALAR).setScalar(new mesos.Value.Scalar(task.resources.mem)))
+                    ];
+&nbsp;
+                    // Reduce available offer cpu and mem resources by requested task resources
+                    offerResources.cpus -= task.resources.cpus;
+                    offerResources.mem -= task.resources.mem;
+&nbsp;
+                    if (task.resources.disk &gt; 0) {
+                        demandedResources.push(helpers.fixEnums(new Builder("mesos.Resource").setName("disk").setType(mesos.Value.Type.SCALAR).setScalar(new mesos.Value.Scalar(task.resources.disk))));
+                        // Reduce disk resources by requested task resources
+                        offerResources.disk -= task.resources.disk;
+                    }
+&nbsp;
+                    if (task.resources.ports &gt; 0) {
+                        var neededPorts = task.resources.ports;
+                        var usableRanges = [];
+                        var usedPorts = [];
+                        var neededStaticPorts = task.resources.staticPorts ? task.resources.staticPorts.length : 0;
+&nbsp;
+                        if (self.options.staticPorts &amp;&amp; task.resources.staticPorts &amp;&amp; task.resources.staticPorts.length &gt; 0) { // Using fixed ports defined in the framework configuration
+                            usedPorts = task.resources.staticPorts;
+                            var __ret = searchPortsInRanges.call(self, task, offerResources, usableRanges, neededStaticPorts, neededPorts);
+                            usedPorts = __ret.usedPorts;
+                            neededPorts = __ret.neededPorts;
+                            neededStaticPorts = __ret.neededStaticPorts;
+                        }
+                        // Using dynamic ports (in addition or instead of fixed ports)
+&nbsp;
+                        self.logger.debug("portRanges: " + JSON.stringify(offerResources.portRanges));
+                        while (neededPorts &gt; 0 &amp;&amp; offerResources.portRanges &amp;&amp; offerResources.portRanges.length &gt; 0) {
+                            var range = offerResources.portRanges.splice(0, 1)[0]; // Get first remaining range
+                            self.logger.debug("actualRange: " + JSON.stringify(range));
+                            var availablePorts = (range.end - range.begin + 1);
+                            var willUsePorts = (availablePorts &gt;= neededPorts ? neededPorts : availablePorts);
+                            // Add to usable ranges
+                            usableRanges.push(new mesos.Value.Range(range.begin, range.begin + willUsePorts - 1));
+                            // Add to used ports array
+                            for (var port = range.begin; port &lt;= (range.begin + willUsePorts - 1); port++) {
+                                // Add to used ports
+                                usedPorts.push(port);
+                                // Remove from ports array / reduce available ports by requested task resources
+                                offerResources.ports.splice(offerResources.ports.indexOf(port), 1);
+                            }
+                            // Push range back portRanges if there are ports left
+                            if (availablePorts &gt; willUsePorts) {
+                                offerResources.portRanges.push(new mesos.Value.Range(range.begin + willUsePorts, range.end))
+                            }
+                            // Decrease needed ports number by used ports
+                            neededPorts -= willUsePorts;
+                        }
+&nbsp;
+                        self.logger.debug("usableRanges: " + JSON.stringify(usableRanges));
+&nbsp;
+                        var usedPortRanges = [];
+                        var index;
+&nbsp;
+                        for (index = 0; index &lt; usedPorts.length; index += 1) {
+                            usedPortRanges.push(new mesos.Value.Range(usedPorts[index], usedPorts[index]));
+                        }
+&nbsp;
+                        // Add to demanded resources
+                        demandedResources.push(
+                            helpers.fixEnums(
+                                new Builder("mesos.Resource").setName("ports")
+                                    .setType(mesos.Value.Type.RANGES)
+                                    .setRanges(new Builder("mesos.Value.Ranges").setRange(usedPortRanges))
+                            )
+                        );
+&nbsp;
+                        // Check if task is a container task, and if so, it the networking mode is BRIDGE and there are port mappings defined
+                        if (task.containerInfo) {
+&nbsp;
+                            // Add the port mappings if needed
+                            <span class="missing-if-branch" title="else path not taken" >E</span>if (task.containerInfo.docker.network === mesos.ContainerInfo.DockerInfo.Network.BRIDGE &amp;&amp; task.portMappings &amp;&amp; task.portMappings.length &gt; 0) {
+                                if (usedPorts.length !== task.portMappings.length) {
+                                    self.logger.debug("No match between task's port mapping count and the used/requested port count!");
+                                } else {
+                                    var portMappings = [],
+                                        counter = 0;
+                                    // Iterate over given port mappings, and create mapping
+                                    task.portMappings.forEach(function (portMapping) {
+                                        portMappings.push(new mesos.ContainerInfo.DockerInfo.PortMapping(usedPorts[counter], portMapping.port, portMapping.protocol));
+                                        counter++;
+                                    });
+&nbsp;
+                                    // Overwrite port mappings
+                                    task.containerInfo.docker.port_mappings = portMappings;
+                                }
+&nbsp;
+                            }
+&nbsp;
+                            // Add the PORTn environment variables
+                            if (usedPorts.length &gt; 0) {
+                                var portIndex = 0;
+                                // Create environment variables for the used ports (schema is "PORT" appended by port index)
+                                usedPorts.forEach(function (port) {
+                                    envVars.push(new Builder("mesos.Environment.Variable").setName("PORT" + portIndex).setValue(port.toString()));
+                                    portIndex++;
+                                });
+&nbsp;
+                            }
+&nbsp;
+                        }
+                    }
+&nbsp;
+&nbsp;
+                    // Add HOST
+                    envVars.push(new Builder("mesos.Environment.Variable").setName("HOST").setValue(offer.url.address.ip));
+&nbsp;
+                    // Add env var for serial task number
+                    if (self.options.serialNumberedTasks) {
+                        var taskNameArray = task.name.split("-");
+                        envVars.push(new Builder("mesos.Environment.Variable").setName("TASK_" + taskNameArray[0].toUpperCase() + "_SERIAL_NUMBER").setValue(taskNameArray[1]));
+                    }
+&nbsp;
+                    if (neededPorts &gt; 0 || neededStaticPorts &gt; 0) {
+                        self.logger.error("Couldn't find enough ports!");
+                    } else {
+                        //Check if there are already environment variables set
+                        if (task.commandInfo.environment &amp;&amp; task.commandInfo.environment.variables &amp;&amp; task.commandInfo.environment.variables.length &gt; 0) {
+                            // Merge the arrays
+                            task.commandInfo.environment.variables = task.commandInfo.environment.variables.concat(envVars);
+                        } else { // Just set them
+                            task.commandInfo.environment = new mesos.Environment(envVars);
+                        }
+&nbsp;
+                        // Get unique taskId
+                        var taskId = self.options.frameworkName + "." + task.name.replace(/\//, "_") + "." + uuid.v4();
+&nbsp;
+                        // Set taskId
+                        task.taskId = taskId;
+&nbsp;
+                        // HTTP health checks
+                        if (task.healthCheck &amp;&amp; task.healthCheck.http) {
+                            var healthCheckPort = task.healthCheck.http.port ? task.healthCheck.http.port : <span class="branch-1 cbranch-no" title="branch not covered" >usedPorts[0];</span> // TODO: Check how to make this more reliable
+                            task.mesosHealthCheck = new Builder("mesos.HealthCheck")
+                                .setType(mesos.HealthCheck.Type.HTTP)
+                                .setHttp(new Builder("mesos.HealthCheck.HTTPCheckInfo")
+                                    .setScheme(task.healthCheck.http.scheme || <span class="branch-1 cbranch-no" title="branch not covered" >"http")</span>
+                                    .setPort(healthCheckPort)
+                                    .setPath(task.healthCheck.http.path || <span class="branch-1 cbranch-no" title="branch not covered" >"/")</span>
+                                    .setStatuses(task.healthCheck.http.statuses || <span class="branch-1 cbranch-no" title="branch not covered" >[200])</span>
+                                );
+                            self.logger.debug("Http healthCheck" + JSON.stringify(task.mesosHealthCheck));
+                        }
+&nbsp;
+                        //
+                        task.mesosName = task.name.replace(/\//, "_");
+&nbsp;
+                        // Remove serial number from mesos task name if not activated (added by default)
+                        if (!self.options.serialNumberedTasks) {
+                            task.mesosName = task.mesosName.replace(/-[0-9]+$/, "");
+                        }
+&nbsp;
+                        self.logger.debug("Mesos task name: " + task.mesosName + " is using serialNumberedTasks: " + self.options.serialNumberedTasks.toString());
+&nbsp;
+                        // Push TaskInfo to toLaunch
+                        toLaunch.push(
+                            new Builder("mesos.TaskInfo")
+                                .setName(task.mesosName)
+                                .setTaskId(new mesos.TaskID(taskId))
+                                .setAgentId(offer.agent_id)
+                                .setResources(demandedResources)
+                                .setExecutor((task.executorInfo ? <span class="branch-0 cbranch-no" title="branch not covered" >helpers.fixEnums(task.executorInfo) </span>: null))
+                                .setCommand((task.commandInfo ? helpers.fixEnums(task.commandInfo) : <span class="branch-1 cbranch-no" title="branch not covered" >null)</span>)
+                                .setContainer((task.containerInfo ? helpers.fixEnums(task.containerInfo) : null))
+                                .setHealthCheck((task.mesosHealthCheck ? helpers.fixEnums(task.mesosHealthCheck) : null))
+                                .setLabels((task.labels ? task.labels : null))
+                        );
+&nbsp;
+                        // Set submit status
+                        task.isSubmitted = true;
+&nbsp;
+                        // Set network runtime info from offer and used ports
+                        if (!task.runtimeInfo) {
+                            task.runtimeInfo = {};
+                            task.runtimeInfo.agentId = offer.agent_id.value || <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+                            task.runtimeInfo.state = "TASK_STAGING";
+                            task.runtimeInfo.network = {
+                                "hostname": offer.hostname,
+                                "ip": offer.url.address.ip || <span class="branch-1 cbranch-no" title="branch not covered" >null,</span>
+                                "ports": usedPorts
+                            };
+&nbsp;
+                        } else {
+                            task.runtimeInfo.state = "TASK_STAGING";
+                            task.runtimeInfo.agentId = offer.agent_id.value || <span class="branch-1 cbranch-no" title="branch not covered" >null;</span>
+                            task.runtimeInfo.network = {
+                                "hostname": offer.hostname,
+                                "ip": offer.url.address.ip || <span class="branch-1 cbranch-no" title="branch not covered" >null,</span>
+                                "ports": usedPorts
+                            };
+                        }
+&nbsp;
+                        self.logger.debug("task details for taskId " + task.taskId + ": " + JSON.stringify(task));
+&nbsp;
+                        // Remove from pendingTasks!
+                        self.pendingTasks.splice(self.pendingTasks.indexOf(task), 1);
+&nbsp;
+                        // Add to launched tasks
+                        self.launchedTasks.push(task);
+&nbsp;
+                        // Save to ZooKeeper
+                        if (self.options.useZk &amp;&amp; self.taskHelper) {
+                            self.taskHelper.saveTask(task);
+                        }
+&nbsp;
+                        self.logger.debug("launchedTasks length: " + self.launchedTasks.length + "; pendingTask length: " + self.pendingTasks.length);
+&nbsp;
+                        declinedNoPending = true;
+                    }
+&nbsp;
+                    self.logger.debug("Offer " + offer.id.value + ": Available resources: " + offerResources.cpus + " - " + offerResources.mem + " - " + offerResources.disk + " - " + offerResources.ports.length)
+&nbsp;
+                } else {
+                    self.logger.error("Offer " + offer.id.value + " has no fitting resources left");
+                }
+&nbsp;
+            });
+&nbsp;
+            // Only trigger a launch if there's actually something to launch :-)
+            if (toLaunch.length &gt; 0) {
+&nbsp;
+                process.nextTick(function () {
+                    // Set the Operations object
+                    var Operations = new Builder("mesos.Offer.Operation")
+                        .setType(mesos.Offer.Operation.Type.LAUNCH)
+                        .setLaunch(new mesos.Offer.Operation.Launch(toLaunch));
+&nbsp;
+                    self.logger.debug("Operation before accept: " + JSON.stringify(helpers.fixEnums(Operations)));
+&nbsp;
+                    // Trigger acceptance
+                    self.accept([offer.id], Operations, null);
+                });
+            }
+&nbsp;
+            // Decline offer if not used
+            if (!declinedNoPending) {
+&nbsp;
+                process.nextTick(function () {
+                    self.logger.debug("DECLINE: Declining Offer " + offer.id.value);
+                    // Trigger decline
+                    self.decline([offer.id], null);
+                });
+&nbsp;
+            }
+        });
+&nbsp;
+    },
+    "INVERSE_OFFERS": <span class="fstat-no" title="function not covered" >fu</span>nction (reverseOffers) {
+<span class="cstat-no" title="statement not covered" >        this.logger.debug("INVERSE_OFFERS: " + JSON.stringify(reverseOffers));</span>
+    },
+    "UPDATE": function (update) {
+&nbsp;
+        var self = this;
+&nbsp;
+        self.logger.debug("UPDATE: " + JSON.stringify(update));
+&nbsp;
+        function handleUpdate(status) {
+&nbsp;
+            self.logger.debug("UPDATE: Got state " + status.state + " for TaskID " + status.task_id.value);
+&nbsp;
+            // Check if the state is defined as a restart state
+            if (self.options.restartStates.indexOf(status.state) &gt; -1) {
+                self.logger.error("TaskId " + status.task_id.value + " got restartable state: " + status.state);
+                // Track launchedTasks array index
+                var foundIndex = 0;
+                var tempLaunchedTasks = self.launchedTasks.slice();
+                // Restart task by splicing it from the launchedTasks array, and afterwards putting it in the pendingTasks array after a cleanup
+                tempLaunchedTasks.forEach(function (task) {
+                    if (status.task_id.value === task.taskId) {
+                        // Check if task was restarted, it means it was already replaced.
+                        if (task.runtimeInfo.restarting) {
+                            // Remove task from launchedTasks array
+                            self.launchedTasks.splice(self.launchedTasks.indexOf(task), 1);
+                            self.logger.debug("TaskId " + status.task_id.value + " was killed and removed from the launchedTasks");
+&nbsp;
+                            if (self.options.useZk) {
+                                self.taskHelper.deleteTask(status.task_id.value);
+                            }
+                            return;
+                        }
+                        // Splice from launchedTasks if found
+                        var taskToRestart = helpers.cloneDeep(self.launchedTasks.splice(foundIndex, 1)[0]);
+                        self.logger.debug("taskToRestart before cleaning: " + JSON.stringify(taskToRestart));
+&nbsp;
+                        if (self.options.useZk) {
+                            self.taskHelper.deleteTask(taskToRestart.taskId);
+                        }
+&nbsp;
+                        // Reset isSubmitted status
+                        taskToRestart.isSubmitted = false;
+                        // Remove old taskId
+                        delete taskToRestart.taskId;
+                        // Remove old runtimeInfo
+                        delete taskToRestart.runtimeInfo;
+                        // Remove old health check (it changes by allocated ports)
+                        delete task.mesosHealthCheck;
+                        // Remove previously set HOST and PORTn environment variables
+                        if (taskToRestart.commandInfo.environment.variables &amp;&amp; taskToRestart.commandInfo.environment.variables.length &gt; 0) {
+                            var usableVariables = [];
+                            // Iterate over all environment variables
+                            taskToRestart.commandInfo.environment.variables.forEach(function (variable) {
+                                // Check if variable name contains either HOST or PORT -&gt; Set by this framework when starting a task
+                                <span class="missing-if-branch" title="else path not taken" >E</span>if (variable.name.match(/^HOST$/g) === null &amp;&amp; variable.name.match(/^PORT[0-9]+$/g) === null) {
+                                    // Add all non-matching (user-defined) environment variables
+                                    usableVariables.push(variable);
+                                }
+                            });
+                            // Remove old variables
+                            delete taskToRestart.commandInfo.environment.variables;
+                            // Add the user-defined variables again
+                            taskToRestart.commandInfo.environment.variables = usableVariables;
+                        }
+                        self.logger.debug("taskToRestart after cleaning: " + JSON.stringify(taskToRestart));
+                        // Restart task by putting it in the pendingTasks array
+                        self.pendingTasks.push(taskToRestart);
+                    } else {
+                        foundIndex++;
+                    }
+                });
+            } else {
+                self.logger.debug("TaskId " + status.task_id.value + " got state: " + status.state);
+                // Keep track of index
+                var index = 0;
+                var match = false;
+&nbsp;
+                self.logger.debug("Iterate over launched tasks...");
+                for (index = 0; index &lt; self.launchedTasks.length; index++) {
+                    var task = self.launchedTasks[index];
+&nbsp;
+                    if (status.task_id.value === task.taskId) {
+                        self.logger.debug("Matched TaskId " + status.task_id.value);
+                        match = true;
+                        // Check if state is TASK_KILLED and TASK_KILLED is not in restartable states array, same for TASK_FINISHED
+                        if ((self.options.restartStates.indexOf("TASK_KILLED") === -1 &amp;&amp; status.state === "TASK_KILLED") || (self.options.restartStates.indexOf("TASK_FINISHED") === -1 &amp;&amp; status.state === "TASK_FINISHED") || (task.runtimeInfo.restarting)) {
+                            // Remove task from launchedTasks array
+                            self.launchedTasks.splice(index, 1);
+                            self.logger.debug("TaskId " + status.task_id.value + " was killed and removed from the launchedTasks");
+&nbsp;
+                            if (self.options.useZk) {
+                                self.taskHelper.deleteTask(status.task_id.value);
+                            }
+                        } else {
+                            var taskStartTime = Date.now();
+                            // Store network info
+                            var network = {};
+&nbsp;
+                            // Remove old runtime info if present
+                            if (Object.getOwnPropertyNames(task.runtimeInfo).length &gt; 0) {
+                                network = helpers.cloneDeep(task.runtimeInfo.network);
+                                if (!status.executor_id || !status.executor_id.value) {
+                                    status.executor_id = {value: task.runtimeInfo.executorId};
+                                }
+                                // Check if we need to emit an event
+                                if (task.runtimeInfo.state === "TASK_STAGING" &amp;&amp; status.state === "TASK_RUNNING") {
+                                    self.emit("task_launched", task);
+                                }
+                                if (task.runtimeInfo.startTime) {
+                                    taskStartTime = task.runtimeInfo.startTime
+                                }
+                                delete task.runtimeInfo;
+                            } else {
+                                self.emit("task_launched", task);
+                            }
+                            // Update task runtime info
+                            task.runtimeInfo = {
+                                agentId: status.agent_id.value,
+                                executorId: status.executor_id.value,
+                                state: status.state,
+                                startTime: taskStartTime,
+                                network: network
+                            };
+                            self.logger.debug("TaskId " + status.task_id.value + " updated task runtime info: " + JSON.stringify(task.runtimeInfo));
+&nbsp;
+                            // Save task to ZooKeeper
+                            if (self.options.useZk) {
+                                self.taskHelper.saveTask(task);
+                            }
+                        }
+&nbsp;
+                    }
+                }
+                // TODO: Check!
+                if (!match &amp;&amp; index &gt;= self.launchedTasks.length &amp;&amp; status.reason === "REASON_RECONCILIATION") {
+                    // Cleaning up unknown tasks
+                    if (self.options.killUnknownTasks &amp;&amp; status.state === "TASK_RUNNING") {
+                        self.logger.info("Killing unknown task ID: " + status.task_id.value + " on agent: " + status.agent_id.value);
+                        self.kill(status.task_id.value, status.agent_id.value);
+                        // Cleaning up stale tasks from ZK.
+                    } else if (status.state !== "TASK_RUNNING" &amp;&amp; self.options.useZk) {
+                        self.logger.info("Cleaning up an unknown task from ZK: " + status.task_id.value);
+                        self.taskHelper.deleteTask(status.task_id.value);
+                    }
+                }
+&nbsp;
+            }
+        }
+&nbsp;
+        // Handle status update
+        handleUpdate(update.status);
+&nbsp;
+        // Acknowledge update
+        self.acknowledge(update);
+&nbsp;
+    },
+    "RESCIND": function (offerId) {
+        this.logger.debug("RESCIND: " + JSON.stringify(offerId));
+    },
+    "RESCIND_INVERSE_OFFER": <span class="fstat-no" title="function not covered" >fu</span>nction (offerId) {
+<span class="cstat-no" title="statement not covered" >        this.logger.debug("RESCIND_INVERSE_OFFER: " + JSON.stringify(offerId));</span>
+    },
+    "MESSAGE": function (message) {
+        this.logger.debug("MESSAGE: " + JSON.stringify(message));
+    },
+    "FAILURE": <span class="fstat-no" title="function not covered" >fu</span>nction (failure) {
+<span class="cstat-no" title="statement not covered" >        this.logger.debug("FAILURE: " + JSON.stringify(failure));</span>
+    },
+    "ERROR": function (error) {
+        this.logger.debug("ERROR: " + JSON.stringify(error));
+    },
+    "HEARTBEAT": function (heartbeat) {
+        this.logger.debug("HEARTBEAT: " + JSON.stringify(heartbeat));
+    }
+};
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Sun Mar 04 2018 17:15:47 GMT+0100 (CET)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
